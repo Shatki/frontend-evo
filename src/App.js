@@ -1,6 +1,7 @@
 import React from 'react';
 import { DataGrid, GridColumn, NumberBox, SwitchButton } from 'rc-easyui';
 
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -104,41 +105,41 @@ class App extends React.Component {
   }
   render() {
     return (
-      <div>
-        <h2>Cell Editing</h2>
-        <DataGrid
-          style={{ height: 250 }}
-          data={this.state.data}
-          clickToEdit
-          selectionMode="cell"
-          editMode="cell"
-        >
-          <GridColumn field="itemid" title="Item ID" editable></GridColumn>
-          <GridColumn field="name" title="Name" editable></GridColumn>
-          <GridColumn field="listprice" title="List Price" align="right"
-            editable
-            editor={({ row }) => (
-              <NumberBox value={row.listprice} precision={1}></NumberBox>
-            )}
-          />
-          <GridColumn field="unitcost" title="Unit Cost" align="right"
-            editable
-            editor={({ row }) => (
-              <NumberBox value={row.unitcost}></NumberBox>
-            )}
-          />
-          <GridColumn field="attr" title="Attribute" width="30%" editable></GridColumn>
-          <GridColumn field="status" title="Status" align="center"
-            editable
-            editor={({ row }) => (
-              <SwitchButton value={row.status}></SwitchButton>
-            )}
-            render={({ row }) => (
-              <span>{String(row.status)}</span>
-            )}
-          />
-        </DataGrid>
-      </div>
+        <div>
+          <h2>Cell Editing</h2>
+          <DataGrid
+              style={{ height: 250 }}
+              data={this.state.data}
+              clickToEdit
+              selectionMode="cell"
+              editMode="cell"
+          >
+            <GridColumn field="itemid" title="Item ID" editable></GridColumn>
+            <GridColumn field="name" title="Name" editable></GridColumn>
+            <GridColumn field="listprice" title="List Price" align="right"
+                        editable
+                        editor={({ row }) => (
+                            <NumberBox value={row.listprice} precision={1}></NumberBox>
+                        )}
+            />
+            <GridColumn field="unitcost" title="Unit Cost" align="right"
+                        editable
+                        editor={({ row }) => (
+                            <NumberBox value={row.unitcost}/>
+                        )}
+            />
+            <GridColumn field="attr" title="Attribute" width="30%" editable></GridColumn>
+            <GridColumn field="status" title="Status" align="center"
+                        editable
+                        editor={({ row }) => (
+                            <SwitchButton value={row.status}></SwitchButton>
+                        )}
+                        render={({ row }) => (
+                            <span>{String(row.status)}</span>
+                        )}
+            />
+          </DataGrid>
+        </div>
     );
   }
 }
