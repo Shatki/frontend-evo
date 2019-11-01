@@ -20,9 +20,9 @@ class EvotorService {
 
         const response = await fetch(`${this._apiBase}${url}/`, {
             method: 'POST',
-            credentials: 'include',
+            //credentials: 'include',
             body: JSON.stringify(data),
-            headers: headers
+            //headers: headers
         });
 
         // получить один заголовок
