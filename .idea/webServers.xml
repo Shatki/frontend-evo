@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="df758a50-a19c-4861-ba0c-db878a3b2b01" name="evotorservice-reactjs" url="https://evotorservice.ru">
+        <fileTransfer host="9200247477.myjino.ru" port="21" rootFolder="/domains/evotorservice.ru" accessType="FTPS">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="21" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
