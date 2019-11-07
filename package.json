@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "rc-easyui": "^1.0.30",
+    "i18next": "^19.0.0",
+    "rc-easyui": "^1.0.36",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-i18next": "^11.0.1",
     "react-scripts": "3.0.1"
   },
   "scripts": {
