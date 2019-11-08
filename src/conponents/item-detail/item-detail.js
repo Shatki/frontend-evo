@@ -76,7 +76,10 @@ export default class ItemDetail extends Component {
         else if (row.editorField === "switch")
             return(<SwitchButton value={row.valueField}/>);
         else if (row.editorField === "combo") {
-            const tax = row.comboValues.find(item => (item.value === row.valueField));
+            let tax = row.comboValues.find(item => (item.value === row.valueField));
+            if (tax === undefined)
+                // Todo: Ошибка в данных. нужна валидация
+                tax = row.comboValues[0];
             return(<div>{ tax.text }</div>);
         }
     }
