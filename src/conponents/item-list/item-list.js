@@ -4,31 +4,14 @@ import { DataGrid, GridColumn, NumberBox, ComboBox} from 'rc-easyui';
 import './item-list.css';
 
 export default class ItemList extends Component {
-    evotorService = new EvotorService();
-
-    state = {
-        operators: ["nofilter", "equal", "notequal", "less", "greater"],
-        status: [
-            { value: null, text: "All" },
-            { value: "P", text: "P" },
-            { value: "N", text: "N" }
-        ],
-        data: [
-            {"code":"FI-SW-01","name":"Koi","unitcost":10.00,"status":"P","listprice":36.50,"attr":"Large","itemid":"EST-1"},
-            {"code":"K9-DL-01","name":"Dalmation","unitcost":12.00,"status":"P","listprice":18.50,"attr":"Spotted Adult Female","itemid":"EST-10"},
-            {"code":"RP-SN-01","name":"Rattlesnake","unitcost":12.00,"status":"P","listprice":38.50,"attr":"Venomless","itemid":"EST-11"},
-            {"code":"RP-SN-01","name":"Rattlesnake","unitcost":12.00,"status":"P","listprice":26.50,"attr":"Rattleless","itemid":"EST-12"},
-            {"code":"RP-LI-02","name":"Iguana","unitcost":12.00,"status":"P","listprice":35.50,"attr":"Green Adult","itemid":"EST-13"},
-            {"code":"FL-DSH-01","name":"Manx","unitcost":12.00,"status":"P","listprice":158.50,"attr":"Tailless","itemid":"EST-14"},
-            {"code":"FL-DSH-01","name":"Manx","unitcost":12.00,"status":"P","listprice":83.50,"attr":"With tail","itemid":"EST-15"},
-            {"code":"FL-DLH-02","name":"Persian","unitcost":12.00,"status":"P","listprice":23.50,"attr":"Adult Female","itemid":"EST-16"},
-            {"code":"FL-DLH-02","name":"Persian","unitcost":12.00,"status":"P","listprice":89.50,"attr":"Adult Male","itemid":"EST-17"},
-            {"code":"AV-CB-01","name":"Amazon Parrot","unitcost":92.00,"status":"P","listprice":63.50,"attr":"Adult Male","itemid":"EST-18"}
-        ]
-    };
-
     constructor(props) {
         super(props);
+        this.state = {
+            operators: ["nofilter", "equal", "notequal", "less", "greater"],
+            allChecked: false,
+            rowClicked: false,
+            data: [],
+        };
     }
 
     handleRowCheck(row, checked) {
@@ -63,33 +46,35 @@ export default class ItemList extends Component {
         if (!selection) {
             return null;
         }
-        return selection.map(function (row) { return row.itemid }).join(",");
+        return selection.map(function (row) { return row.code }).join(",");
 
     }
 
     render() {
+        const { data, measureTypes } = this.props;
+
         return (
             <div>
-                <DataGrid filterable data={this.state.data} columnMoving style={{height:550}}
+                <DataGrid filterable data={ data } columnMoving style={{ height:550 }}
                           columnResizing
                           selectionMode='multiple'
                           selection={this.state.selection}
                           onSelectionChange={(selection) => this.setState({ selection: selection })}>
-                    <GridColumn field="itemid" title="Артикул"/>
-                    <GridColumn field="name" title="Наименование"/>
-                    <GridColumn field="listprice" title="Цена" align="right"
+                    <GridColumn field="code" title="Код" width="10%"/>
+                    <GridColumn field="name" title="Наименование" width="50%"/>
+                    <GridColumn field="price" title="Цена продаж" width="10%" align="right"
                                 filterOperators={this.state.operators}
                                 filter={() => <NumberBox/>}
                     />
-                    <GridColumn field="unitcost" title="Остаток" align="right"
+                    <GridColumn field="quantity" title="Остаток" align="right" width="10%"
                                 filterOperators={this.state.operators}
                                 filter={() => <NumberBox/>}
                     />
-                    <GridColumn field="attr" title="Атрибут" width="30%"/>
-                    <GridColumn field="status" title="Единицы" align="center"
+                    <GridColumn field="description" title="Описание" width="10%"/>
+                    <GridColumn field="measureName" title="Единицы" width="10%" align="center"
                                 filter={() => (
                                     <ComboBox
-                                        data={this.state.status}
+                                        data={ measureTypes }
                                         editable={false}
                                         inputStyle={{ textAlign: 'center' }}
                                     />

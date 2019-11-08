@@ -14,7 +14,7 @@ export default class ItemDetail extends Component {
                 {"nameField": "barCodes", "valueField": "", "titleField": "Штрихкоды", "groupField": "Коды", "editorField": "text"},
                 {"nameField": "name", "valueField": "", "titleField": "Наименование", "groupField": "Основные", "editorField": "text" },
                 {"nameField": "price", "valueField": "", "titleField": "Цена продажи", "groupField": "Цены", "editorField": "number", "precision": 2},
-                {"nameField": "quantity", "valueField": "", "titleField": "Остаток", "groupField": "Цены", "editorField": "text" },
+                {"nameField": "quantity", "valueField": "", "titleField": "Остаток", "groupField": "Цены", "editorField": "number" },
                 {"nameField": "costPrice", "valueField": "", "titleField": "Цена закупки", "groupField": "Цены", "editorField": "number", "precision": 2},
                 {"nameField": "measureName", "valueField": "", "titleField": "Единицы", "groupField": "Цены", "editorField": "combo", "comboValues": this.props.measureTypes},
                 {"nameField": "tax", "valueField": "", "titleField": "Ставка НДС", "groupField": "Цены", "editorField": "combo", "comboValues": this.props.taxTypes},
@@ -32,24 +32,26 @@ export default class ItemDetail extends Component {
                 {"nameField": "parentUuid", "valueField": "", "titleField": "Группа товаров", "groupField": "Основные", "editorField": "text"},
 
             ],
-            data : null
+            itemData : [],
+            data: []
         };
     }
 
     renderGroup({ value, rows }) {
         return (
-            <span style={{fontWeight:'bold'}}>{value} - <span style={{color:'red'}}>{rows.length}</span> свойств(а)
+            <span style={{ fontWeight:'bold' }}>{value} - <span style={{ color:'red' }}>{ rows.length }</span> свойств(а)
       </span>
         )
     }
 
     renderData() {
-        // Преобразование для групповых свойств
         const { itemData } = this.props;
-        const data = itemData[0];
+        // Преобразование для групповых свойств
+        // Todo: тут кривой временный код
+        console.log(itemData[0]);
 
         return this.state.itemProps.map((property) => {
-            property.valueField = data[property.nameField];
+            property.valueField = itemData[0][property.nameField];
             return property;
         })
     }
@@ -91,11 +93,12 @@ export default class ItemDetail extends Component {
     }
 
     render() {
-        //const { taxTypes, productTypes, itemData } = this.props;
+        const { taxTypes, productTypes } = this.props;
+        const { data } = this.state.data;
 
         return (
             <div>
-                <DataGrid data={ this.state.data }
+                <DataGrid data={ data }
                           columnResizing
                           clickToEdit
                           selectionMode="row"

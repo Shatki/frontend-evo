@@ -1,6 +1,6 @@
 import React from 'react';
 import { LocaleProvider } from 'rc-easyui';
-import easyuiru from 'rc-easyui/dist/locale/easyui-lang-ru';
+import easyuiru from '../../locale/easyui-lang-ru';
 import EvotorService from "../../services/evotor-service";
 import Dashboard from "../dashboard";
 
