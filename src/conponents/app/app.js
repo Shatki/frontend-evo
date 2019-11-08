@@ -1,11 +1,10 @@
 import React from 'react';
-
-import easyuiru from 'rc-easyui/dist/locale/easyui-lang-ru';
 import { LocaleProvider } from 'rc-easyui';
-
-import './app.css'
+import easyuiru from 'rc-easyui/dist/locale/easyui-lang-ru';
 import EvotorService from "../../services/evotor-service";
 import Dashboard from "../dashboard";
+
+import './app.css'
 
 export default class App extends React.Component {
     state = {
@@ -20,7 +19,7 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <LocaleProvider locale={ easyuiru }>
+            <LocaleProvider local={ easyuiru }>
                 <Dashboard/>
             </LocaleProvider>
         );
