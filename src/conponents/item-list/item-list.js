@@ -50,12 +50,17 @@ export default class ItemList extends Component {
 
     }
 
+    onDblClick({ row }){
+        console.log(row.name);
+    }
+
     render() {
         const { data, measureTypes } = this.props;
 
         return (
             <div>
                 <DataGrid filterable data={ data } columnMoving style={{ height:550 }}
+                          onCellDblClick = { this.onDblClick }
                           columnResizing
                           selectionMode='multiple'
                           selection={this.state.selection}

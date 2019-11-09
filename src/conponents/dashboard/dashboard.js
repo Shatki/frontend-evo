@@ -13,7 +13,6 @@ import '../../themes/react.css'
 import '../../themes/icon.css'
 
 
-
 export default class Dashboard extends React.Component {
     constructor(props) {
         super(props);
@@ -41,7 +40,7 @@ export default class Dashboard extends React.Component {
                     {value: "VAT_10_110", text: "НДС 10/110"},
                 ],
             },
-            listData: [
+            data: [
                 {
                     "uuid": "011845e5-d2f3-433e-a961-dcdbd4e6927b",
                     "group": false,
@@ -1364,6 +1363,7 @@ export default class Dashboard extends React.Component {
                     "tareVolume": null
                 }
             ],
+            listData: [],
             treeData: [
                 {
                     text: "Item1",
@@ -1415,8 +1415,14 @@ export default class Dashboard extends React.Component {
         }
     };
 
+    updateData(){
+       const categories = this.state.data.filter(item => item.group === true);
+       console.log(categories);
+       return this.state
+    }
+
     render() {
-        const { constants, itemData, treeData, listData } = this.state;
+        const { constants, itemData, treeData, listData } = this.updateData();
         return (
             <div>
                 <Header/>

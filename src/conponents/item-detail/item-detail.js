@@ -5,9 +5,10 @@ import { NumberBox, TextBox, SwitchButton, ComboBox } from  'rc-easyui'
 import './item-detail.css'
 
 export default class ItemDetail extends Component {
+
     constructor(props) {
         super(props);
-        let itemProps = [
+        this.itemProps = [
                 //{"nameField": "uuid", "valueField": "", "titleField": "UUID", "groupField": "Основные", "editorField": "text"},
                 {"nameField": "code", "valueField": "", "titleField": "Код", "groupField": "Основные", "editorField": "number"},
                 {"nameField": "barCodes", "valueField": "", "titleField": "Штрихкоды", "groupField": "Коды", "editorField": "text"},
@@ -32,7 +33,6 @@ export default class ItemDetail extends Component {
 
             ];
         this.state = {
-
             itemData : [],
             data: []
         };
@@ -45,12 +45,10 @@ export default class ItemDetail extends Component {
         )
     }
 
-    renderData() {
+    updateData() {
         const { itemData } = this.props;
         // Преобразование для групповых свойств
         // Todo: тут кривой временный код
-        console.log(itemData[0]);
-
         return this.itemProps.map((property) => {
             property.valueField = itemData[0][property.nameField];
             return property;
@@ -88,18 +86,17 @@ export default class ItemDetail extends Component {
     }
 
     componentDidMount() {
-        this.setState({
-            data: this.renderData()
-        })
+        //this.setState({
+        //    data: this.updateData()
+        //})
     }
 
     render() {
-        const { taxTypes, productTypes } = this.props;
-        const { data } = this.state.data;
+        const { taxTypes, productTypes, dataItem } = this.props;
 
         return (
             <div>
-                <DataGrid data={ data }
+                <DataGrid data={ this.updateData() }
                           columnResizing
                           clickToEdit
                           selectionMode="row"
