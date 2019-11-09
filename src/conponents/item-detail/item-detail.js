@@ -7,8 +7,7 @@ import './item-detail.css'
 export default class ItemDetail extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            itemProps: [
+        let itemProps = [
                 //{"nameField": "uuid", "valueField": "", "titleField": "UUID", "groupField": "Основные", "editorField": "text"},
                 {"nameField": "code", "valueField": "", "titleField": "Код", "groupField": "Основные", "editorField": "number"},
                 {"nameField": "barCodes", "valueField": "", "titleField": "Штрихкоды", "groupField": "Коды", "editorField": "text"},
@@ -31,7 +30,9 @@ export default class ItemDetail extends Component {
                 {"nameField": "group", "valueField": "", "titleField": "Группа", "groupField": "Основные", "editorField": "switch"},
                 {"nameField": "parentUuid", "valueField": "", "titleField": "Группа товаров", "groupField": "Основные", "editorField": "text"},
 
-            ],
+            ];
+        this.state = {
+
             itemData : [],
             data: []
         };
@@ -50,7 +51,7 @@ export default class ItemDetail extends Component {
         // Todo: тут кривой временный код
         console.log(itemData[0]);
 
-        return this.state.itemProps.map((property) => {
+        return this.itemProps.map((property) => {
             property.valueField = itemData[0][property.nameField];
             return property;
         })
@@ -108,7 +109,8 @@ export default class ItemDetail extends Component {
                           style={{ height: 600 }}>
                     <GridColumn field="rn" align="center" width="20px"
                                 cellCss="datagrid-td-rownumber"
-                        //render={({rowIndex}) => (
+                        //
+                        // render={({rowIndex}) => (
                         //    <span>{rowIndex+1}</span>
                         //)}
                     />
