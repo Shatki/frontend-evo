@@ -40,7 +40,7 @@ export default class ItemDetail extends Component {
 
     renderGroup({ value, rows }) {
         return (
-            <span style={{ fontWeight:'bold' }}>{value} - <span style={{ color:'red' }}>{ rows.length }</span> свойств(а)
+            <span style={{ fontWeight:'bold'}}>{value} - <span style={{ color:'red' }}>{ rows.length }</span> свойств(а)
       </span>
         )
     }
@@ -99,18 +99,13 @@ export default class ItemDetail extends Component {
                 <DataGrid data={ this.updateData() }
                           columnResizing
                           clickToEdit
+                          expanderWidth ={20}
                           selectionMode="row"
                           editMode="row"
                           groupField="groupField"
                           renderGroup={ this.renderGroup }
                           style={{ height: 600 }}>
-                    <GridColumn field="rn" align="center" width="20px"
-                                cellCss="datagrid-td-rownumber"
-                        //
-                        // render={({rowIndex}) => (
-                        //    <span>{rowIndex+1}</span>
-                        //)}
-                    />
+                    <GridColumn key="e" field="e"  width={20}/>
                     <GridColumn field="titleField" title="Имя поля"/>
                     <GridColumn field="valueField" title="Параметр"
                                 editable

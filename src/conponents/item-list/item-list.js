@@ -1,17 +1,19 @@
 import React, { Component } from 'react';
-import EvotorService from '../../services/evotor-service'
 import { DataGrid, GridColumn, NumberBox, ComboBox} from 'rc-easyui';
 import './item-list.css';
+import Spinner from "../spinner";
 
 export default class ItemList extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
             operators: ["nofilter", "equal", "notequal", "less", "greater"],
             allChecked: false,
             rowClicked: false,
             data: [],
         };
+        //this.updateItemList();
     }
 
     handleRowCheck(row, checked) {
@@ -54,8 +56,16 @@ export default class ItemList extends Component {
         console.log(row.name);
     }
 
+    onDataLoaded = (data) => {
+        this.setState({
+            data,
+            loading: false
+        })
+    };
+
     render() {
         const { data, measureTypes } = this.props;
+        console.log(data);
 
         return (
             <div>
@@ -63,16 +73,16 @@ export default class ItemList extends Component {
                           onCellDblClick = { this.onDblClick }
                           columnResizing
                           selectionMode='multiple'
-                          selection={this.state.selection}
+                          selection={ this.state.selection }
                           onSelectionChange={(selection) => this.setState({ selection: selection })}>
                     <GridColumn field="code" title="Код" width="10%"/>
                     <GridColumn field="name" title="Наименование" width="50%"/>
                     <GridColumn field="price" title="Цена продаж" width="10%" align="right"
-                                filterOperators={this.state.operators}
+                                filterOperators={ this.state.operators }
                                 filter={() => <NumberBox/>}
                     />
                     <GridColumn field="quantity" title="Остаток" align="right" width="10%"
-                                filterOperators={this.state.operators}
+                                filterOperators={ this.state.operators }
                                 filter={() => <NumberBox/>}
                     />
                     <GridColumn field="description" title="Описание" width="10%"/>
@@ -80,7 +90,7 @@ export default class ItemList extends Component {
                                 filter={() => (
                                     <ComboBox
                                         data={ measureTypes }
-                                        editable={false}
+                                        editable={ false }
                                         inputStyle={{ textAlign: 'center' }}
                                     />
                                 )}
