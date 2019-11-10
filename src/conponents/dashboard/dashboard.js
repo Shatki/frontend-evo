@@ -33,7 +33,16 @@ export default class Dashboard extends React.Component {
                 measureTypes: [
                     {value: null, text: "Любые"},
                     {value: "шт", text: "шт"},
-                    {value: "уп", text: "уп"}
+                    {value: "кг", text: "кг"},
+                    {value: "л", text: "л"},
+                    {value: "м", text: "м"},
+                    {value: "км", text: "км"},
+                    {value: "м2", text: "м2"},
+                    {value: "м3", text: "м3"},
+                    {value: "компл", text: "компл"},
+                    {value: "упак", text: "упак"},
+                    {value: "ед", text: "ед"},
+                    {value: "дроб", text: "дроб"}
                 ],
                 taxTypes: [
                     {value: "NO_VAT", text: "Без НДС"},
@@ -116,15 +125,20 @@ export default class Dashboard extends React.Component {
     render() {
         const { constants, itemData, treeData, listData } = this.state;
         return (
-            <div>
-                <Header/>
-                <Layout style={{ width: '100%', height: 600 }}>
+            <div >
+
+                <Layout style={{ width: '100%', height: '100%' }}>
+                    <LayoutPanel region="north" style={{ height: 60 }}>
+                        <Header/>
+                    </LayoutPanel>
+
                     <LayoutPanel region="west" split style={{ minWidth: 150, maxWidth: 400 }}>
                         <ItemTree data = { treeData }/>
                     </LayoutPanel>
 
-                    <ItemList { ...constants } data = { listData }/>
-
+                    <LayoutPanel region="center">
+                        <ItemList { ...constants } data = { listData }/>
+                    </LayoutPanel>
                     <LayoutPanel region="east" split style={{ minWidth: 200, maxWidth: 400 }}>
                         <ItemDetail { ...constants } itemData = { itemData } />
                     </LayoutPanel>

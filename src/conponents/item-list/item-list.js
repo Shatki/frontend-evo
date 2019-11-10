@@ -67,14 +67,20 @@ export default class ItemList extends Component {
         const { data, measureTypes } = this.props;
         console.log(data);
 
+        // <p>You selected: {this.selectionInfo()}</p>
+
         return (
             <div>
-                <DataGrid filterable data={ data } columnMoving style={{ height:550 }}
-                          onCellDblClick = { this.onDblClick }
-                          columnResizing
-                          selectionMode='multiple'
-                          selection={ this.state.selection }
-                          onSelectionChange={(selection) => this.setState({ selection: selection })}>
+                <DataGrid
+                        style={{ height: 'calc(100vh - 60px)' }}
+                        filterable
+                        data={ data }
+                        columnMoving
+                        onCellDblClick = { this.onDblClick }
+                        columnResizing
+                        selectionMode ='multiple'
+                        selection={ this.state.selection }
+                        onSelectionChange={(selection) => this.setState({ selection: selection })}>
                     <GridColumn field="code" title="Код" width="10%"/>
                     <GridColumn field="name" title="Наименование" width="50%"/>
                     <GridColumn field="price" title="Цена продаж" width="10%" align="right"
@@ -96,7 +102,6 @@ export default class ItemList extends Component {
                                 )}
                     />
                 </DataGrid>
-                <p>You selected: {this.selectionInfo()}</p>
             </div>
         );
     }

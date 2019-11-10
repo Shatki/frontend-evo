@@ -3,13 +3,18 @@ import './header.css'
 
 
 export default class Header extends Component {
-    state = {
-        store: 'Магазин "XXI BEK"'
-    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            store: 'Магазин "XXI BEK"'
+        };
+    }
 
     render() {
         return(
-            <h2>{ this.state.store }</h2>
+            <div style={{ ...this.props }}>
+                <h2>{ this.state.store }</h2>
+            </div>
         )
     }
 }

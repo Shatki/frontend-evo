@@ -45,16 +45,6 @@ export default class ItemDetail extends Component {
         )
     }
 
-    updateData() {
-        const { itemData } = this.props;
-        // Преобразование для групповых свойств
-        // Todo: тут кривой временный код
-        return this.itemProps.map((property) => {
-            property.valueField = itemData[0][property.nameField];
-            return property;
-        })
-    }
-
     renderEditor({ row }){
         if (row.editorField === "number")
             return(<NumberBox value={ row.valueField } precision={ row.precision }/>);
@@ -85,6 +75,15 @@ export default class ItemDetail extends Component {
         }
     }
 
+    updateData() {
+        const { itemData } = this.props;
+        // Преобразование для групповых свойств
+        // Todo: тут кривой временный код
+        return this.itemProps.map((property) => {
+            property.valueField = itemData[0][property.nameField];
+            return property;
+        })
+    }
     componentDidMount() {
         //this.setState({
         //    data: this.updateData()
@@ -99,13 +98,12 @@ export default class ItemDetail extends Component {
                 <DataGrid data={ this.updateData() }
                           columnResizing
                           clickToEdit
-                          expanderWidth ={20}
+                          expanderWidth ={ 20 }
                           selectionMode="row"
                           editMode="row"
                           groupField="groupField"
-                          renderGroup={ this.renderGroup }
-                          style={{ height: 600 }}>
-                    <GridColumn key="e" field="e"  width={20}/>
+                          renderGroup={ this.renderGroup }>
+                    <GridColumn width={ 20 }/>
                     <GridColumn field="titleField" title="Имя поля"/>
                     <GridColumn field="valueField" title="Параметр"
                                 editable
