@@ -107,7 +107,7 @@ export default class Dashboard extends React.Component {
         this.updateData();
     };
 
-    transforTreeData = (data, parentUuid=null) => {
+    transformTreeData = (data, parentUuid=null) => {
         // Возвращает коренной список, parentUuid = null
         // Алгоритм преобразования данных в объект для listTree
         const children = data.filter(item => parentUuid === item.parentUuid);
@@ -115,14 +115,21 @@ export default class Dashboard extends React.Component {
         if (children.length > 0){
             // Выбираем элементы имеющие children
             return  children.map((child)=>{
-                //
-                //console.log(child, child.parentUuid);
-                return{
-                    uuid: child.uuid,
-                    text: child.name,
-                    state: 'closed',
-                    children: this.transforTreeData(data, child.uuid)
-                };
+                let transformTreeData = this.transformTreeData(data, child.uuid);
+                if (transformTreeData.length > 0){
+                    return{
+                        uuid: child.uuid,
+                        text: child.name,
+                        state: 'closed',
+                        children: transformTreeData
+                    };
+                }
+                else{
+                    return{
+                        uuid: child.uuid,
+                        text: child.name,
+                    };
+                }
             });
         } else {
             return [];
@@ -134,7 +141,7 @@ export default class Dashboard extends React.Component {
         this.setState({
             listData: data.filter(item => item.group === false),
             treeData: treeData,
-            transformTreeData: this.transforTreeData(treeData, null),
+            transformTreeData: this.transformTreeData(treeData, null),
             loading: false
         });
     };

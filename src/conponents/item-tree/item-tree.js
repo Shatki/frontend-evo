@@ -34,7 +34,10 @@ export default class ItemTree extends Component {
     render() {
         const { treeData } = this.props;
         return (
-            <Tree data={ treeData }/>
+            <Tree
+                animate
+                dblclickToEdit
+                data={ treeData }/>
         )
     }
 }
