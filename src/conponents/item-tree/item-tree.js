@@ -4,8 +4,10 @@ import './item-tree.css'
 import { Tree } from 'rc-easyui';
 
 export default class ItemTree extends Component {
-    state = {
-        menuData: [
+    constructor(props){
+        super(props);
+        this.state = {
+            menuData: [
                 {
                     text: "Item1",
                     children: [
@@ -25,11 +27,14 @@ export default class ItemTree extends Component {
                 },
                 { text: "Item2" }
             ],
-    };
+        };
+    }
+
 
     render() {
+        const { treeData } = this.props;
         return (
-            <Tree data={this.state.menuData}/>
+            <Tree data={ treeData }/>
         )
     }
 }

@@ -65,8 +65,6 @@ export default class ItemList extends Component {
 
     render() {
         const { data, measureTypes } = this.props;
-        console.log(data);
-
         // <p>You selected: {this.selectionInfo()}</p>
 
         return (

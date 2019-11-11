@@ -74,6 +74,7 @@ export default class Dashboard extends React.Component {
                 },
                 { text: "Item2" }
             ],
+            transformTreeData: [],
             itemData: [
                 {
                     "uuid": "01ba18b6-8707-5f47-3d9c-4db058054cb2",
@@ -106,13 +107,36 @@ export default class Dashboard extends React.Component {
         this.updateData();
     };
 
+    transforTreeData = (data, parentUuid=null) => {
+        // Возвращает коренной список, parentUuid = null
+        // Алгоритм преобразования данных в объект для listTree
+        const children = data.filter(item => parentUuid === item.parentUuid);
+        // alert(children.toSource());
+        if (children.length > 0){
+            // Выбираем элементы имеющие children
+            return  children.map((child)=>{
+                //
+                //console.log(child, child.parentUuid);
+                return{
+                    uuid: child.uuid,
+                    text: child.name,
+                    state: 'closed',
+                    children: this.transforTreeData(data, child.uuid)
+                };
+            });
+        } else {
+            return [];
+        }
+    };
+
     onDataLoaded = (data) =>{
+        const treeData = data.filter(item => item.group === true);
         this.setState({
             listData: data.filter(item => item.group === false),
-            treeData: data.filter(item => item.group === true),
+            treeData: treeData,
+            transformTreeData: this.transforTreeData(treeData, null),
             loading: false
-        })
-
+        });
     };
 
     updateData(){
@@ -123,7 +147,7 @@ export default class Dashboard extends React.Component {
     }
 
     render() {
-        const { constants, itemData, treeData, listData } = this.state;
+        const { constants, itemData, transformTreeData, listData } = this.state;
         return (
             <div >
 
@@ -133,7 +157,7 @@ export default class Dashboard extends React.Component {
                     </LayoutPanel>
 
                     <LayoutPanel region="west" split style={{ minWidth: 150, maxWidth: 400 }}>
-                        <ItemTree data = { treeData }/>
+                        <ItemTree treeData = { transformTreeData }/>
                     </LayoutPanel>
 
                     <LayoutPanel region="center">
