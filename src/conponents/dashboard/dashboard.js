@@ -54,26 +54,7 @@ export default class Dashboard extends React.Component {
                 ],
             },
             listData: [],
-            treeData: [
-                {
-                    text: "Item1",
-                    children: [
-                        { text: "Item11" },
-                        {
-                            text: "Item12",
-                            state: "closed",
-                            children: [
-                                { text: "Iteme121" },
-                                { text: "Iteme122" },
-                                { text: "Iteme123" }
-                            ]
-                        },
-                        { text: "Item13" },
-                        { text: "Item14" }
-                    ]
-                },
-                { text: "Item2" }
-            ],
+            treeData: [],
             transformTreeData: [],
             itemData: [
                 {
@@ -102,7 +83,6 @@ export default class Dashboard extends React.Component {
                     "tareVolume": 0.57
                 },
             ],
-
         };
         this.updateData();
     };

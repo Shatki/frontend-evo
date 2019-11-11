@@ -7,34 +7,22 @@ export default class ItemTree extends Component {
     constructor(props){
         super(props);
         this.state = {
-            menuData: [
-                {
-                    text: "Item1",
-                    children: [
-                        { text: "Item11" },
-                        {
-                            text: "Item12",
-                            state: "closed",
-                            children: [
-                                { text: "Iteme121" },
-                                { text: "Iteme122" },
-                                { text: "Iteme123" }
-                            ]
-                        },
-                        { text: "Item13" },
-                        { text: "Item14" }
-                    ]
-                },
-                { text: "Item2" }
-            ],
+            menuData: [],
         };
     }
 
+    renderNode = ({ node }) => {
+        return (
+            <span tabIndex="0">
+            {node.text}
+            </span>
+        )
+    };
 
     render() {
         const { treeData } = this.props;
         return (
-            <Tree
+            <Tree render = { this.renderNode }
                 animate
                 dblclickToEdit
                 data={ treeData }/>

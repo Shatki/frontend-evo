@@ -43,6 +43,13 @@ export default class ItemList extends Component {
         })
     }
 
+    handleKeyPress = (event) => {
+        console.log(event.key);
+        if(event.key === 'Enter'){
+            console.log('enter press here! ')
+        }
+    };
+
     selectionInfo() {
         const { selection } = this.state;
         if (!selection) {
@@ -69,7 +76,7 @@ export default class ItemList extends Component {
 
         return (
             <div>
-                <DataGrid
+                <DataGrid onKeyPress = { this.handleKeyPress }
                         style={{ height: 'calc(100vh - 60px)' }}
                         filterable
                         data={ data }
