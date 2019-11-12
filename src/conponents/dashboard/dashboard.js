@@ -85,7 +85,7 @@ export default class Dashboard extends React.Component {
             ],
             treeSelection: null,
             listSelection: [],
-            itemSelection: null
+            itemSelection: null,
         };
         this.updateData();
     };
@@ -121,17 +121,9 @@ export default class Dashboard extends React.Component {
         }
     };
 
-    displayListData = (data, node) => {
-        if(!node){
-            return data.filter(item => item.parentUuid === null);
-        }
-        // Сюда уже приходят подготовленные данные что приходят
-        const children = this.state.treeData.filter(item => item.parentUuid === node.uuid);
-        if (children.length > 0){
-
-        } else{
-            return data.filter(item => item.parentUuid === node.uuid);
-        }
+    displayListData = (treeData, listData, node) => {
+        let data =  treeData.filter(item => item.parentUuid === node);
+        return data.concat(listData.filter(item => item.parentUuid === node));
     };
 
     addRootTreeData = (treeData) => {
@@ -152,7 +144,7 @@ export default class Dashboard extends React.Component {
             listData: listData,
             treeData: treeData,
             transformTreeData: this.addRootTreeData(treeData),
-            displayListData: this.displayListData(listData, null),
+            displayListData: this.displayListData(treeData, listData, null),
             loading: false
         });
     };
@@ -165,9 +157,10 @@ export default class Dashboard extends React.Component {
     };
 
     onTreeSelectionChange = (node) =>{
+        const { treeData, listData } = this.state;
         this.setState({
             treeSelection: node,
-            displayListData: this.displayListData(this.state.listData, node)
+            displayListData: this.displayListData(treeData, listData, node)
         });
     };
 
