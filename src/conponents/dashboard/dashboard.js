@@ -20,7 +20,6 @@ export default class Dashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            loading: true,
             constants: {
                 productTypes: [
                     {value: "NORMAL", text: "обычный"},
@@ -56,6 +55,7 @@ export default class Dashboard extends React.Component {
             listData: [],
             treeData: [],
             transformTreeData: [],
+            displayListData: [],
             itemData: [
                 {
                     "uuid": "01ba18b6-8707-5f47-3d9c-4db058054cb2",
@@ -83,6 +83,9 @@ export default class Dashboard extends React.Component {
                     "tareVolume": 0.57
                 },
             ],
+            treeSelection: null,
+            listSelection: [],
+            itemSelection: null
         };
         this.updateData();
     };
@@ -97,6 +100,7 @@ export default class Dashboard extends React.Component {
             return  children.map((child)=>{
                 let transformTreeData = this.transformTreeData(data, child.uuid);
                 if (transformTreeData.length > 0){
+                    // Родительский узел
                     return{
                         uuid: child.uuid,
                         text: child.name,
@@ -105,6 +109,7 @@ export default class Dashboard extends React.Component {
                     };
                 }
                 else{
+                    // Конечный узел
                     return{
                         uuid: child.uuid,
                         text: child.name,
@@ -116,13 +121,53 @@ export default class Dashboard extends React.Component {
         }
     };
 
+    displayListData = (data, node) => {
+        if(!node){
+            return data.filter(item => item.parentUuid === null);
+        }
+        // Сюда уже приходят подготовленные данные что приходят
+        const children = this.state.treeData.filter(item => item.parentUuid === node.uuid);
+        if (children.length > 0){
+
+        } else{
+            return data.filter(item => item.parentUuid === node.uuid);
+        }
+    };
+
+    addRootTreeData = (treeData) => {
+        return([
+            {
+            uuid: null,
+            text: "Root",
+            state: 'opened',
+            children: this.transformTreeData(treeData, null),
+        }
+        ]);
+    };
+
     onDataLoaded = (data) =>{
         const treeData = data.filter(item => item.group === true);
+        const listData = data.filter(item => item.group === false);
         this.setState({
-            listData: data.filter(item => item.group === false),
+            listData: listData,
             treeData: treeData,
-            transformTreeData: this.transformTreeData(treeData, null),
+            transformTreeData: this.addRootTreeData(treeData),
+            displayListData: this.displayListData(listData, null),
             loading: false
+        });
+    };
+
+    onListSelectionChange = (selection) =>{
+        // console.log(selection);
+        this.setState({
+            listSelection: selection
+        });
+    };
+
+    onTreeSelectionChange = (node) =>{
+        this.setState({
+            treeSelection: node,
+            displayListData: this.displayListData(this.state.listData, node)
         });
     };
 
@@ -134,7 +179,7 @@ export default class Dashboard extends React.Component {
     }
 
     render() {
-        const { constants, itemData, transformTreeData, listData } = this.state;
+        const { constants, itemData, transformTreeData, displayListData } = this.state;
         return (
             <div >
 
@@ -144,12 +189,15 @@ export default class Dashboard extends React.Component {
                     </LayoutPanel>
 
                     <LayoutPanel region="west" split style={{ minWidth: 150, maxWidth: 400 }}>
-                        <ItemTree treeData = { transformTreeData }/>
+                        <ItemTree treeData = { transformTreeData }
+                        onTreeSelectionChange = { this.onTreeSelectionChange }/>
                     </LayoutPanel>
 
                     <LayoutPanel region="center">
-                        <ItemList { ...constants } data = { listData }/>
+                        <ItemList { ...constants } listData = { displayListData } node = { this.state.treeSelection }
+                                    onListSelectionChange = { this.onListSelectionChange }/>
                     </LayoutPanel>
+
                     <LayoutPanel region="east" split style={{ minWidth: 200, maxWidth: 400 }}>
                         <ItemDetail { ...constants } itemData = { itemData } />
                     </LayoutPanel>

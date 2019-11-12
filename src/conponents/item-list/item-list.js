@@ -16,47 +16,8 @@ export default class ItemList extends Component {
         //this.updateItemList();
     }
 
-    handleRowCheck(row, checked) {
-        let data = this.state.data.slice();
-        let index = this.state.data.indexOf(row);
-        data.splice(index, 1, Object.assign({}, row, { selected: checked }));
-        let checkedRows = data.filter(row => row.selected);
-        this.setState({
-            allChecked: data.length === checkedRows.length,
-            rowClicked: true,
-            data: data
-        }, () => {
-            this.setState({ rowClicked: false })
-        });
-    }
-
-    handleAllCheck(checked) {
-        if (this.state.rowClicked) {
-            return;
-        }
-        let data = this.state.data.map(row => {
-            return Object.assign({}, row, { selected: checked })
-        });
-        this.setState({
-            allChecked: checked,
-            data: data
-        })
-    }
-
-    handleKeyPress = (event) => {
-        console.log(event.key);
-        if(event.key === 'Enter'){
-            console.log('enter press here! ')
-        }
-    };
-
-    selectionInfo() {
-        const { selection } = this.state;
-        if (!selection) {
-            return null;
-        }
-        return selection.map(function (row) { return row.code }).join(",");
-
+    componentDidMount() {
+        //this.onDataLoaded()
     }
 
     onDblClick({ row }){
@@ -71,21 +32,20 @@ export default class ItemList extends Component {
     };
 
     render() {
-        const { data, measureTypes } = this.props;
-        // <p>You selected: {this.selectionInfo()}</p>
+        const { onListSelectionChange, listData, measureTypes } = this.props;
 
         return (
             <div>
-                <DataGrid onKeyPress = { this.handleKeyPress }
+                <DataGrid
                         style={{ height: 'calc(100vh - 60px)' }}
                         filterable
-                        data={ data }
+                        data={ listData }
                         columnMoving
                         onCellDblClick = { this.onDblClick }
                         columnResizing
                         selectionMode ='multiple'
                         selection={ this.state.selection }
-                        onSelectionChange={(selection) => this.setState({ selection: selection })}>
+                        onSelectionChange={ onListSelectionChange }>
                     <GridColumn field="code" title="Код" width="10%"/>
                     <GridColumn field="name" title="Наименование" width="50%"/>
                     <GridColumn field="price" title="Цена продаж" width="10%" align="right"

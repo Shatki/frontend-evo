@@ -4,13 +4,6 @@ import './item-tree.css'
 import { Tree } from 'rc-easyui';
 
 export default class ItemTree extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            menuData: [],
-        };
-    }
-
     renderNode = ({ node }) => {
         return (
             <span tabIndex="0">
@@ -20,11 +13,12 @@ export default class ItemTree extends Component {
     };
 
     render() {
-        const { treeData } = this.props;
+        const { onTreeSelectionChange, treeData } = this.props;
         return (
             <Tree render = { this.renderNode }
                 animate
                 dblclickToEdit
+                onSelectionChange = { onTreeSelectionChange }
                 data={ treeData }/>
         )
     }
