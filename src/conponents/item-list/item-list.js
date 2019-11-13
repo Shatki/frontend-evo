@@ -24,6 +24,16 @@ export default class ItemList extends Component {
         console.log(row.name);
     }
 
+    renderRow(row) {
+        // Придаем стиль nodes строкам
+        if (row.group) {
+            //console.log(row.name);
+            // background: "#b8eecf", fontSize: "14px",
+            return { fontWeight: "bold" };
+        }
+        return null;
+    }
+
     onDataLoaded = (data) => {
         this.setState({
             data,
@@ -33,12 +43,12 @@ export default class ItemList extends Component {
 
     render() {
         const { onListSelectionChange, listData, measureTypes } = this.props;
-
         return (
             <div>
                 <DataGrid
                         style={{ height: 'calc(100vh - 60px)' }}
                         filterable
+                        rowCss={this.renderRow}
                         data={ listData }
                         columnMoving
                         onCellDblClick = { this.onDblClick }

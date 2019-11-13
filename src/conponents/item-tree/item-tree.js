@@ -13,11 +13,13 @@ export default class ItemTree extends Component {
     };
 
     render() {
-        const { onTreeSelectionChange, treeData } = this.props;
+        const { onTreeSelectionChange,
+                onTreeNodeSelection,
+                treeData } = this.props;
         return (
             <Tree render = { this.renderNode }
                 animate
-                dblclickToEdit
+                onNodeDblClick = { onTreeNodeSelection }
                 onSelectionChange = { onTreeSelectionChange }
                 data={ treeData }/>
         )

@@ -90,6 +90,38 @@ export default class Dashboard extends React.Component {
         this.updateData();
     };
 
+    addRootTreeData = (treeData) => {
+        return([
+            {
+            uuid: null,
+            text: "Магазин 'XXI BEK'",
+            state: 'opened',
+            children: this.transformTreeData(treeData, null),
+        }
+        ]);
+    };
+
+    onListSelectionChange = (selection) =>{
+        // console.log(selection);
+        this.setState({
+            listSelection: selection
+        });
+    };
+
+    onTreeNodeSelection = (node) =>{
+         const { treeData, listData } = this.state;
+         this.setState({
+            treeSelection: node,
+            displayListData: this.displayListData(treeData, listData, node.uuid)
+        });
+    };
+
+    onTreeSelectionChange = (node) =>{
+        this.setState({
+            treeSelection: node,
+        });
+    };
+
     transformTreeData = (data, parentUuid=null) => {
         // Возвращает коренной список, parentUuid = null
         // Алгоритм преобразования данных в объект для listTree
@@ -121,23 +153,24 @@ export default class Dashboard extends React.Component {
         }
     };
 
-    displayListData = (treeData, listData, node) => {
-        let data =  treeData.filter(item => item.parentUuid === node);
-        return data.concat(listData.filter(item => item.parentUuid === node));
-    };
-
-    addRootTreeData = (treeData) => {
-        return([
-            {
-            uuid: null,
-            text: "Root",
-            state: 'opened',
-            children: this.transformTreeData(treeData, null),
-        }
-        ]);
+    displayListData = (treeData, listData, nodeUuid) => {
+        // Сначала выбираем каталоги нужного node, затем добавляем items
+        let data =  treeData.filter(item => item.parentUuid === nodeUuid);
+        return data
+            // Передаем в ItemList только наименование и код nodes
+            .map((item)=>{
+                return{
+                    code: item.code,
+                    name: item.name,
+                    group: true
+                }
+            })
+            // Привоединяем items и передаем в компоненту
+            .concat(listData.filter(item => item.parentUuid === nodeUuid));
     };
 
     onDataLoaded = (data) =>{
+        // первоначальное заполнение данных
         const treeData = data.filter(item => item.group === true);
         const listData = data.filter(item => item.group === false);
         this.setState({
@@ -149,21 +182,6 @@ export default class Dashboard extends React.Component {
         });
     };
 
-    onListSelectionChange = (selection) =>{
-        // console.log(selection);
-        this.setState({
-            listSelection: selection
-        });
-    };
-
-    onTreeSelectionChange = (node) =>{
-        const { treeData, listData } = this.state;
-        this.setState({
-            treeSelection: node,
-            displayListData: this.displayListData(treeData, listData, node)
-        });
-    };
-
     updateData(){
         const store_id = 0;
         this.evotorService
@@ -172,6 +190,7 @@ export default class Dashboard extends React.Component {
     }
 
     render() {
+        // Вытаскиваем данные для отображения
         const { constants, itemData, transformTreeData, displayListData } = this.state;
         return (
             <div >
@@ -182,17 +201,24 @@ export default class Dashboard extends React.Component {
                     </LayoutPanel>
 
                     <LayoutPanel region="west" split style={{ minWidth: 150, maxWidth: 400 }}>
-                        <ItemTree treeData = { transformTreeData }
-                        onTreeSelectionChange = { this.onTreeSelectionChange }/>
+                        <ItemTree
+                            treeData = { transformTreeData }
+                            onTreeSelectionChange = { this.onTreeSelectionChange }
+                            onTreeNodeSelection = { this.onTreeNodeSelection } />
                     </LayoutPanel>
 
                     <LayoutPanel region="center">
-                        <ItemList { ...constants } listData = { displayListData } node = { this.state.treeSelection }
-                                    onListSelectionChange = { this.onListSelectionChange }/>
+                        <ItemList
+                            { ...constants }
+                            node = { this.state.treeSelection }
+                            listData = { displayListData }
+                            onListSelectionChange = { this.onListSelectionChange }/>
                     </LayoutPanel>
 
                     <LayoutPanel region="east" split style={{ minWidth: 200, maxWidth: 400 }}>
-                        <ItemDetail { ...constants } itemData = { itemData } />
+                        <ItemDetail
+                            { ...constants }
+                            itemData = { itemData } />
                     </LayoutPanel>
                 </Layout>
             </div>
