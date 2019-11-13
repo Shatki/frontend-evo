@@ -12,6 +12,7 @@ import '../../themes/custome/style.css'
 import '../../themes/react.css'
 import '../../themes/icon.css'
 import EvotorService from "../../services/evotor-service";
+import ContextMenu from "../context-menu";
 
 
 export default class Dashboard extends React.Component {
@@ -178,7 +179,8 @@ export default class Dashboard extends React.Component {
             treeData: treeData,
             transformTreeData: this.addRootTreeData(treeData),
             displayListData: this.displayListData(treeData, listData, null),
-            loading: false
+            loading: false,
+            menu: null
         });
     };
 
@@ -189,12 +191,17 @@ export default class Dashboard extends React.Component {
             .then(this.onDataLoaded);
     }
 
+    handleContextMenu = (event)=> {
+        console.log(event);
+        event.preventDefault();
+        this.menu.showContextMenu(event.pageX, event.pageY)
+    };
+
     render() {
         // Вытаскиваем данные для отображения
         const { constants, itemData, transformTreeData, displayListData } = this.state;
         return (
-            <div >
-
+            <div onContextMenu={this.handleContextMenu.bind(this)}>
                 <Layout style={{ width: '100%', height: '100%' }}>
                     <LayoutPanel region="north" style={{ height: 60 }}>
                         <Header/>
@@ -220,6 +227,7 @@ export default class Dashboard extends React.Component {
                             { ...constants }
                             itemData = { itemData } />
                     </LayoutPanel>
+                    <ContextMenu ref={ ref => this.menu = ref} />
                 </Layout>
             </div>
         );
