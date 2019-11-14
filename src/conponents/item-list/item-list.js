@@ -46,6 +46,7 @@ export default class ItemList extends Component {
 
     handleCellContextMenu({ row, column, originalEvent }){
         originalEvent.preventDefault();
+        console.log(row.name);
         this.props.menu.current.showContextMenu(originalEvent.pageX, originalEvent.pageY)
     }
 
