@@ -87,6 +87,7 @@ export default class Dashboard extends React.Component {
             listSelection: [],
             itemSelection: null,
             listMenuRef: React.createRef(),
+            treeMenuRef: React.createRef(),
         };
         this.updateData();
     };
@@ -167,7 +168,7 @@ export default class Dashboard extends React.Component {
                     group: true
                 }
             })
-            // Привоединяем items и передаем в компоненту
+            // Приcоединяем items и передаем
             .concat(listData.filter(item => item.parentUuid === nodeUuid));
     };
 
@@ -192,15 +193,7 @@ export default class Dashboard extends React.Component {
             .then(this.onDataLoaded);
     }
 
-    handleContextMenu = (event)=> {
-        console.log(event);
-        event.preventDefault();
-        this.menu.showContextMenu(event.pageX, event.pageY)
-    };
-
     render() {
-        // Вытаскиваем данные для отображения
-        const { constants, itemData, transformTreeData, displayListData } = this.state;
         return (
             <Layout style={{ width: '100%', height: '100%' }}>
                 <LayoutPanel region="north" style={{ height: 60 }}>
@@ -209,24 +202,28 @@ export default class Dashboard extends React.Component {
 
                 <LayoutPanel region="west" split style={{ minWidth: 150, maxWidth: 400 }}>
                     <ItemTree
-                        treeData = { transformTreeData }
+                        treeData = { this.state.transformTreeData }
+                        menuRef = { this.state.treeMenuRef }
                         onTreeSelectionChange = { this.onTreeSelectionChange }
-                        onTreeNodeSelection = { this.onTreeNodeSelection } />
+                        onTreeNodeSelection = { this.onTreeNodeSelection }
+                    />
                 </LayoutPanel>
 
                 <LayoutPanel region="center">
                     <ItemList
-                        { ...constants }
+                        { ...this.state.constants }
                         node = { this.state.treeSelection }
-                        menu = { this.state.listMenuRef }
-                        listData = { displayListData }
-                        onListSelectionChange = { this.onListSelectionChange }/>
+                        menuRef = { this.state.listMenuRef }
+                        listData = { this.state.displayListData }
+                        onListSelectionChange = { this.onListSelectionChange }
+                    />
                 </LayoutPanel>
 
                 <LayoutPanel region="east" split style={{ minWidth: 200, maxWidth: 400 }}>
                     <ItemDetail
-                        { ...constants }
-                        itemData = { itemData } />
+                        { ...this.state.constants }
+                        itemData = { this.state.itemData }
+                    />
                 </LayoutPanel>
             </Layout>
         );
