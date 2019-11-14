@@ -12,7 +12,6 @@ import '../../themes/custome/style.css'
 import '../../themes/react.css'
 import '../../themes/icon.css'
 import EvotorService from "../../services/evotor-service";
-import ContextMenu from "../context-menu";
 
 
 export default class Dashboard extends React.Component {
@@ -87,6 +86,7 @@ export default class Dashboard extends React.Component {
             treeSelection: null,
             listSelection: [],
             itemSelection: null,
+            listMenuRef: React.createRef(),
         };
         this.updateData();
     };
@@ -94,11 +94,11 @@ export default class Dashboard extends React.Component {
     addRootTreeData = (treeData) => {
         return([
             {
-            uuid: null,
-            text: "Магазин 'XXI BEK'",
-            state: 'opened',
-            children: this.transformTreeData(treeData, null),
-        }
+                uuid: null,
+                text: "Магазин 'XXI BEK'",
+                state: 'opened',
+                children: this.transformTreeData(treeData, null),
+            }
         ]);
     };
 
@@ -110,8 +110,8 @@ export default class Dashboard extends React.Component {
     };
 
     onTreeNodeSelection = (node) =>{
-         const { treeData, listData } = this.state;
-         this.setState({
+        const { treeData, listData } = this.state;
+        this.setState({
             treeSelection: node,
             displayListData: this.displayListData(treeData, listData, node.uuid)
         });
@@ -155,10 +155,11 @@ export default class Dashboard extends React.Component {
     };
 
     displayListData = (treeData, listData, nodeUuid) => {
+        /* Преобразование данных из Стейта в данные плагина для отображения в ListItem */
         // Сначала выбираем каталоги нужного node, затем добавляем items
         let data =  treeData.filter(item => item.parentUuid === nodeUuid);
         return data
-            // Передаем в ItemList только наименование и код nodes
+        // Передаем в ItemList только наименование и код nodes
             .map((item)=>{
                 return{
                     code: item.code,
@@ -201,35 +202,33 @@ export default class Dashboard extends React.Component {
         // Вытаскиваем данные для отображения
         const { constants, itemData, transformTreeData, displayListData } = this.state;
         return (
-            <div onContextMenu={this.handleContextMenu.bind(this)}>
-                <Layout style={{ width: '100%', height: '100%' }}>
-                    <LayoutPanel region="north" style={{ height: 60 }}>
-                        <Header/>
-                    </LayoutPanel>
+            <Layout style={{ width: '100%', height: '100%' }}>
+                <LayoutPanel region="north" style={{ height: 60 }}>
+                    <Header/>
+                </LayoutPanel>
 
-                    <LayoutPanel region="west" split style={{ minWidth: 150, maxWidth: 400 }}>
-                        <ItemTree
-                            treeData = { transformTreeData }
-                            onTreeSelectionChange = { this.onTreeSelectionChange }
-                            onTreeNodeSelection = { this.onTreeNodeSelection } />
-                    </LayoutPanel>
+                <LayoutPanel region="west" split style={{ minWidth: 150, maxWidth: 400 }}>
+                    <ItemTree
+                        treeData = { transformTreeData }
+                        onTreeSelectionChange = { this.onTreeSelectionChange }
+                        onTreeNodeSelection = { this.onTreeNodeSelection } />
+                </LayoutPanel>
 
-                    <LayoutPanel region="center">
-                        <ItemList
-                            { ...constants }
-                            node = { this.state.treeSelection }
-                            listData = { displayListData }
-                            onListSelectionChange = { this.onListSelectionChange }/>
-                    </LayoutPanel>
+                <LayoutPanel region="center">
+                    <ItemList
+                        { ...constants }
+                        node = { this.state.treeSelection }
+                        menu = { this.state.listMenuRef }
+                        listData = { displayListData }
+                        onListSelectionChange = { this.onListSelectionChange }/>
+                </LayoutPanel>
 
-                    <LayoutPanel region="east" split style={{ minWidth: 200, maxWidth: 400 }}>
-                        <ItemDetail
-                            { ...constants }
-                            itemData = { itemData } />
-                    </LayoutPanel>
-                    <ContextMenu ref={ ref => this.menu = ref} />
-                </Layout>
-            </div>
+                <LayoutPanel region="east" split style={{ minWidth: 200, maxWidth: 400 }}>
+                    <ItemDetail
+                        { ...constants }
+                        itemData = { itemData } />
+                </LayoutPanel>
+            </Layout>
         );
     }
 }

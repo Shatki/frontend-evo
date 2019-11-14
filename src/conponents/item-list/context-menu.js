@@ -1,12 +1,10 @@
-import React from 'react';
 import { Menu, MenuItem, SubMenu } from 'rc-easyui';
-import './context-menu.css'
+import React from "react";
 
-export default class ContextMenu extends React.Component {
-    // onContextMenu={this.handleContextMenu.bind(this)}
-    render() {
+export const ContextMenu = ({ menu }) => {
+        // onContextMenu={this.handleContextMenu.bind(this)}
         return (
-            <Menu>
+            <Menu ref={ menu }>
                 <MenuItem text="New"/>
                 <MenuItem text="Open">
                     <SubMenu>
@@ -20,5 +18,4 @@ export default class ContextMenu extends React.Component {
                 <MenuItem text="Exit"/>
             </Menu>
         );
-    }
-}
+    };

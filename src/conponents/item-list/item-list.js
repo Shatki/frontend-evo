@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import { DataGrid, GridColumn, NumberBox, ComboBox} from 'rc-easyui';
+import { ContextMenu } from "./context-menu";
 import './item-list.css';
 import Spinner from "../spinner";
+
+
 
 export default class ItemList extends Component {
     constructor(props) {
@@ -18,10 +21,6 @@ export default class ItemList extends Component {
 
     componentDidMount() {
         //this.onDataLoaded()
-    }
-
-    onDblClick({ row }){
-        console.log(row.name);
     }
 
     renderRow(row) {
@@ -41,21 +40,32 @@ export default class ItemList extends Component {
         })
     };
 
+    onDblClick({ row }){
+        console.log(row.name);
+    }
+
+    handleCellContextMenu({ row, column, originalEvent }){
+        originalEvent.preventDefault();
+        this.props.menu.current.showContextMenu(originalEvent.pageX, originalEvent.pageY)
+    }
+
     render() {
-        const { onListSelectionChange, listData, measureTypes } = this.props;
+        const { onListSelectionChange, listData, measureTypes, menu } = this.props;
         return (
             <div>
                 <DataGrid
-                        style={{ height: 'calc(100vh - 60px)' }}
-                        filterable
-                        rowCss={this.renderRow}
-                        data={ listData }
-                        columnMoving
-                        onCellDblClick = { this.onDblClick }
-                        columnResizing
-                        selectionMode ='multiple'
-                        selection={ this.state.selection }
-                        onSelectionChange={ onListSelectionChange }>
+                    style={{ height: 'calc(100vh - 60px)' }}
+                    filterable
+                    rowCss={this.renderRow}
+                    data={ listData }
+                    columnMoving
+                    onCellDblClick = { this.onDblClick }
+                    columnResizing
+                    selectionMode ='multiple'
+                    selection={ this.state.selection }
+                    onSelectionChange={ onListSelectionChange }
+                    onCellContextMenu={this.handleCellContextMenu.bind(this)}
+                >
                     <GridColumn field="code" title="Код" width="10%"/>
                     <GridColumn field="name" title="Наименование" width="50%"/>
                     <GridColumn field="price" title="Цена продаж" width="10%" align="right"
@@ -77,6 +87,7 @@ export default class ItemList extends Component {
                                 )}
                     />
                 </DataGrid>
+                <ContextMenu menu = { menu }/>
             </div>
         );
     }
