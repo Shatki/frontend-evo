@@ -1,24 +1,21 @@
 import { Menu, MenuItem, SubMenu } from 'rc-easyui';
 import React from "react";
 
-
-
 export const ContextMenu = ({ menuRef, menu }) => {
     // onContextMenu={this.handleContextMenu.bind(this)}
     //item.disabled===true ? 'disabled': ''
 
     const renderMenu =(menu) =>{
+
         return menu.map((item)=>{
-            if(item.hasOwnProperty('subMenu')){
-                console.log(item.subMenu.text);
+            console.log(item);
+            if(item.length > 1){
                 return(
-                    <React.Fragment>
-                        <MenuItem {...item.menuItem }>
-                            <SubMenu>
-                                { renderMenu(item.subMenu) }
-                            </SubMenu>)
-                        </MenuItem>
-                    </React.Fragment>
+                    <MenuItem {...item.menuItem }>
+                        <SubMenu>
+                           { renderMenu(item.subMenu) }
+                        </SubMenu>)
+                    </MenuItem>
                 )
             } else
                 return (<MenuItem {...item.menuItem }/>)
