@@ -88,6 +88,7 @@ export default class Dashboard extends React.Component {
             itemSelection: null,
             listMenuRef: React.createRef(),
             treeMenuRef: React.createRef(),
+            itemMenuRef: React.createRef(),
         };
         this.updateData();
     };
@@ -222,6 +223,7 @@ export default class Dashboard extends React.Component {
                 <LayoutPanel region="east" split style={{ minWidth: 200, maxWidth: 400 }}>
                     <ItemDetail
                         { ...this.state.constants }
+                        menuRef = { this.state.itemMenuRef }
                         itemData = { this.state.itemData }
                     />
                 </LayoutPanel>

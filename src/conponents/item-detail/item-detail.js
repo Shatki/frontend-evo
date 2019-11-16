@@ -3,6 +3,7 @@ import { DataGrid, GridColumn } from 'rc-easyui'
 import { NumberBox, TextBox, SwitchButton, ComboBox } from  'rc-easyui'
 
 import './item-detail.css'
+import { Menu, MenuItem, SubMenu } from 'rc-easyui';
 
 export default class ItemDetail extends Component {
 
@@ -36,7 +37,12 @@ export default class ItemDetail extends Component {
         ];
         this.state = {
             itemData : [],
-            data: []
+            data: [],
+            menu: [
+                {   menuItem: { text: "Создать", disabled: false } },
+                {   menuItem: { text: "Печатать", disabled: true, iconCls: "icon-print" } },
+                {   menuItem: { text: "Закрыть", disabled: false } },
+            ],
         };
     }
 
@@ -86,25 +92,37 @@ export default class ItemDetail extends Component {
             return property;
         })
     }
+
     componentDidMount() {
         //this.setState({
         //    data: this.updateData()
         //})
     }
 
-    render() {
-        const { taxTypes, productTypes, dataItem } = this.props;
+    handleItemContextMenu({ row, column, originalEvent }) {
+        originalEvent.preventDefault();
+        console.log(row.nameField);
+        this.props.menuRef.current.showContextMenu(originalEvent.pageX, originalEvent.pageY)
+    }
 
+    handleItemClick(value){
+        console.log(value);
+    }
+
+    render() {
         return (
-            <div>
-                <DataGrid data={ this.updateData() }
-                          columnResizing
-                          clickToEdit
-                          expanderWidth ={ 20 }
-                          selectionMode="row"
-                          editMode="row"
-                          groupField="groupField"
-                          renderGroup={ this.renderGroup }>
+            <div >
+                <DataGrid
+                    data={ this.updateData() }
+                    columnResizing
+                    clickToEdit
+                    expanderWidth ={ 20 }
+                    selectionMode="row"
+                    editMode="row"
+                    groupField="groupField"
+                    renderGroup={ this.renderGroup }
+                    onCellContextMenu={this.handleItemContextMenu.bind(this)}>
+
                     <GridColumn width={ 20 }/>
                     <GridColumn field="titleField" title="Имя поля"/>
                     <GridColumn field="valueField" title="Параметр"
@@ -113,7 +131,58 @@ export default class ItemDetail extends Component {
                                 render={ this.renderView }
                     />
                 </DataGrid>
+                <ItemMenu
+                    menuRef={ this.props.menuRef }
+                    menu={ this.state.menu }
+                    handleItemClick={ this.handleItemClick }/>
             </div>
         );
     }
 }
+
+export const ItemMenu = ({ menu, menuRef, handleItemClick }) => {
+    const renderMenu = (menu) =>{
+        const items = menu.map((item)=>{
+            if(item.subMenu !== undefined){
+                return(
+                    <MenuItem { ...item.menuItem }>
+                        <SubMenu>
+                            { renderMenu(item.subMenu) }
+                        </SubMenu>
+                    </MenuItem>
+                )
+            } else
+                return (<MenuItem {...item.menuItem }/>)
+        });
+        return(
+            <React.Fragment>
+                { items }
+            </React.Fragment>
+        )
+    };
+
+    return(
+        <Menu ref={ menuRef }
+              onItemClick={ handleItemClick.bind(this) }>
+            <MenuItem text="Тест" iconCls="icon-save"/>
+            { renderMenu(menu) }
+        </Menu>
+    )
+};
+
+
+
+/*
+<MenuItem text="New"/>
+
+            <MenuItem text="Open">
+                <SubMenu>
+                    <MenuItem text="Word"/>
+                    <MenuItem text="Excel"/>
+                    <MenuItem text="PowerPoint"/>
+                </SubMenu>
+            </MenuItem>
+            <MenuItem text="Save" iconCls="icon-save"/>
+            <MenuItem text="Print" iconCls="icon-print" disabled/>
+            <MenuItem text="Exit"/>
+ */

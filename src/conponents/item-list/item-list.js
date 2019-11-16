@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { DataGrid, GridColumn, NumberBox, ComboBox} from 'rc-easyui';
-import { ContextMenu } from "../context-menu/context-menu";
+import ContextMenu from "../context-menu";
 import './item-list.css';
 import Spinner from "../spinner";
 
@@ -15,6 +15,12 @@ export default class ItemList extends Component {
             allChecked: false,
             rowClicked: false,
             data: [],
+            menu: [
+                {   menuItem: { key: "create", text: "Создать", disabled: false } },
+                {   menuItem: { key: "open", text: "Открыть", disabled: false} },
+                {   menuItem: { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" } },
+                {   menuItem: { key: "close", text: "Закрыть", disabled: false } },
+            ],
         };
         //this.updateItemList();
     }
@@ -50,6 +56,10 @@ export default class ItemList extends Component {
         this.props.menuRef.current.showContextMenu(originalEvent.pageX, originalEvent.pageY)
     };
 
+    handleItemClick(value){
+        console.log(value);
+    }
+
     render() {
         const numberBoxFilter = () =>{
             return (<NumberBox/>)
@@ -76,7 +86,7 @@ export default class ItemList extends Component {
                     selectionMode ='multiple'
                     selection={ this.state.selection }
                     onSelectionChange={ this.props.onListSelectionChange }
-                    onCellContextMenu={ this.handleCellContextMenu.bind(this)}
+                    //onCellContextMenu={ this.handleCellContextMenu.bind(this)}
                 >
                     <GridColumn field="code" title="Код" width="10%"/>
                     <GridColumn field="name" title="Наименование" width="50%"/>
@@ -93,7 +103,9 @@ export default class ItemList extends Component {
                                 filter={ comboBoxFilter }
                     />
                 </DataGrid>
-                <ContextMenu menuRef = { this.props.menuRef } menu = { [] }/>
+                <ContextMenu menu = { this.state.menu }
+                             menuRef = { this.props.menuRef }
+                             handleItemClick = { this.handleItemClick }/>
             </div>
         );
     }

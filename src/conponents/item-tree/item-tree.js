@@ -1,8 +1,8 @@
-import React, { Component, ReactFragment } from 'react';
-
-import './item-tree.css'
+import React, { Component } from 'react';
 import { Tree } from 'rc-easyui';
-import { ContextMenu } from "../context-menu/context-menu";
+import ContextMenu from "../context-menu";
+import './item-tree.css'
+
 
 
 export default class ItemTree extends Component {
@@ -26,7 +26,6 @@ export default class ItemTree extends Component {
         }
     }
 
-
     renderNode = ({ node }) => {
         return (
             <span tabIndex="0">
@@ -38,20 +37,29 @@ export default class ItemTree extends Component {
     handleNodeContextMenu = ({ node, originalEvent }) => {
         originalEvent.preventDefault();
         console.log(node.text);
-        this.props.menuRef.current.showContextMenu(originalEvent.pageX, originalEvent.pageY)
+        this.props.menuRef.current.showContextMenu(originalEvent.pageX, originalEvent.pageY);
+    };
+
+    handleContextMenuClick = (value) => {
+        console.log(value);
     };
 
     render() {
         return (
             <React.Fragment>
-                <Tree render = { this.renderNode }
-                      animate
-                      onNodeDblClick = { this.props.onTreeNodeSelection }
-                      onSelectionChange = { this.props.onTreeSelectionChange }
-                      data={ this.props.treeData }
-                      onNodeContextMenu={ this.handleNodeContextMenu.bind(this)}
+                <Tree
+                    render = { this.renderNode }
+                    animate
+                    onNodeDblClick = { this.props.onTreeNodeSelection }
+                    onSelectionChange = { this.props.onTreeSelectionChange }
+                    data={ this.props.treeData }
+                    //onNodeContextMenu={ this.handleNodeContextMenu.bind(this)}
                 />
-                <ContextMenu menuRef={ this.props.menuRef } menu={ this.state.menu }/>
+                <ContextMenu
+                    menu={ this.state.menu }
+                    menuRef={ this.props.menuRef }
+                    handleItemClick = { this.handleContextMenuClick }
+                />
             </React.Fragment>
         )
     }
