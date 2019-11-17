@@ -16,10 +16,10 @@ export default class ItemList extends Component {
             rowClicked: false,
             data: [],
             menu: [
-                {   menuItem: { key: "create", text: "Создать", disabled: false } },
-                {   menuItem: { key: "open", text: "Открыть", disabled: false} },
-                {   menuItem: { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" } },
-                {   menuItem: { key: "close", text: "Закрыть", disabled: false } },
+                { key: "create", text: "Создать", disabled: false },
+                { key: "open", text: "Открыть", disabled: false },
+                { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" },
+                { key: "close", text: "Закрыть", disabled: false },
             ],
         };
         //this.updateItemList();
@@ -29,7 +29,7 @@ export default class ItemList extends Component {
         //this.onDataLoaded()
     }
 
-    renderRow(row) {
+    renderRow =(row) =>{
         // Придаем стиль nodes строкам
         if (row.group) {
             //console.log(row.name);
@@ -37,7 +37,7 @@ export default class ItemList extends Component {
             return { fontWeight: "bold" };
         }
         return null;
-    }
+    };
 
     onDataLoaded = (data) => {
         this.setState({
@@ -46,9 +46,9 @@ export default class ItemList extends Component {
         })
     };
 
-    onDblClick({ row }){
+    onDblClick = ({ row }) =>{
         console.log(row.name);
-    }
+    };
 
     handleCellContextMenu = ({ row, column, originalEvent }) =>{
         originalEvent.preventDefault();
@@ -56,9 +56,9 @@ export default class ItemList extends Component {
         this.props.menuRef.current.showContextMenu(originalEvent.pageX, originalEvent.pageY)
     };
 
-    handleItemClick(value){
+    handleItemClick = (value) =>{
         console.log(value);
-    }
+    };
 
     render() {
         const numberBoxFilter = () =>{
@@ -86,7 +86,7 @@ export default class ItemList extends Component {
                     selectionMode ='multiple'
                     selection={ this.state.selection }
                     onSelectionChange={ this.props.onListSelectionChange }
-                    //onCellContextMenu={ this.handleCellContextMenu.bind(this)}
+                    onCellContextMenu={ this.handleCellContextMenu.bind(this)}
                 >
                     <GridColumn field="code" title="Код" width="10%"/>
                     <GridColumn field="name" title="Наименование" width="50%"/>
@@ -109,5 +109,4 @@ export default class ItemList extends Component {
             </div>
         );
     }
-
 }

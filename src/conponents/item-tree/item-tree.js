@@ -11,17 +11,17 @@ export default class ItemTree extends Component {
         console.log(props);
         this.state = {
             menu: [
-                {   menuItem: { key: "create", text: "Создать", disabled: false } },
-                {   menuItem: { key: "open", text: "Открыть", disabled: false} },
-                {   menuItem: { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" } },
-                {   menuItem: { key: "submenu", text: "Субменю", disabled: false},
-                    subMenu: [
-                        { menuItem: { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" } },
-                        { menuItem: { key: "menu1", text:"Меню1", disabled: false } },
-                        { menuItem: { key: "menu2", text:"Меню1", disabled: false } },
+                { key: "create", text: "Создать", disabled: false },
+                { key: "open", text: "Открыть", disabled: false },
+                { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print"  },
+                { key: "submenu", text: "Субменю", disabled: false,
+                    submenu: [
+                        { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" },
+                        { key: "menu1", text:"Меню1", disabled: false },
+                        { key: "menu2", text:"Меню1", disabled: false },
                     ]
                 },
-                {   menuItem: { key: "close", text: "Закрыть", disabled: false } },
+                { key: "close", text: "Закрыть", disabled: false },
             ],
         }
     }
@@ -53,7 +53,7 @@ export default class ItemTree extends Component {
                     onNodeDblClick = { this.props.onTreeNodeSelection }
                     onSelectionChange = { this.props.onTreeSelectionChange }
                     data={ this.props.treeData }
-                    //onNodeContextMenu={ this.handleNodeContextMenu.bind(this)}
+                    onNodeContextMenu={ this.handleNodeContextMenu.bind(this)}
                 />
                 <ContextMenu
                     menu={ this.state.menu }

@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import { DataGrid, GridColumn } from 'rc-easyui'
 import { NumberBox, TextBox, SwitchButton, ComboBox } from  'rc-easyui'
-
+import ContextMenu from "../context-menu";
 import './item-detail.css'
 import { Menu, MenuItem, SubMenu } from 'rc-easyui';
+
 
 export default class ItemDetail extends Component {
 
@@ -39,21 +40,25 @@ export default class ItemDetail extends Component {
             itemData : [],
             data: [],
             menu: [
-                {   menuItem: { text: "Создать", disabled: false } },
-                {   menuItem: { text: "Печатать", disabled: true, iconCls: "icon-print" } },
-                {   menuItem: { text: "Закрыть", disabled: false } },
+                { key: "create", text: "Создать", disabled: false, submenu: [
+                        { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" },
+                        { key: "menu1", text:"Меню1", disabled: false },
+                        { key: "menu2", text:"Меню1", disabled: false },
+                    ]  },
+                { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" },
+                { key: "close", text: "Закрыть", disabled: false },
             ],
         };
     }
 
-    renderGroup({ value, rows }) {
+    renderGroup = ({ value, rows }) =>{
         return (
             <span style={{ fontWeight:'bold'}}>{value} - <span style={{ color:'red' }}>{ rows.length }</span> свойств(а)
       </span>
         )
-    }
+    };
 
-    renderEditor({ row }){
+    renderEditor = ({ row }) =>{
         if (row.editorField === "number")
             return(<NumberBox value={ row.valueField } precision={ row.precision }/>);
         else if (row.editorField === "text")
@@ -65,7 +70,7 @@ export default class ItemDetail extends Component {
                 //onChange={(value) => this.setState({ value: value })}
             />);
 
-    }
+    };
 
     renderView({ row }) {
         if (row.editorField === "text")
@@ -131,7 +136,7 @@ export default class ItemDetail extends Component {
                                 render={ this.renderView }
                     />
                 </DataGrid>
-                <ItemMenu
+                <ContextMenu
                     menuRef={ this.props.menuRef }
                     menu={ this.state.menu }
                     handleItemClick={ this.handleItemClick }/>
@@ -139,50 +144,3 @@ export default class ItemDetail extends Component {
         );
     }
 }
-
-export const ItemMenu = ({ menu, menuRef, handleItemClick }) => {
-    const renderMenu = (menu) =>{
-        const items = menu.map((item)=>{
-            if(item.subMenu !== undefined){
-                return(
-                    <MenuItem { ...item.menuItem }>
-                        <SubMenu>
-                            { renderMenu(item.subMenu) }
-                        </SubMenu>
-                    </MenuItem>
-                )
-            } else
-                return (<MenuItem {...item.menuItem }/>)
-        });
-        return(
-            <React.Fragment>
-                { items }
-            </React.Fragment>
-        )
-    };
-
-    return(
-        <Menu ref={ menuRef }
-              onItemClick={ handleItemClick.bind(this) }>
-            <MenuItem text="Тест" iconCls="icon-save"/>
-            { renderMenu(menu) }
-        </Menu>
-    )
-};
-
-
-
-/*
-<MenuItem text="New"/>
-
-            <MenuItem text="Open">
-                <SubMenu>
-                    <MenuItem text="Word"/>
-                    <MenuItem text="Excel"/>
-                    <MenuItem text="PowerPoint"/>
-                </SubMenu>
-            </MenuItem>
-            <MenuItem text="Save" iconCls="icon-save"/>
-            <MenuItem text="Print" iconCls="icon-print" disabled/>
-            <MenuItem text="Exit"/>
- */

@@ -1,32 +1,27 @@
 import { Menu, MenuItem, SubMenu } from 'rc-easyui';
 import React from "react";
 
-export const ContextMenu = ({ menu, menuRef, handleItemClick }) =>  {
-    const renderMenu = (menu) =>{
-        const items = menu.map((item)=>{
-            if(item.subMenu !== undefined){
+export const ContextMenu = ({ menu, menuRef, handleItemClick }) => {
+    const renderMenu = (data) =>{
+        return data.map((item)=>{
+            const { submenu, ...itemProps } = item;
+            if(submenu !== undefined){
                 return(
-                    <MenuItem { ...item.menuItem }>
+                    <MenuItem { ...itemProps }>
                         <SubMenu>
-                            { renderMenu(item.subMenu) }
+                            { renderMenu(submenu) }
                         </SubMenu>
                     </MenuItem>
                 )
             } else
-                return (<MenuItem {...item.menuItem }/>)
+                return (<MenuItem {...itemProps }/>)
         });
-        return(
-            <React.Fragment>
-                { items }
-            </React.Fragment>
-        )
     };
 
-    return (
-        <Menu
-            onItemClick={ handleItemClick.bind(this) }
-            ref={ menuRef }>
+    return(
+        <Menu ref={ menuRef }
+              onItemClick={ handleItemClick.bind(this) }>
             { renderMenu(menu) }
         </Menu>
-    );
+    )
 };
