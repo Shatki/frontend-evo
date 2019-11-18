@@ -11,6 +11,8 @@ import './dashboard.css'
 import '../../themes/custome/style.css'
 import '../../themes/react.css'
 import '../../themes/icon.css'
+import '../../themes/custome/evotor-icons.css'
+
 import EvotorService from "../../services/evotor-service";
 
 
@@ -89,6 +91,8 @@ export default class Dashboard extends React.Component {
             listMenuRef: React.createRef(),
             treeMenuRef: React.createRef(),
             itemMenuRef: React.createRef(),
+            collapsedWest: false,
+            collapsedEast: true,
         };
         this.updateData();
     };
@@ -99,6 +103,7 @@ export default class Dashboard extends React.Component {
                 uuid: null,
                 text: "Магазин 'XXI BEK'",
                 state: 'opened',
+                iconCls: "icon-evotor-folder-user",
                 children: this.transformTreeData(treeData, null),
             }
         ]);
@@ -139,6 +144,7 @@ export default class Dashboard extends React.Component {
                     return{
                         uuid: child.uuid,
                         text: child.name,
+                        iconCls: "icon-evotor-folder-sub",
                         state: 'closed',
                         children: transformTreeData
                     };
@@ -148,6 +154,7 @@ export default class Dashboard extends React.Component {
                     return{
                         uuid: child.uuid,
                         text: child.name,
+                        iconCls: "icon-evotor-folder",
                     };
                 }
             });
@@ -195,13 +202,22 @@ export default class Dashboard extends React.Component {
     }
 
     render() {
+        { }
+
         return (
             <Layout style={{ width: '100%', height: '100%' }}>
                 <LayoutPanel region="north" style={{ height: 60 }}>
                     <Header/>
                 </LayoutPanel>
 
-                <LayoutPanel region="west" split style={{ minWidth: 150, maxWidth: 400 }}>
+                <LayoutPanel
+                    title="Группы товаров"
+                    collapsible
+                    collapsed = { this.state.collapsedWest}
+                    expander
+                    region="west"
+                    split
+                    style={{ minWidth: 150, maxWidth: 400 }}>
                     <ItemTree
                         treeData = { this.state.transformTreeData }
                         menuRef = { this.state.treeMenuRef }
@@ -220,7 +236,15 @@ export default class Dashboard extends React.Component {
                     />
                 </LayoutPanel>
 
-                <LayoutPanel region="east" split style={{ minWidth: 200, maxWidth: 400 }}>
+                <LayoutPanel
+                    title="Свойства"
+                    collapsible
+                    collapsed ={ this.state.collapsedEast}
+                    //expand = { this.handleExpandEast.bind(this) }
+                    expander
+                    region="east"
+                    split
+                    style={{ minWidth: 200, maxWidth: 400 }}>
                     <ItemDetail
                         { ...this.state.constants }
                         menuRef = { this.state.itemMenuRef }

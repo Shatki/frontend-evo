@@ -11,9 +11,10 @@ export default class ItemTree extends Component {
         console.log(props);
         this.state = {
             menu: [
-                { key: "create", text: "Создать", disabled: false },
-                { key: "open", text: "Открыть", disabled: false },
-                { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print"  },
+                { key: "create", text: "Создать", disabled: false, iconCls: "icon-evotor-folder-add" },
+                { key: "open", text: "Открыть", disabled: false, iconCls: "icon-evotor-folder-open" },
+                { key: "delete", text: "Удалить", disabled: true, iconCls: "icon-evotor-folder-delete" },
+                { key: "upload", text: "Выгрузить", disabled: false, iconCls: "icon-evotor-upload-to-the-cloud" },
                 { key: "submenu", text: "Субменю", disabled: false,
                     submenu: [
                         { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" },
