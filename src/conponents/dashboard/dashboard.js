@@ -87,8 +87,8 @@ export default class Dashboard extends React.Component {
             collapsedEast: true,
         };
         this.contextMenu ={
-            listMenuRef: React.createRef(),
             treeMenuRef: React.createRef(),
+            listMenuRef: React.createRef(),
             itemMenuRef: React.createRef(),
             treeMenu: [
                 { key: "create", text: "Создать", disabled: false, iconCls: "icon-evotor-folder-add" },
@@ -120,7 +120,7 @@ export default class Dashboard extends React.Component {
                 { key: "close", text: "Закрыть", disabled: false },
             ],
             treeMenuFunc: [
-                { key: "Открыть", func: this.handleTreeNodeSelection },
+                { key: "Открыть", func: this.handleTreeNodeSelection.bind(this) },
             ]
         };
 
@@ -251,6 +251,7 @@ export default class Dashboard extends React.Component {
                         style={{ minWidth: 150, maxWidth: 400 }}>
                         <ItemTree
                             treeData = { this.state.transformTreeData }
+                            menuRef = { this.contextMenu.treeMenuRef }
                             handleTreeSelectionChange = { this.handleTreeSelectionChange }
                             handleTreeNodeSelection = { this.handleTreeNodeSelection }
                         />

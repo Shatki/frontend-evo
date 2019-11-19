@@ -8,8 +8,9 @@ import './item-tree.css'
 export default class ItemTree extends Component {
     constructor(props){
         super(props);
-        console.log(props);
+        this.handleContextMenuClick.bind(this);
         this.state = {
+            menuRef: null
         }
     }
 
@@ -23,12 +24,13 @@ export default class ItemTree extends Component {
 
     handleNodeContextMenu = ({ node, originalEvent }) => {
         originalEvent.preventDefault();
+        this.tree.selectNode(node);
         console.log(node.text);
-        this.menu_current.showContextMenu(originalEvent.pageX, originalEvent.pageY);
+        this.props.menuRef.current.showContextMenu(originalEvent.pageX, originalEvent.pageY);
     };
 
     handleContextMenuClick = (value) => {
-        console.log(this.menuFunc.key[value]);
+        this.menuFunc.find(m => m.key === value).func();
         console.log(value);
     };
 
@@ -36,22 +38,22 @@ export default class ItemTree extends Component {
         return (
             <ContextMenuConsumer>
                 {
-                    ({ treeMenuRef : menuRef, treeMenu: menu, treeMenuFunc: menuFunc }) =>{
-                        this.menu_current = menuRef.current;
+                    ({ treeMenu: menu, treeMenuFunc: menuFunc }) =>{
                         this.menuFunc = menuFunc;
                         return(
                             <>
                                 <Tree
+                                    ref = {(tree)=>{this.tree = tree}}
                                     render = { this.renderNode }
                                     animate
                                     onNodeDblClick = { this.props.handleTreeNodeSelection }
                                     onSelectionChange = { this.props.handleTreeSelectionChange }
                                     data={ this.props.treeData }
-                                    onNodeContextMenu={ this.handleNodeContextMenu.bind(this)}
+                                    onNodeContextMenu={ this.handleNodeContextMenu}
                                 />
                                 <ContextMenu
                                     menu={ menu }
-                                    menuRef={ menuRef }
+                                    menuRef = { this.props.menuRef }
                                     handleItemClick = { this.handleContextMenuClick }
                                 />
                             </>
