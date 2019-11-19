@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { DataGrid, GridColumn } from 'rc-easyui'
 import { NumberBox, TextBox, SwitchButton, ComboBox } from  'rc-easyui'
-import ContextMenu from "../context-menu";
+import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import './item-detail.css'
 import { Menu, MenuItem, SubMenu } from 'rc-easyui';
 
@@ -39,15 +39,6 @@ export default class ItemDetail extends Component {
         this.state = {
             itemData : [],
             data: [],
-            menu: [
-                { key: "create", text: "Создать", disabled: false, submenu: [
-                        { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" },
-                        { key: "menu1", text:"Меню1", disabled: false },
-                        { key: "menu2", text:"Меню1", disabled: false },
-                    ]  },
-                { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" },
-                { key: "close", text: "Закрыть", disabled: false },
-            ],
         };
     }
 
@@ -107,7 +98,7 @@ export default class ItemDetail extends Component {
     handleItemContextMenu({ row, column, originalEvent }) {
         originalEvent.preventDefault();
         console.log(row.nameField);
-        this.props.menuRef.current.showContextMenu(originalEvent.pageX, originalEvent.pageY)
+        this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY)
     }
 
     handleItemClick(value){
@@ -115,32 +106,44 @@ export default class ItemDetail extends Component {
     }
 
     render() {
-        return (
-            <div >
-                <DataGrid
-                    data={ this.updateData() }
-                    columnResizing
-                    clickToEdit
-                    expanderWidth ={ 20 }
-                    selectionMode="row"
-                    editMode="row"
-                    groupField="groupField"
-                    renderGroup={ this.renderGroup }
-                    onCellContextMenu={this.handleItemContextMenu.bind(this)}>
+        return(
+            <ContextMenuConsumer>
+                {
+                    ({ itemMenuRef: menuRef, itemMenu: menu }) =>{
+                        this.menu = menuRef.current;
+                        return (
+                            <>
+                                <DataGrid
+                                    data={ this.updateData() }
+                                    columnResizing
+                                    clickToEdit
+                                    expanderWidth ={ 20 }
+                                    selectionMode="row"
+                                    editMode="row"
+                                    groupField="groupField"
+                                    renderGroup={ this.renderGroup }
+                                    onCellContextMenu={this.handleItemContextMenu.bind(this)}>
 
-                    <GridColumn width={ 20 }/>
-                    <GridColumn field="titleField" title="Имя поля"/>
-                    <GridColumn field="valueField" title="Параметр"
-                                editable
-                                editor={ this.renderEditor }
-                                render={ this.renderView }
-                    />
-                </DataGrid>
-                <ContextMenu
-                    menuRef={ this.props.menuRef }
-                    menu={ this.state.menu }
-                    handleItemClick={ this.handleItemClick }/>
-            </div>
+                                    <GridColumn width={ 20 }/>
+                                    <GridColumn field="titleField" title="Имя поля"/>
+                                    <GridColumn field="valueField" title="Параметр"
+                                                editable
+                                                editor={ this.renderEditor }
+                                                render={ this.renderView }
+                                    />
+                                </DataGrid>
+                                <ContextMenu
+                                    menuRef={ menuRef }
+                                    menu={ menu }
+                                    handleItemClick={ this.handleItemClick }
+                                />
+                            </>
+                        );
+                    }
+                }
+            </ContextMenuConsumer>
         );
+
+
     }
 }

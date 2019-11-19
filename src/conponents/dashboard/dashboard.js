@@ -1,20 +1,15 @@
 import React from 'react';
 import { Layout, LayoutPanel } from 'rc-easyui';
 import { Draggable, Droppable } from 'rc-easyui';
+import { ContextMenuProvider } from "../context-menu";
 
 import Header from "../header"
 import ItemTree from "../item-tree";
 import ItemList from "../item-list";
 import ItemDetail from "../item-detail";
-import './dashboard.css'
-
-import '../../themes/custome/style.css'
-import '../../themes/react.css'
-import '../../themes/icon.css'
-import '../../themes/custome/evotor-icons.css'
-
 import EvotorService from "../../services/evotor-service";
 
+import './dashboard.css'
 
 export default class Dashboard extends React.Component {
     evotorService = new EvotorService();
@@ -88,12 +83,47 @@ export default class Dashboard extends React.Component {
             treeSelection: null,
             listSelection: [],
             itemSelection: null,
-            listMenuRef: React.createRef(),
-            treeMenuRef: React.createRef(),
-            itemMenuRef: React.createRef(),
             collapsedWest: false,
             collapsedEast: true,
         };
+        this.contextMenu ={
+            listMenuRef: React.createRef(),
+            treeMenuRef: React.createRef(),
+            itemMenuRef: React.createRef(),
+            treeMenu: [
+                { key: "create", text: "Создать", disabled: false, iconCls: "icon-evotor-folder-add" },
+                { key: "open", text: "Открыть", disabled: false, iconCls: "icon-evotor-folder-open" },
+                { key: "delete", text: "Удалить", disabled: true, iconCls: "icon-evotor-folder-delete" },
+                { key: "upload", text: "Выгрузить", disabled: false, iconCls: "icon-evotor-upload-to-the-cloud" },
+                { key: "submenu", text: "Субменю", disabled: false,
+                    submenu: [
+                        { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" },
+                        { key: "menu1", text:"Меню1", disabled: false },
+                        { key: "menu2", text:"Меню1", disabled: false },
+                    ]
+                },
+                { key: "close", text: "Закрыть", disabled: false },
+            ],
+            listMenu: [
+                { key: "create", text: "Создать", disabled: false },
+                { key: "open", text: "Открыть", disabled: false },
+                { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" },
+                { key: "close", text: "Закрыть", disabled: false },
+            ],
+            itemMenu: [
+                { key: "create", text: "Создать", disabled: false, submenu: [
+                        { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" },
+                        { key: "menu1", text:"Меню1", disabled: false },
+                        { key: "menu2", text:"Меню1", disabled: false },
+                    ]  },
+                { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" },
+                { key: "close", text: "Закрыть", disabled: false },
+            ],
+            treeMenuFunc: [
+                { key: "Открыть", func: this.handleTreeNodeSelection },
+            ]
+        };
+
         this.updateData();
     };
 
@@ -109,14 +139,13 @@ export default class Dashboard extends React.Component {
         ]);
     };
 
-    onListSelectionChange = (selection) =>{
-        // console.log(selection);
+    handleTreeSelectionChange = (node) =>{
         this.setState({
-            listSelection: selection
+            treeSelection: node,
         });
     };
 
-    onTreeNodeSelection = (node) =>{
+    handleTreeNodeSelection = (node) =>{
         const { treeData, listData } = this.state;
         this.setState({
             treeSelection: node,
@@ -124,9 +153,10 @@ export default class Dashboard extends React.Component {
         });
     };
 
-    onTreeSelectionChange = (node) =>{
+    onListSelectionChange = (selection) =>{
+        // console.log(selection);
         this.setState({
-            treeSelection: node,
+            listSelection: selection
         });
     };
 
@@ -202,56 +232,55 @@ export default class Dashboard extends React.Component {
     }
 
     render() {
-        { }
-
         return (
-            <Layout style={{ width: '100%', height: '100%' }}>
-                <LayoutPanel region="north" style={{ height: 60 }}>
-                    <Header/>
-                </LayoutPanel>
+            <ContextMenuProvider value = { this.contextMenu }>
+                <Layout style={{ width: '100%', height: '100%' }}>
+                    <LayoutPanel
+                        region="north"
+                        style={{ height: 60 }}>
+                        <Header/>
+                    </LayoutPanel>
 
-                <LayoutPanel
-                    title="Группы товаров"
-                    collapsible
-                    collapsed = { this.state.collapsedWest}
-                    expander
-                    region="west"
-                    split
-                    style={{ minWidth: 150, maxWidth: 400 }}>
-                    <ItemTree
-                        treeData = { this.state.transformTreeData }
-                        menuRef = { this.state.treeMenuRef }
-                        onTreeSelectionChange = { this.onTreeSelectionChange }
-                        onTreeNodeSelection = { this.onTreeNodeSelection }
-                    />
-                </LayoutPanel>
+                    <LayoutPanel
+                        title="Группы товаров"
+                        collapsible
+                        collapsed = { this.state.collapsedWest}
+                        expander
+                        region="west"
+                        split
+                        style={{ minWidth: 150, maxWidth: 400 }}>
+                        <ItemTree
+                            treeData = { this.state.transformTreeData }
+                            handleTreeSelectionChange = { this.handleTreeSelectionChange }
+                            handleTreeNodeSelection = { this.handleTreeNodeSelection }
+                        />
+                    </LayoutPanel>
 
-                <LayoutPanel region="center">
-                    <ItemList
-                        { ...this.state.constants }
-                        node = { this.state.treeSelection }
-                        menuRef = { this.state.listMenuRef }
-                        listData = { this.state.displayListData }
-                        onListSelectionChange = { this.onListSelectionChange }
-                    />
-                </LayoutPanel>
+                    <LayoutPanel region="center">
+                        <ItemList
+                            { ...this.state.constants }
+                            node = { this.state.treeSelection }
+                            listData = { this.state.displayListData }
+                            onListSelectionChange = { this.onListSelectionChange }
+                        />
+                    </LayoutPanel>
 
-                <LayoutPanel
-                    title="Свойства"
-                    collapsible
-                    collapsed ={ this.state.collapsedEast}
-                    //expand = { this.handleExpandEast.bind(this) }
-                    expander
-                    region="east"
-                    split
-                    style={{ minWidth: 200, maxWidth: 400 }}>
-                    <ItemDetail
-                        { ...this.state.constants }
-                        menuRef = { this.state.itemMenuRef }
-                        itemData = { this.state.itemData }
-                    />
-                </LayoutPanel>
-            </Layout>
+                    <LayoutPanel
+                        title="Свойства"
+                        collapsible
+                        collapsed ={ this.state.collapsedEast}
+                        //expand = { this.handleExpandEast.bind(this) }
+                        expander
+                        region="east"
+                        split
+                        style={{ minWidth: 200, maxWidth: 400 }}>
+                        <ItemDetail
+                            { ...this.state.constants }
+                            itemData = { this.state.itemData }
+                        />
+                    </LayoutPanel>
+                </Layout>
+            </ContextMenuProvider>
         );
     }
 }

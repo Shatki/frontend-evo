@@ -4,6 +4,10 @@ import easyuiru from '../../locale/easyui-lang-ru';
 import EvotorService from "../../services/evotor-service";
 import Dashboard from "../dashboard";
 
+import '../../themes/custome/style.css'
+import '../../themes/react.css'
+import '../../themes/icon.css'
+import '../../themes/custome/evotor-icons.css'
 import './app.css'
 
 export default class App extends React.Component {

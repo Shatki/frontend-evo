@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { DataGrid, GridColumn, NumberBox, ComboBox} from 'rc-easyui';
-import ContextMenu from "../context-menu";
+import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import './item-list.css';
 import Spinner from "../spinner";
 
@@ -15,12 +15,6 @@ export default class ItemList extends Component {
             allChecked: false,
             rowClicked: false,
             data: [],
-            menu: [
-                { key: "create", text: "Создать", disabled: false },
-                { key: "open", text: "Открыть", disabled: false },
-                { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" },
-                { key: "close", text: "Закрыть", disabled: false },
-            ],
         };
         //this.updateItemList();
     }
@@ -53,7 +47,7 @@ export default class ItemList extends Component {
     handleCellContextMenu = ({ row, column, originalEvent }) =>{
         originalEvent.preventDefault();
         console.log(row.name);
-        this.props.menuRef.current.showContextMenu(originalEvent.pageX, originalEvent.pageY)
+        this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY)
     };
 
     handleItemClick = (value) =>{
@@ -74,39 +68,53 @@ export default class ItemList extends Component {
         };
 
         return (
-            <div>
-                <DataGrid
-                    style={{ height: 'calc(100vh - 60px)' }}
-                    filterable
-                    rowCss={this.renderRow}
-                    data={ this.props.listData }
-                    columnMoving
-                    onCellDblClick = { this.onDblClick }
-                    columnResizing
-                    selectionMode ='multiple'
-                    selection={ this.state.selection }
-                    onSelectionChange={ this.props.onListSelectionChange }
-                    onCellContextMenu={ this.handleCellContextMenu.bind(this)}
-                >
-                    <GridColumn field="code" title="Код" width="10%"/>
-                    <GridColumn field="name" title="Наименование" width="50%"/>
-                    <GridColumn field="price" title="Цена продаж" width="10%" align="right"
-                                filterOperators={ this.state.operators }
-                                filter={ numberBoxFilter }
-                    />
-                    <GridColumn field="quantity" title="Остаток" align="right" width="10%"
-                                filterOperators={ this.state.operators }
-                                filter={ numberBoxFilter }
-                    />
-                    <GridColumn field="description" title="Описание" width="10%"/>
-                    <GridColumn field="measureName" title="Единицы" width="10%" align="center"
-                                filter={ comboBoxFilter }
-                    />
-                </DataGrid>
-                <ContextMenu menu = { this.state.menu }
-                             menuRef = { this.props.menuRef }
-                             handleItemClick = { this.handleItemClick }/>
-            </div>
+            <ContextMenuConsumer>
+                {
+                    ({ listMenuRef: menuRef, listMenu: menu })=>{
+                        this.menu = menuRef.current;
+                        return (
+                            <>
+                                <DataGrid
+                                    style={{ height: 'calc(100vh - 60px)' }}
+                                    filterable
+                                    rowCss={this.renderRow}
+                                    data={ this.props.listData }
+                                    columnMoving
+                                    onCellDblClick = { this.onDblClick }
+                                    columnResizing
+                                    selectionMode ='multiple'
+                                    selection={ this.state.selection }
+                                    onSelectionChange={ this.props.onListSelectionChange }
+                                    onCellContextMenu={ this.handleCellContextMenu.bind(this)}
+                                >
+                                    <GridColumn field="code" title="Код" width="10%"/>
+                                    <GridColumn field="name" title="Наименование" width="50%"/>
+                                    <GridColumn field="price" title="Цена продаж" width="10%" align="right"
+                                                filterOperators={ this.state.operators }
+                                                filter={ numberBoxFilter }
+                                    />
+                                    <GridColumn field="quantity" title="Остаток" align="right" width="10%"
+                                                filterOperators={ this.state.operators }
+                                                filter={ numberBoxFilter }
+                                    />
+                                    <GridColumn field="description" title="Описание" width="10%"/>
+                                    <GridColumn field="measureName" title="Единицы" width="10%" align="center"
+                                                filter={ comboBoxFilter }
+                                    />
+                                </DataGrid>
+                                <ContextMenu menu = { menu }
+                                             menuRef = { menuRef }
+                                             handleItemClick = { this.handleItemClick }/>
+                            </>
+                        );
+                    }
+                }
+            </ContextMenuConsumer>
+
         );
+
+
+
+
     }
 }
