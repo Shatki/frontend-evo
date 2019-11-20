@@ -120,25 +120,14 @@ export default class Dashboard extends React.Component {
                 { key: "close", text: "Закрыть", disabled: false },
             ],
             treeMenuFunc: [
-                { key: "Открыть", func: this.handleTreeNodeSelection.bind(this) },
+                { key: "Открыть", func: this.handleTreeNodeSelection },
             ]
         };
 
         this.updateData();
     };
 
-    addRootTreeData = (treeData) => {
-        return([
-            {
-                uuid: null,
-                text: "Магазин 'XXI BEK'",
-                state: 'opened',
-                iconCls: "icon-evotor-folder-user",
-                children: this.transformTreeData(treeData, null),
-            }
-        ]);
-    };
-
+    // ***** Context Menu ***************************************************************************
     handleTreeSelectionChange = (node) =>{
         this.setState({
             treeSelection: node,
@@ -158,6 +147,19 @@ export default class Dashboard extends React.Component {
         this.setState({
             listSelection: selection
         });
+    };
+
+    // ***** Data Update ****************************************************************************
+    addRootTreeData = (treeData) => {
+        return([
+            {
+                uuid: null,
+                text: "Магазин 'XXI BEK'",
+                state: 'opened',
+                iconCls: "icon-evotor-folder-user",
+                children: this.transformTreeData(treeData, null),
+            }
+        ]);
     };
 
     transformTreeData = (data, parentUuid=null) => {

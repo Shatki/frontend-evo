@@ -10,7 +10,7 @@ export default class ItemTree extends Component {
         super(props);
         this.handleContextMenuClick.bind(this);
         this.state = {
-            menuRef: null
+            selection: null
         }
     }
 
@@ -25,13 +25,16 @@ export default class ItemTree extends Component {
     handleNodeContextMenu = ({ node, originalEvent }) => {
         originalEvent.preventDefault();
         this.tree.selectNode(node);
-        console.log(node.text);
-        this.props.menuRef.current.showContextMenu(originalEvent.pageX, originalEvent.pageY);
+        this.setState({
+            selection: node
+        });
+        //console.log(node.text);
+        this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY);
     };
 
     handleContextMenuClick = (value) => {
-        this.menuFunc.find(m => m.key === value).func();
-        console.log(value);
+        this.menuFunc.find(m => m.key === value).func(this.state.selection);
+
     };
 
     render() {
@@ -40,6 +43,7 @@ export default class ItemTree extends Component {
                 {
                     ({ treeMenu: menu, treeMenuFunc: menuFunc }) =>{
                         this.menuFunc = menuFunc;
+                        this.menu = this.props.menuRef.current;
                         return(
                             <>
                                 <Tree
