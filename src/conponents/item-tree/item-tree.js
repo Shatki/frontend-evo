@@ -9,9 +9,14 @@ export default class ItemTree extends Component {
     constructor(props){
         super(props);
         this.handleContextMenuClick.bind(this);
+        this.handleNodeContextMenu.bind(this);
         this.state = {
             selection: null
-        }
+        };
+        this.treeContextMenuFunction = [
+            { key: "Создать", function: this.handleTreeNodeCreate },
+            { key: "Открыть", function: this.props.handleTreeNodeSelection },
+        ]
     }
 
     renderNode = ({ node }) => {
@@ -20,6 +25,27 @@ export default class ItemTree extends Component {
             {node.text}
             </span>
         )
+    };
+
+    // ItemTree => Create new node
+    handleTreeNodeCreate = (node) =>{
+        // Todo Вообще товар создаем на сервере, пока без
+        const itemUuid = require('uuid/v4');
+        const newNode = {
+            uuid: itemUuid(),
+            text: 'Новая папка',
+            iconCls: "icon-evotor-folder",
+        };
+        //console.log(newItemTree);
+        if(node.children === undefined){
+
+            node.children = [newNode]
+        }else{
+            node.children.push(newNode);
+        }
+        // Включаем редактор Ноды
+        this.tree.selectNode(newNode);
+        this.tree.beginEdit(newNode);
     };
 
     handleNodeContextMenu = ({ node, originalEvent }) => {
@@ -33,16 +59,16 @@ export default class ItemTree extends Component {
     };
 
     handleContextMenuClick = (value) => {
-        this.menuFunc.find(m => m.key === value).func(this.state.selection);
-
+        this.treeContextMenuFunction
+            .find(m => m.key === value)
+            .function(this.state.selection);
     };
 
     render() {
         return (
             <ContextMenuConsumer>
                 {
-                    ({ treeMenu: menu, treeMenuFunc: menuFunc }) =>{
-                        this.menuFunc = menuFunc;
+                    ({ treeMenu: menu }) =>{
                         this.menu = this.props.menuRef.current;
                         return(
                             <>

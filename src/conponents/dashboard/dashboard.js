@@ -93,8 +93,8 @@ export default class Dashboard extends React.Component {
             treeMenu: [
                 { key: "create", text: "Создать", disabled: false, iconCls: "icon-evotor-folder-add" },
                 { key: "open", text: "Открыть", disabled: false, iconCls: "icon-evotor-folder-open" },
-                { key: "delete", text: "Удалить", disabled: true, iconCls: "icon-evotor-folder-delete" },
-                { key: "upload", text: "Выгрузить", disabled: false, iconCls: "icon-evotor-upload-to-the-cloud" },
+                { key: "delete", text: "Удалить", disabled: false, iconCls: "icon-evotor-folder-delete" },
+                { key: "upload", text: "Выгрузить", disabled: true, iconCls: "icon-evotor-upload-to-the-cloud" },
                 { key: "submenu", text: "Субменю", disabled: false,
                     submenu: [
                         { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" },
@@ -119,9 +119,6 @@ export default class Dashboard extends React.Component {
                 { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" },
                 { key: "close", text: "Закрыть", disabled: false },
             ],
-            treeMenuFunc: [
-                { key: "Открыть", func: this.handleTreeNodeSelection },
-            ]
         };
 
         this.updateData();
@@ -134,6 +131,7 @@ export default class Dashboard extends React.Component {
         });
     };
 
+    // ItemTree => Open Node
     handleTreeNodeSelection = (node) =>{
         const { treeData, listData } = this.state;
         this.setState({
