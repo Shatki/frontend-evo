@@ -18,7 +18,7 @@ export default class Dashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            hasError: false,
+            hasError: true,
             constants: {
                 productTypes: [
                     {value: "NORMAL", text: "обычный"},
