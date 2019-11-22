@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { DataGrid, GridColumn, NumberBox, ComboBox} from 'rc-easyui';
 import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import './item-list.css';
-import Spinner from "../spinner";
+import Gears from "../gears";
 
 
 

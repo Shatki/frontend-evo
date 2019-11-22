@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { Tree } from 'rc-easyui';
 import ContextMenu, { ContextMenuConsumer } from "../context-menu";
+import ErrorView from "../error-view";
 import './item-tree.css'
+
 
 
 
@@ -11,6 +13,7 @@ export default class ItemTree extends Component {
         this.handleContextMenuClick.bind(this);
         this.handleNodeContextMenu.bind(this);
         this.state = {
+            hasError: true,
             selection: null
         };
         this.treeContextMenuFunction = [
@@ -65,6 +68,8 @@ export default class ItemTree extends Component {
     };
 
     render() {
+        if(this.state.hasError)
+            return (<ErrorView/>);
         return (
             <ContextMenuConsumer>
                 {

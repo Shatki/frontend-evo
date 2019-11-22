@@ -10,6 +10,7 @@ import ItemDetail from "../item-detail";
 import EvotorService from "../../services/evotor-service";
 
 import './dashboard.css'
+import ErrorView from "../error-view";
 
 export default class Dashboard extends React.Component {
     evotorService = new EvotorService();
@@ -17,6 +18,7 @@ export default class Dashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            hasError: false,
             constants: {
                 productTypes: [
                     {value: "NORMAL", text: "обычный"},
@@ -232,6 +234,8 @@ export default class Dashboard extends React.Component {
     }
 
     render() {
+        if(this.state.hasError)
+            return (<ErrorView/>);
         return (
             <ContextMenuProvider value = { this.contextMenu }>
                 <Layout style={{ width: '100%', height: '100%' }}>
