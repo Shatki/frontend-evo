@@ -1,26 +1,27 @@
 import React from 'react'
+import  { GearOne, GearTwo, GearTree }  from "./gears-error";
 import './gears.css'
 
-const Gears = () => {
+const GearsError = () => {
     return(
         <div className="gears">
-            <div className="gear one">
+            <GearOne className="gear">
                 <div className="bar"/>
                 <div className="bar"/>
                 <div className="bar"/>
-            </div>
-            <div className="gear two">
+            </GearOne>
+            <GearTwo className="gear">
                 <div className="bar"/>
                 <div className="bar"/>
                 <div className="bar"/>
-            </div>
-            <div className="gear three">
+            </GearTwo>
+            <GearTree className="gear">
                 <div className="bar"/>
                 <div className="bar"/>
                 <div className="bar"/>
-            </div>
+            </GearTree>
         </div>
     )
 };
 
-export default Gears;
+export default GearsError;

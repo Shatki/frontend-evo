@@ -11,6 +11,7 @@ import EvotorService from "../../services/evotor-service";
 
 import './dashboard.css'
 import ErrorView from "../error-view";
+import LoadingView from "../loading-view";
 
 export default class Dashboard extends React.Component {
     evotorService = new EvotorService();
@@ -18,7 +19,8 @@ export default class Dashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            hasError: true,
+            loading:true,
+            hasError: false,
             constants: {
                 productTypes: [
                     {value: "NORMAL", text: "обычный"},
@@ -122,9 +124,17 @@ export default class Dashboard extends React.Component {
                 { key: "close", text: "Закрыть", disabled: false },
             ],
         };
-
-        this.updateData();
     };
+
+    componentDidMount() {
+       this.updateData();
+    }
+
+    componentDidCatch(error, errorInfo) {
+        this.setState({
+            hasError: true
+        })
+    }
 
     // ***** Context Menu ***************************************************************************
     handleTreeSelectionChange = (node) =>{
@@ -236,6 +246,8 @@ export default class Dashboard extends React.Component {
     render() {
         if(this.state.hasError)
             return (<ErrorView/>);
+        if(this.state.loading)
+            return(<LoadingView/>);
         return (
             <ContextMenuProvider value = { this.contextMenu }>
                 <Layout style={{ width: '100%', height: '100%' }}>
@@ -254,7 +266,7 @@ export default class Dashboard extends React.Component {
                         split
                         style={{ minWidth: 150, maxWidth: 400 }}>
                         <ItemTree
-                            treeData = { this.state.transformTreeData }
+                            data = { this.state.transformTreeData }
                             menuRef = { this.contextMenu.treeMenuRef }
                             handleTreeSelectionChange = { this.handleTreeSelectionChange }
                             handleTreeNodeSelection = { this.handleTreeNodeSelection }

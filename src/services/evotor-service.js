@@ -1365,9 +1365,11 @@ export default class EvotorService {
     }
 
     async getAllProducts(store_id){
-        // console.log(store_id);
-        // Временная заглушка
-        return await this.state.data;
+        return new Promise (resolve=>{
+         setTimeout(() => {
+          resolve(this.state.data);
+      }, 1000);
+        });
     }
 
     //async getAllProducts(store_id){

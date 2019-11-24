@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import './error-view.css'
-import Gears from "../gears";
+import { GearsError } from "../gears";
 
 
 export default class ErrorView extends Component {
@@ -31,7 +31,7 @@ export default class ErrorView extends Component {
             <div className={ this.state.loadingClass ? 'loading': null }>
                 <h1>500</h1>
                 <h2>Что-то сломалось <b>:(</b></h2>
-                <Gears/>
+                <GearsError/>
             </div>
         )
     }

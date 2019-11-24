@@ -5,21 +5,36 @@ import ErrorView from "../error-view";
 import './item-tree.css'
 
 
-
-
 export default class ItemTree extends Component {
     constructor(props){
         super(props);
         this.handleContextMenuClick.bind(this);
         this.handleNodeContextMenu.bind(this);
         this.state = {
-            hasError: true,
+            data: props.data,
+            hasError: false,
             selection: null
         };
         this.treeContextMenuFunction = [
             { key: "Создать", function: this.handleTreeNodeCreate },
             { key: "Открыть", function: this.props.handleTreeNodeSelection },
+            { key: "Удалить", function: this.handleTreeNodeDelete },
+            { key: "Закрыть", function: this.handleContextMenuClose },
         ]
+    }
+
+    componentDidMount() {
+        this.setState({
+            data: this.props.data
+        })
+    }
+
+    componentDidCatch(error, errorInfo) {
+        console.log(errorInfo.componentStack);
+        this.setState({
+            hasError: true
+        })
+
     }
 
     renderNode = ({ node }) => {
@@ -51,6 +66,26 @@ export default class ItemTree extends Component {
         this.tree.beginEdit(newNode);
     };
 
+    // ItemTree => Create new node
+    handleTreeNodeDelete = (node) =>{
+        // Todo Удаляем сервере через redo undo, пока без
+        if(node.children === undefined){
+            //Если у ноды есть дети, удаляем рекурсивно
+
+            node.children = []
+        }else{
+            node.children.pop(node);
+        }
+        // Включаем редактор Ноды
+        //this.tree.selectNode(newNode);
+        //this.tree.beginEdit(newNode);
+    };
+
+    // ItemTree => Close menu
+    handleContextMenuClose = (node) =>{
+        this.tree.cancelEdit();
+    };
+
     handleNodeContextMenu = ({ node, originalEvent }) => {
         originalEvent.preventDefault();
         this.tree.selectNode(node);
@@ -70,6 +105,7 @@ export default class ItemTree extends Component {
     render() {
         if(this.state.hasError)
             return (<ErrorView/>);
+        console.log(this.state.data);
         return (
             <ContextMenuConsumer>
                 {
@@ -83,7 +119,7 @@ export default class ItemTree extends Component {
                                     animate
                                     onNodeDblClick = { this.props.handleTreeNodeSelection }
                                     onSelectionChange = { this.props.handleTreeSelectionChange }
-                                    data={ this.props.treeData }
+                                    data={ this.state.data }
                                     onNodeContextMenu={ this.handleNodeContextMenu}
                                 />
                                 <ContextMenu
