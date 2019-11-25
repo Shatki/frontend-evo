@@ -2,7 +2,7 @@
 export default class EvotorService {
     // https://api.evotorservice.ru/user/01-000000000738894/stores/a06c4306-732d-4914-9543-a588af06c683
     //_apiBase = 'https://api.evotorservice.ru';
-    _apiEvotorBase = 'https://api.evotor.ru/api/v1';
+    //_apiEvotorBase = 'https://api.evotor.ru/api/v1';
     _apiServiceBase = 'https://api.evotorservice.ru';
     state = {
         userId: '01-000000000738894',
@@ -1344,7 +1344,7 @@ export default class EvotorService {
         });
 
         // https://api.evotor.ru/api/v1/inventories/stores/search
-        const response = await fetch(`${this._apiEvotorBase}/${url}`, {
+        const response = await fetch(`${this._apiServiceBase}/${url}`, {
             method: 'GET',
             headers: headers
         });
@@ -1364,7 +1364,16 @@ export default class EvotorService {
         return await this.getResource(`inventories/employees/search`)
     }
 
+
     async getAllProducts(store_id){
+        return await this.getResource(`store/${this.state.stores[store_id].uuid}/products`)
+    }
+}
+
+
+/*
+Симуляция
+async getAllProducts(store_id){
         return new Promise (resolve=>{
          setTimeout(() => {
           resolve(this.state.data);
@@ -1372,7 +1381,6 @@ export default class EvotorService {
         });
     }
 
-    //async getAllProducts(store_id){
-    //    return await this.getResource(`inventories/stores/${this.state.stores[store_id].uuid}/products`)
-    //}
-}
+
+
+ */

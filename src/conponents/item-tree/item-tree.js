@@ -29,14 +29,6 @@ export default class ItemTree extends Component {
         })
     }
 
-    componentDidCatch(error, errorInfo) {
-        console.log(errorInfo.componentStack);
-        this.setState({
-            hasError: true
-        })
-
-    }
-
     renderNode = ({ node }) => {
         return (
             <span tabIndex="0">

@@ -12,6 +12,7 @@ import EvotorService from "../../services/evotor-service";
 import './dashboard.css'
 import ErrorView from "../error-view";
 import LoadingView from "../loading-view";
+import ErrorBoundry from "../error-boundry";
 
 export default class Dashboard extends React.Component {
     evotorService = new EvotorService();
@@ -20,7 +21,6 @@ export default class Dashboard extends React.Component {
         super(props);
         this.state = {
             loading:true,
-            hasError: false,
             constants: {
                 productTypes: [
                     {value: "NORMAL", text: "обычный"},
@@ -127,7 +127,7 @@ export default class Dashboard extends React.Component {
     };
 
     componentDidMount() {
-       this.updateData();
+        this.updateData();
     }
 
     componentDidCatch(error, errorInfo) {
@@ -244,8 +244,6 @@ export default class Dashboard extends React.Component {
     }
 
     render() {
-        if(this.state.hasError)
-            return (<ErrorView/>);
         if(this.state.loading)
             return(<LoadingView/>);
         return (
@@ -265,12 +263,14 @@ export default class Dashboard extends React.Component {
                         region="west"
                         split
                         style={{ minWidth: 150, maxWidth: 400 }}>
-                        <ItemTree
-                            data = { this.state.transformTreeData }
-                            menuRef = { this.contextMenu.treeMenuRef }
-                            handleTreeSelectionChange = { this.handleTreeSelectionChange }
-                            handleTreeNodeSelection = { this.handleTreeNodeSelection }
-                        />
+                        <ErrorBoundry>
+                            <ItemTree
+                                data = { this.state.transformTreeData }
+                                menuRef = { this.contextMenu.treeMenuRef }
+                                handleTreeSelectionChange = { this.handleTreeSelectionChange }
+                                handleTreeNodeSelection = { this.handleTreeNodeSelection }
+                            />
+                        </ErrorBoundry>
                     </LayoutPanel>
 
                     <LayoutPanel region="center">
