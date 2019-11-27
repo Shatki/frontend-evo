@@ -6,6 +6,7 @@
     "i18next": "^19.0.0",
     "rc-easyui": "^1.0.36",
     "react": "^16.8.6",
+    "react-cookies": "^0.1.1",
     "react-dom": "^16.8.6",
     "react-i18next": "^11.0.1",
     "react-native-vector-icons": "^6.6.0",
