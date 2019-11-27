@@ -240,7 +240,7 @@ export default class Dashboard extends React.Component {
         const store_id = 0;
         this.evotorService
             .getAllProducts(store_id)
-            .then(this.onDataLoaded);
+            .then((body)=>{console.log(body)});
     }
 
     render() {

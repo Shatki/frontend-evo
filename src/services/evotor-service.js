@@ -2,6 +2,7 @@
 export default class EvotorService {
     // https://api.evotorservice.ru/user/01-000000000738894/stores/a06c4306-732d-4914-9543-a588af06c683
     _apiBase = 'https://api.evotorservice.ru';
+    //_apiBase = "http://localhost:8000";
     //_apiEvotorBase = 'https://api.evotor.ru/api/v1';
     state = {
         userId: '01-000000000738894',
@@ -1339,13 +1340,12 @@ export default class EvotorService {
         //const body = JSON.stringify(data);
         const headers = new Headers({
             'Content-Type': 'application/json',
-            'X-Authorization': this.state.token,
+            'X-Auth-Token': this.state.token,
         });
 
         // https://api.evotor.ru/api/v1/inventories/stores/search
         const response = await fetch(`${this._apiBase}/${url}`, {
-            credentials: 'include',
-            mode: 'cors',
+            //credentials: 'include',
             method: 'GET',
             headers: headers
         });
@@ -1367,7 +1367,7 @@ export default class EvotorService {
 
 
     async getAllProducts(store_id){
-        return await this.getResource(`store/${this.state.stores[store_id].uuid}/products`)
+        return await this.getResource(`store/${this.state.stores[store_id].uuid}/products`);
     }
 }
 
