@@ -1,8 +1,8 @@
 
 export default class EvotorService {
     // https://api.evotorservice.ru/user/01-000000000738894/stores/a06c4306-732d-4914-9543-a588af06c683
-    _apiBase = 'https://api.evotorservice.ru';
-    //_apiBase = "http://localhost:8000";
+    //_apiBase = 'https://api.evotorservice.ru';
+    _apiBase = "http://localhost:8000";
     //_apiEvotorBase = 'https://api.evotor.ru/api/v1';
     state = {
         userId: '01-000000000738894',
@@ -1357,12 +1357,12 @@ export default class EvotorService {
     }
 
     async getAllStores(){
-        this.state = await this.getResource(`inventories/stores/search`);
+        this.state = await this.getResource(`stores`);
         return this.state
     }
 
     async getAllEmployees(){
-        return await this.getResource(`inventories/employees/search`)
+        return await this.getResource(`employees`)
     }
 
 
