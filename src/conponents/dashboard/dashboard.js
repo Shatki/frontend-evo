@@ -131,6 +131,8 @@ export default class Dashboard extends React.Component {
         };
     };
 
+
+
     componentDidUpdate(prevProps, prevState, snapshot) {
     }
 
@@ -146,10 +148,8 @@ export default class Dashboard extends React.Component {
     // Todo Undo/Redo event + other
     onKeyDown = e => console.log(e);
 
-    componentDidCatch(error, errorInfo) {
-        this.setState({
-            hasError: true
-        })
+    handleDragStart(item) {
+        this.setState({ dragItem: item })
     }
 
     // ***** Context Menu ***************************************************************************
@@ -242,22 +242,26 @@ export default class Dashboard extends React.Component {
                         split
                         style={{ minWidth: 150, maxWidth: 400 }}>
                         <ErrorBoundry>
-                            <ItemTree
-                                data = { this.state.transformTreeData }
-                                menuRef = { this.contextMenu.treeMenuRef }
-                                handleTreeSelectionChange = { this.handleTreeSelectionChange }
-                                handleTreeNodeSelection = { this.handleTreeNodeSelection }
-                            />
+                            <Droppable onDrop={this.handleDrop.bind(this)}>
+                                <ItemTree
+                                    data = { this.state.transformTreeData }
+                                    menuRef = { this.contextMenu.treeMenuRef }
+                                    handleTreeSelectionChange = { this.handleTreeSelectionChange }
+                                    handleTreeNodeSelection = { this.handleTreeNodeSelection }
+                                />
+                            </Droppable>
                         </ErrorBoundry>
                     </LayoutPanel>
 
                     <LayoutPanel region="center">
-                        <ItemList
-                            { ...this.state.constants }
-                            node = { this.state.treeSelection }
-                            listData = { this.state.displayListData }
-                            onListSelectionChange = { this.onListSelectionChange }
-                        />
+                        <Draggable>
+                            <ItemList
+                                { ...this.state.constants }
+                                node = { this.state.treeSelection }
+                                listData = { this.state.displayListData }
+                                onListSelectionChange = { this.onListSelectionChange }
+                            />
+                        </Draggable>
                     </LayoutPanel>
 
                     <LayoutPanel

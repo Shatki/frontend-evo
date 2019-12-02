@@ -73,7 +73,7 @@ export default class ItemList extends Component {
                         this.menu = menuRef.current;
                         return (
                             <>
-                                <DataGrid
+                                <DataGrid className="dragitem"
                                     style={{ height: 'calc(100vh - 60px)' }}
                                     filterable
                                     rowCss={this.renderRow}
