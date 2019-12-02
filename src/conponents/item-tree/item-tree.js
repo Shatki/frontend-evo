@@ -2,22 +2,27 @@ import React, { Component } from 'react';
 import { Tree } from 'rc-easyui';
 import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import ErrorView from "../error-view";
+import { deleteNode, createNode } from "../../algorithms/node-services";
+
 import './item-tree.css'
 
 
 export default class ItemTree extends Component {
     constructor(props){
         super(props);
-        this.handleContextMenuClick.bind(this);
-        this.handleNodeContextMenu.bind(this);
+        //this.handleContextMenuClick.bind(this);
+        //this.handleNodeContextMenu.bind(this);
+        //this.handleSelectionChange.bind(this);
         this.state = {
             data: props.data,
             hasError: false,
-            selection: null
+            selection: null,
+            editingNode: null,
         };
         this.treeContextMenuFunction = [
             { key: "Создать", function: this.handleTreeNodeCreate },
-            { key: "Открыть", function: this.props.handleTreeNodeSelection },
+            { key: "Переименовать", function: this.handleTreeNodeRename },
+            { key: "Открыть", function: this.handleNodeDblClick },
             { key: "Удалить", function: this.handleTreeNodeDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ]
@@ -39,38 +44,27 @@ export default class ItemTree extends Component {
 
     // ItemTree => Create new node
     handleTreeNodeCreate = (node) =>{
-        // Todo Вообще товар создаем на сервере, пока без
-        const itemUuid = require('uuid/v4');
-        const newNode = {
-            uuid: itemUuid(),
-            text: 'Новая папка',
-            iconCls: "icon-evotor-folder",
-        };
-        //console.log(newItemTree);
-        if(node.children === undefined){
-
-            node.children = [newNode]
-        }else{
-            node.children.push(newNode);
-        }
+        // Todo Каждое действие отправляется на сервер для Redo/Undo
+        const newNode = createNode(this.state.data, node);
         // Включаем редактор Ноды
         this.tree.selectNode(newNode);
         this.tree.beginEdit(newNode);
     };
 
+    // ItemTree => Rename node
+    handleTreeNodeRename = (node) =>{
+        // Todo Каждое действие отправляется на сервер для Redo/Undo
+        // Включаем редактор Ноды
+        this.tree.selectNode(node);
+        this.tree.beginEdit(node);
+    };
+
     // ItemTree => Create new node
     handleTreeNodeDelete = (node) =>{
-        // Todo Удаляем сервере через redo undo, пока без
-        if(node.children === undefined){
-            //Если у ноды есть дети, удаляем рекурсивно
-
-            node.children = []
-        }else{
-            node.children.pop(node);
-        }
-        // Включаем редактор Ноды
-        //this.tree.selectNode(newNode);
-        //this.tree.beginEdit(newNode);
+        // Todo Каждое действие отправляется на сервер для Redo/Undo
+        this.setState({
+            data: deleteNode(this.state.data, node)
+        })
     };
 
     // ItemTree => Close menu
@@ -94,10 +88,40 @@ export default class ItemTree extends Component {
             .function(this.state.selection);
     };
 
+    handleNodeDblClick = (node) =>{
+        // Вызываем головную функцию из Дашбоарда
+        this.props.handleTreeNodeSelection(node)
+    };
+
+    handleSelectionChange = (node) => {
+        // Вызываем для сохранения стейта в Дашбоард
+        if (this.state.editingNode !== null) this.tree.cancelEdit();
+
+        this.props.handleTreeSelectionChange(node);
+    };
+
+    handleEditBegin = ({ node, originalValue }) =>{
+        this.setState({
+            editingNode: node
+        })
+    };
+
+    handleEditEnd = ({ node, originalValue }) =>{
+        this.setState({
+            editingNode: null
+        })
+    };
+
+    handleEditCancel = ({ node, originalValue }) =>{
+        this.setState({
+            editingNode: null
+        })
+    };
+
+
     render() {
         if(this.state.hasError)
             return (<ErrorView/>);
-        console.log(this.state.data);
         return (
             <ContextMenuConsumer>
                 {
@@ -109,10 +133,13 @@ export default class ItemTree extends Component {
                                     ref = {(tree)=>{this.tree = tree}}
                                     render = { this.renderNode }
                                     animate
-                                    onNodeDblClick = { this.props.handleTreeNodeSelection }
-                                    onSelectionChange = { this.props.handleTreeSelectionChange }
+                                    onNodeDblClick = { this.handleNodeDblClick }
+                                    onSelectionChange = { this.handleSelectionChange }
                                     data={ this.state.data }
-                                    onNodeContextMenu={ this.handleNodeContextMenu}
+                                    onNodeContextMenu={ this.handleNodeContextMenu }
+                                    onEditBegin = { this.handleEditBegin }
+                                    onEditEnd = { this.handleEditEnd }
+                                    onEditCancel = { this.handleEditCancel }
                                 />
                                 <ContextMenu
                                     menu={ menu }

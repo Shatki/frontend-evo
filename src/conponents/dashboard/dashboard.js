@@ -10,9 +10,10 @@ import ItemDetail from "../item-detail";
 import EvotorService from "../../services/evotor-service";
 
 import './dashboard.css'
-import ErrorView from "../error-view";
 import LoadingView from "../loading-view";
 import ErrorBoundry from "../error-boundry";
+
+import { addRootNode, transformTreeData } from "../../algorithms/node-services";
 
 export default class Dashboard extends React.Component {
     evotorService = new EvotorService();
@@ -20,7 +21,10 @@ export default class Dashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            loading:true,
+            loading: true,
+            store: {
+                "name": "Магазин 'XXI BEK'",
+                "uuid":  "20180507-447F-40C1-8081-52D4B03CD7AB"},
             constants: {
                 productTypes: [
                     {value: "NORMAL", text: "обычный"},
@@ -96,6 +100,7 @@ export default class Dashboard extends React.Component {
             itemMenuRef: React.createRef(),
             treeMenu: [
                 { key: "create", text: "Создать", disabled: false, iconCls: "icon-evotor-folder-add" },
+                { key: "rename", text: "Переименовать", disabled: false, iconCls: "icon-evotor-folder-edit" },
                 { key: "open", text: "Открыть", disabled: false, iconCls: "icon-evotor-folder-open" },
                 { key: "delete", text: "Удалить", disabled: false, iconCls: "icon-evotor-folder-delete" },
                 { key: "upload", text: "Выгрузить", disabled: true, iconCls: "icon-evotor-upload-to-the-cloud" },
@@ -126,9 +131,20 @@ export default class Dashboard extends React.Component {
         };
     };
 
+    componentDidUpdate(prevProps, prevState, snapshot) {
+    }
+
     componentDidMount() {
+        document.addEventListener("keydown", this.onKeyDown);
         this.updateData();
     }
+
+    componentWillUnmount() {
+        document.removeEventListener("keydown", this.onKeyDown);
+    }
+
+    // Todo Undo/Redo event + other
+    onKeyDown = e => console.log(e);
 
     componentDidCatch(error, errorInfo) {
         this.setState({
@@ -138,6 +154,7 @@ export default class Dashboard extends React.Component {
 
     // ***** Context Menu ***************************************************************************
     handleTreeSelectionChange = (node) =>{
+        console.log(node);
         this.setState({
             treeSelection: node,
         });
@@ -160,51 +177,6 @@ export default class Dashboard extends React.Component {
     };
 
     // ***** Data Update ****************************************************************************
-    addRootTreeData = (treeData) => {
-        return([
-            {
-                uuid: null,
-                text: "Магазин 'XXI BEK'",
-                state: 'opened',
-                iconCls: "icon-evotor-folder-user",
-                children: this.transformTreeData(treeData, null),
-            }
-        ]);
-    };
-
-    transformTreeData = (data, parentUuid=null) => {
-        // Возвращает коренной список, parentUuid = null
-        // Алгоритм преобразования данных в объект для listTree
-        const children = data.filter(item => parentUuid === item.parentUuid);
-        // alert(children.toSource());
-        if (children.length > 0){
-            // Выбираем элементы имеющие children
-            return  children.map((child)=>{
-                let transformTreeData = this.transformTreeData(data, child.uuid);
-                if (transformTreeData.length > 0){
-                    // Родительский узел
-                    return{
-                        uuid: child.uuid,
-                        text: child.name,
-                        iconCls: "icon-evotor-folder-sub",
-                        state: 'closed',
-                        children: transformTreeData
-                    };
-                }
-                else{
-                    // Конечный узел
-                    return{
-                        uuid: child.uuid,
-                        text: child.name,
-                        iconCls: "icon-evotor-folder",
-                    };
-                }
-            });
-        } else {
-            return [];
-        }
-    };
-
     displayListData = (treeData, listData, nodeUuid) => {
         /* Преобразование данных из Стейта в данные плагина для отображения в ListItem */
         // Сначала выбираем каталоги нужного node, затем добавляем items
@@ -226,10 +198,11 @@ export default class Dashboard extends React.Component {
         // первоначальное заполнение данных
         const treeData = data.filter(item => item.group === true);
         const listData = data.filter(item => item.group === false);
+        const children = transformTreeData(treeData, null);
         this.setState({
             listData: listData,
             treeData: treeData,
-            transformTreeData: this.addRootTreeData(treeData),
+            transformTreeData: addRootNode(children, this.state.store.name),
             displayListData: this.displayListData(treeData, listData, null),
             loading: false,
             menu: null
@@ -243,12 +216,17 @@ export default class Dashboard extends React.Component {
             .then(this.onDataLoaded);
     }
 
+    handleKeyDown =(event) =>{
+      console.log("Key down event", event);
+    };
+
     render() {
         if(this.state.loading)
             return(<LoadingView/>);
         return (
             <ContextMenuProvider value = { this.contextMenu }>
-                <Layout style={{ width: '100%', height: '100%' }}>
+                <Layout style={{ width: '100%', height: '100%' }}
+                        onKeyDown={ this.handleKeyDown }>
                     <LayoutPanel
                         region="north"
                         style={{ height: 60 }}>

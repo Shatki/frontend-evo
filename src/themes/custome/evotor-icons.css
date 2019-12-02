@@ -70,6 +70,22 @@
 	background:url('icon-8/16/search-16.png') no-repeat center center;
 }
 
+.icon-evotor-property-edit{
+	background:url('icon-8/16/edit-property-16.png') no-repeat center center;
+}
+
+.icon-evotor-row-edit{
+	background:url('icon-8/16/edit-row-16.png') no-repeat center center;
+}
+
+.icon-evotor-folder-edit{
+	background:url('icon-8/16/folder-edit-16.png') no-repeat center center;
+}
+
+.icon-evotor-file-edit{
+	background:url('icon-8/16/edit-file-16.png') no-repeat center center;
+}
+
 .icon-evotor-services{
 	background:url('icon-8/16/services-16.png') no-repeat center center;
 }
