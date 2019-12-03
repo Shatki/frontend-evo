@@ -1,8 +1,7 @@
 import React from 'react';
 import { Layout, LayoutPanel } from 'rc-easyui';
-import { Draggable, Droppable } from 'rc-easyui';
 import { ContextMenuProvider } from "../context-menu";
-
+import { Draggable, Droppable, dropCls } from 'rc-easyui';
 import Header from "../header"
 import ItemTree from "../item-tree";
 import ItemList from "../item-list";
@@ -93,6 +92,9 @@ export default class Dashboard extends React.Component {
             itemSelection: null,
             collapsedWest: false,
             collapsedEast: true,
+            // Drag'n'Drop
+            isover: false,
+            dragItem: null,
         };
         this.contextMenu ={
             treeMenuRef: React.createRef(),
@@ -147,10 +149,6 @@ export default class Dashboard extends React.Component {
 
     // Todo Undo/Redo event + other
     onKeyDown = e => console.log(e);
-
-    handleDragStart(item) {
-        this.setState({ dragItem: item })
-    }
 
     // ***** Context Menu ***************************************************************************
     handleTreeSelectionChange = (node) =>{
@@ -216,8 +214,16 @@ export default class Dashboard extends React.Component {
             .then(this.onDataLoaded);
     }
 
-    handleKeyDown =(event) =>{
+    handleKeyDown = (event) =>{
       console.log("Key down event", event);
+    };
+
+    handleDragStart = (item) => {
+        this.setState({ dragItem: item })
+    };
+
+    handleDrop = (scope) =>{
+        console.log(scope);
     };
 
     render() {
@@ -242,26 +248,24 @@ export default class Dashboard extends React.Component {
                         split
                         style={{ minWidth: 150, maxWidth: 400 }}>
                         <ErrorBoundry>
-                            <Droppable onDrop={this.handleDrop.bind(this)}>
+
                                 <ItemTree
                                     data = { this.state.transformTreeData }
                                     menuRef = { this.contextMenu.treeMenuRef }
                                     handleTreeSelectionChange = { this.handleTreeSelectionChange }
                                     handleTreeNodeSelection = { this.handleTreeNodeSelection }
                                 />
-                            </Droppable>
+
                         </ErrorBoundry>
                     </LayoutPanel>
 
                     <LayoutPanel region="center">
-                        <Draggable>
                             <ItemList
                                 { ...this.state.constants }
                                 node = { this.state.treeSelection }
                                 listData = { this.state.displayListData }
                                 onListSelectionChange = { this.onListSelectionChange }
                             />
-                        </Draggable>
                     </LayoutPanel>
 
                     <LayoutPanel

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { DataGrid, GridColumn, NumberBox, ComboBox} from 'rc-easyui';
+import { Draggable, Droppable, dropCls } from 'rc-easyui';
 import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import './item-list.css';
 
@@ -22,7 +23,7 @@ export default class ItemList extends Component {
         //this.onDataLoaded()
     }
 
-    renderRow =(row) =>{
+    renderRowStyle =(row) =>{
         // Придаем стиль nodes строкам
         if (row.group) {
             //console.log(row.name);
@@ -53,6 +54,10 @@ export default class ItemList extends Component {
         console.log(value);
     };
 
+    renderItem = (row) => {
+        return row
+    };
+
     render() {
         const numberBoxFilter = () =>{
             return (<NumberBox/>)
@@ -73,10 +78,11 @@ export default class ItemList extends Component {
                         this.menu = menuRef.current;
                         return (
                             <>
-                                <DataGrid className="dragitem"
+                                <DataGrid
+                                    render = { this.renderItem }
                                     style={{ height: 'calc(100vh - 60px)' }}
                                     filterable
-                                    rowCss={this.renderRow}
+                                    rowCss={ this.renderRowStyle }
                                     data={ this.props.listData }
                                     columnMoving
                                     onCellDblClick = { this.onDblClick }
@@ -84,22 +90,22 @@ export default class ItemList extends Component {
                                     selectionMode ='multiple'
                                     selection={ this.state.selection }
                                     onSelectionChange={ this.props.onListSelectionChange }
-                                    onCellContextMenu={ this.handleCellContextMenu.bind(this)}
+                                    onCellContextMenu={ this.handleCellContextMenu }
                                 >
-                                    <GridColumn field="code" title="Код" width="10%"/>
-                                    <GridColumn field="name" title="Наименование" width="50%"/>
-                                    <GridColumn field="price" title="Цена продаж" width="10%" align="right"
-                                                filterOperators={ this.state.operators }
-                                                filter={ numberBoxFilter }
-                                    />
-                                    <GridColumn field="quantity" title="Остаток" align="right" width="10%"
-                                                filterOperators={ this.state.operators }
-                                                filter={ numberBoxFilter }
-                                    />
-                                    <GridColumn field="description" title="Описание" width="10%"/>
-                                    <GridColumn field="measureName" title="Единицы" width="10%" align="center"
-                                                filter={ comboBoxFilter }
-                                    />
+                                        <GridColumn field="code" title="Код" width="10%"/>
+                                        <GridColumn field="name" title="Наименование" width="50%"/>
+                                        <GridColumn field="price" title="Цена продаж" width="10%" align="right"
+                                                    filterOperators={ this.state.operators }
+                                                    filter={ numberBoxFilter }
+                                        />
+                                        <GridColumn field="quantity" title="Остаток" align="right" width="10%"
+                                                    filterOperators={ this.state.operators }
+                                                    filter={ numberBoxFilter }
+                                        />
+                                        <GridColumn field="description" title="Описание" width="10%"/>
+                                        <GridColumn field="measureName" title="Единицы" width="10%" align="center"
+                                                    filter={ comboBoxFilter }
+                                        />
                                 </DataGrid>
                                 <ContextMenu menu = { menu }
                                              menuRef = { menuRef }
