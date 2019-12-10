@@ -248,13 +248,15 @@ export default class Dashboard extends React.Component {
                         split
                         style={{ minWidth: 150, maxWidth: 400 }}>
                         <ErrorBoundry>
-                            <Droppable>
+                            <Droppable
+                                onDrop={ this.handleDrop.bind(this) }
+                            >
                                 <div>
-                                <ItemTree
-                                    data = { this.state.transformTreeData }
-                                    handleTreeSelectionChange = { this.handleTreeSelectionChange }
-                                    handleTreeNodeSelection = { this.handleTreeNodeSelection }
-                                />
+                                    <ItemTree
+                                        data = { this.state.transformTreeData }
+                                        handleTreeSelectionChange = { this.handleTreeSelectionChange }
+                                        handleTreeNodeSelection = { this.handleTreeNodeSelection }
+                                    />
                                 </div>
                             </Droppable>
                         </ErrorBoundry>

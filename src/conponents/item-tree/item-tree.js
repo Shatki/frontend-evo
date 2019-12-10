@@ -128,7 +128,7 @@ export default class ItemTree extends Component {
                     ({ treeMenu: menu, treeMenuRef: menuRef }) =>{
                         this.menu = menuRef.current;
                         return(
-                            <div>
+                            <>
                                 <Tree
                                     ref = {(tree)=>{ this.tree = tree }}
                                     render = { this.renderNode }
@@ -146,7 +146,7 @@ export default class ItemTree extends Component {
                                     menuRef = { menuRef }
                                     handleItemClick = { this.handleContextMenuClick }
                                 />
-                            </div>
+                            </>
                         )
                     }
                 }

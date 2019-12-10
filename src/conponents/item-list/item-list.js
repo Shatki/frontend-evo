@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { DataGrid, GridColumn, NumberBox, ComboBox} from 'rc-easyui';
-import { Draggable, Droppable, dropCls } from 'rc-easyui';
+import { Draggable, dropCls } from 'rc-easyui';
 import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import './item-list.css';
 
@@ -64,6 +64,7 @@ export default class ItemList extends Component {
     };
 
     renderItem = (row) => {
+        console.log(row);
         return row
     };
 
