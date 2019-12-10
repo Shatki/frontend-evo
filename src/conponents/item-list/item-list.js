@@ -20,7 +20,9 @@ export default class ItemList extends Component {
     }
 
     componentDidMount() {
-        //this.onDataLoaded()
+        this.setState({
+            data: this.props.data
+        })
     }
 
     renderRowStyle =(row) =>{
@@ -40,7 +42,7 @@ export default class ItemList extends Component {
         })
     };
 
-    onDblClick = ({ row }) =>{
+    handleDblClick = ({ row }) =>{
         console.log(row.name);
     };
 
@@ -50,7 +52,14 @@ export default class ItemList extends Component {
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY)
     };
 
-    handleItemClick = (value) =>{
+    handleSelectionChange = (node) => {
+        // Вызываем для сохранения стейта в Дашбоард
+        if (this.state.editingNode !== null) this.list.cancelEdit();
+
+        this.props.handleListSelectionChange(node);
+    };
+
+    handleContextMenuClick = (value) =>{
         console.log(value);
     };
 
@@ -79,17 +88,18 @@ export default class ItemList extends Component {
                         return (
                             <>
                                 <DataGrid
+                                    //ref = {(list)=>{ this.list = list }}
                                     render = { this.renderItem }
                                     style={{ height: 'calc(100vh - 60px)' }}
                                     filterable
                                     rowCss={ this.renderRowStyle }
                                     data={ this.props.listData }
                                     columnMoving
-                                    onCellDblClick = { this.onDblClick }
+                                    onCellDblClick = { this.handleDblClick }
                                     columnResizing
                                     selectionMode ='multiple'
                                     selection={ this.state.selection }
-                                    onSelectionChange={ this.props.onListSelectionChange }
+                                    onSelectionChange={ this.handleListSelectionChange }
                                     onCellContextMenu={ this.handleCellContextMenu }
                                 >
                                         <GridColumn field="code" title="Код" width="10%"/>
@@ -107,9 +117,10 @@ export default class ItemList extends Component {
                                                     filter={ comboBoxFilter }
                                         />
                                 </DataGrid>
-                                <ContextMenu menu = { menu }
-                                             menuRef = { menuRef }
-                                             handleItemClick = { this.handleItemClick }/>
+                                <ContextMenu
+                                    menu = { menu }
+                                    menuRef = { menuRef }
+                                    handleItemClick = { this.handleContextMenuClick }/>
                             </>
                         );
                     }

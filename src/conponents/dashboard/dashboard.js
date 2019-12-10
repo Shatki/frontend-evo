@@ -167,7 +167,7 @@ export default class Dashboard extends React.Component {
         });
     };
 
-    onListSelectionChange = (selection) =>{
+    handleListSelectionChange = (selection) =>{
         // console.log(selection);
         this.setState({
             listSelection: selection
@@ -215,7 +215,7 @@ export default class Dashboard extends React.Component {
     }
 
     handleKeyDown = (event) =>{
-      console.log("Key down event", event);
+        console.log("Key down event", event);
     };
 
     handleDragStart = (item) => {
@@ -248,24 +248,27 @@ export default class Dashboard extends React.Component {
                         split
                         style={{ minWidth: 150, maxWidth: 400 }}>
                         <ErrorBoundry>
-
+                            <Droppable>
+                                <div>
                                 <ItemTree
                                     data = { this.state.transformTreeData }
-                                    menuRef = { this.contextMenu.treeMenuRef }
                                     handleTreeSelectionChange = { this.handleTreeSelectionChange }
                                     handleTreeNodeSelection = { this.handleTreeNodeSelection }
                                 />
-
+                                </div>
+                            </Droppable>
                         </ErrorBoundry>
                     </LayoutPanel>
 
                     <LayoutPanel region="center">
+                        <ErrorBoundry>
                             <ItemList
                                 { ...this.state.constants }
                                 node = { this.state.treeSelection }
                                 listData = { this.state.displayListData }
-                                onListSelectionChange = { this.onListSelectionChange }
+                                handleListSelectionChange = { this.handleListSelectionChange }
                             />
+                        </ErrorBoundry>
                     </LayoutPanel>
 
                     <LayoutPanel
@@ -277,10 +280,12 @@ export default class Dashboard extends React.Component {
                         region="east"
                         split
                         style={{ minWidth: 200, maxWidth: 400 }}>
-                        <ItemDetail
-                            { ...this.state.constants }
-                            itemData = { this.state.itemData }
-                        />
+                        <ErrorBoundry>
+                            <ItemDetail
+                                { ...this.state.constants }
+                                itemData = { this.state.itemData }
+                            />
+                        </ErrorBoundry>
                     </LayoutPanel>
                 </Layout>
             </ContextMenuProvider>

@@ -125,12 +125,12 @@ export default class ItemTree extends Component {
         return (
             <ContextMenuConsumer>
                 {
-                    ({ treeMenu: menu }) =>{
-                        this.menu = this.props.menuRef.current;
+                    ({ treeMenu: menu, treeMenuRef: menuRef }) =>{
+                        this.menu = menuRef.current;
                         return(
-                            <>
+                            <div>
                                 <Tree
-                                    ref = {(tree)=>{this.tree = tree}}
+                                    ref = {(tree)=>{ this.tree = tree }}
                                     render = { this.renderNode }
                                     animate
                                     onNodeDblClick = { this.handleNodeDblClick }
@@ -143,10 +143,10 @@ export default class ItemTree extends Component {
                                 />
                                 <ContextMenu
                                     menu={ menu }
-                                    menuRef = { this.props.menuRef }
+                                    menuRef = { menuRef }
                                     handleItemClick = { this.handleContextMenuClick }
                                 />
-                            </>
+                            </div>
                         )
                     }
                 }
