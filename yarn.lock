@@ -7951,9 +7951,9 @@ raw-body@2.4.0:
     unpipe "1.0.0"
 
 rc-easyui@^1.0.36:
-  version "1.0.38"
-  resolved "https://registry.yarnpkg.com/rc-easyui/-/rc-easyui-1.0.38.tgz#93e6711d79346668570376a3d624499ad6e9064d"
-  integrity sha512-qqyoG/kHsS/ZTm4kcv46cRK7mrLMRzUFFwtbEoy9NJX1Nmk0aprlMGMMWnVCZa1AxxSy0wr9GZxWq/xXfXdplA==
+  version "1.0.39"
+  resolved "https://registry.yarnpkg.com/rc-easyui/-/rc-easyui-1.0.39.tgz#e1481d93d40d95656bbe187a72d9af2c1a755c1a"
+  integrity sha512-Q3Bh3jyaQz/O2UZhPywr+5ODYVb7gbqVbr3PpMCnFQyIltRfgvuFeMc/+GK4FXfi2RTwhHx2e40PlPhsD22gsw==
 
 rc@^1.2.7:
   version "1.2.8"

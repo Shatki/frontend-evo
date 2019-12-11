@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { DataGrid, GridColumn, NumberBox, ComboBox} from 'rc-easyui';
-import { Draggable, dropCls } from 'rc-easyui';
+import { Draggable, dropCls, dragCls } from 'rc-easyui';
 import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import './item-list.css';
 
@@ -14,6 +14,7 @@ export default class ItemList extends Component {
             operators: ["nofilter", "equal", "notequal", "less", "greater"],
             allChecked: false,
             rowClicked: false,
+            selection: null,
             data: [],
         };
         //this.updateItemList();
@@ -25,7 +26,7 @@ export default class ItemList extends Component {
         })
     }
 
-    renderRowStyle =(row) =>{
+    renderRowStyle = (row) =>{
         // Придаем стиль nodes строкам
         if (row.group) {
             //console.log(row.name);
@@ -52,20 +53,58 @@ export default class ItemList extends Component {
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY)
     };
 
-    handleSelectionChange = (node) => {
+    handleSelectionChange = (selection) => {
+        console.log(selection);
         // Вызываем для сохранения стейта в Дашбоард
         if (this.state.editingNode !== null) this.list.cancelEdit();
 
-        this.props.handleListSelectionChange(node);
+        // Сохраним в стейт
+        this.setState({
+            selection: selection
+        });
+
+        this.props.handleListSelectionChange(selection);
     };
 
     handleContextMenuClick = (value) =>{
         console.log(value);
     };
 
-    renderItem = (row) => {
-        console.log(row);
-        return row
+    renderColumn = ({ value, row, rowIndex }) => {
+        // style={{ width: '200px', height: '200px', border: '1px solid #ccc' }}
+        const item = (proxy) => {
+            if (!proxy){
+                return (
+                    <div >
+                        { row.name }
+                    </div>
+                );
+            }else {
+                const { selection } = this.state;
+                let items = row.name;
+
+                if(selection && selection.length > 1 ) {
+                    items = this.state.selection.map((item)=>{
+                        return(
+                            <div key = { item.uuid } style={{ border: '1px solid #ccc', backgroundColor: "#aaa" }}>
+                                { item.name }
+                            </div>
+                        )
+                    });
+                }
+                return (
+                    <div>
+                        { items }
+                    </div>
+                )
+            }
+        };
+
+        return (
+            <Draggable revert proxy={() => item(true)}>
+                { item() }
+            </Draggable>
+        )
     };
 
     render() {
@@ -89,8 +128,8 @@ export default class ItemList extends Component {
                         return (
                             <>
                                 <DataGrid
-                                    //ref = {(list)=>{ this.list = list }}
-                                    render = { this.renderItem }
+                                    ref = {(list)=>{ this.list = list }}
+                                    //renderItem = { this.renderRow }
                                     style={{ height: 'calc(100vh - 60px)' }}
                                     filterable
                                     rowCss={ this.renderRowStyle }
@@ -100,11 +139,15 @@ export default class ItemList extends Component {
                                     columnResizing
                                     selectionMode ='multiple'
                                     selection={ this.state.selection }
-                                    onSelectionChange={ this.handleListSelectionChange }
+                                    onSelectionChange={ this.handleSelectionChange }
                                     onCellContextMenu={ this.handleCellContextMenu }
                                 >
                                         <GridColumn field="code" title="Код" width="10%"/>
-                                        <GridColumn field="name" title="Наименование" width="50%"/>
+                                        <GridColumn
+                                            render = { this.renderColumn }
+                                            field="name"
+                                            title="Наименование"
+                                            width="50%"/>
                                         <GridColumn field="price" title="Цена продаж" width="10%" align="right"
                                                     filterOperators={ this.state.operators }
                                                     filter={ numberBoxFilter }

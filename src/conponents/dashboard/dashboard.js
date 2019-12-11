@@ -169,6 +169,7 @@ export default class Dashboard extends React.Component {
 
     handleListSelectionChange = (selection) =>{
         // console.log(selection);
+        // Дублируется в ListItem.  Потом Удалить лишнее
         this.setState({
             listSelection: selection
         });
