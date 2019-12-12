@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Tree } from 'rc-easyui';
+import { Tree, Droppable } from 'rc-easyui';
 import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import ErrorView from "../error-view";
 import { deleteNode, createNode } from "../../algorithms/node-services";
@@ -34,11 +34,31 @@ export default class ItemTree extends Component {
         })
     }
 
+    handleNodeDragOver = (node) => {
+        this.tree.selectNode(node);
+        console.log("Drag over =>", node.text);
+    };
+
+    handleNodeDragLeave = (node) => {
+        console.log("Drag leave =>", node.text);
+    };
+
+    handleNodeDrop = (node) => {
+        this.props.onDrop(node);
+        //console.log("Drop =>", node.text);
+    };
+
     renderNode = ({ node }) => {
         return (
-            <span tabIndex="0">
-            {node.text}
-            </span>
+            <Droppable
+                onDragOver={ () => this.handleNodeDragOver(node) }
+                onDragLeave={ () => this.handleNodeDragLeave(node) }
+                onDrop={ () => this.handleNodeDrop(node) }
+            >
+                <div tabIndex="0">
+                    {node.text}
+                </div>
+            </Droppable>
         )
     };
 

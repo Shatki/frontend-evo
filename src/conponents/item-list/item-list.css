@@ -1,0 +1,14 @@
+.dnd .datagrid-cell{
+    height: 32px;
+}
+.dnd .datagrid-cell>div{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.datagrid-moving-proxy {
+    background: #ccc;
+    color: #fff;
+}

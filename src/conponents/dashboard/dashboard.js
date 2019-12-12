@@ -1,7 +1,6 @@
 import React from 'react';
 import { Layout, LayoutPanel } from 'rc-easyui';
 import { ContextMenuProvider } from "../context-menu";
-import { Draggable, Droppable, dropCls } from 'rc-easyui';
 import Header from "../header"
 import ItemTree from "../item-tree";
 import ItemList from "../item-list";
@@ -56,8 +55,10 @@ export default class Dashboard extends React.Component {
                     {value: "VAT_10_110", text: "НДС 10/110"},
                 ],
             },
+
             listData: [],
             treeData: [],
+
             transformTreeData: [],
             displayListData: [],
             itemData: [
@@ -87,14 +88,17 @@ export default class Dashboard extends React.Component {
                     "tareVolume": 0.57
                 },
             ],
-            treeSelection: null,
-            listSelection: [],
+
+            treeSelection: null, // target node
+            nodeView: null, // view node
+            //listSelection: [],
             itemSelection: null,
+
             collapsedWest: false,
             collapsedEast: true,
             // Drag'n'Drop
             isover: false,
-            dragItem: null,
+            dragItems: null,
         };
         this.contextMenu ={
             treeMenuRef: React.createRef(),
@@ -133,14 +137,44 @@ export default class Dashboard extends React.Component {
         };
     };
 
+    loadData = () =>{
+        const store_id = 0;
+        this.evotorService
+            .getAllProducts(store_id)
+            .then(this.onDataLoaded);
+    };
 
+    onDataLoaded = (data) =>{
+        // первоначальное заполнение данных
+        const treeData = data.filter(item => item.group === true);
+        const listData = data.filter(item => item.group === false);
+        const children = transformTreeData(treeData, null);
+        this.setState({
+            listData: listData,
+            treeData: treeData,
+            transformTreeData: addRootNode(children, this.state.store.name),
+            displayListData: this.displayListData(treeData, listData, this.state.nodeView),
+            loading: false,
+            menu: null
+        });
+    };
+
+    updateListData = (data) => {
+        // Обновление данных в ListItem
+        const { treeData, nodeView } = this.state;
+        this.setState({
+            listData: data,
+            listSelection: [],
+            displayListData: this.displayListData(treeData, data, nodeView === null ? null : nodeView.uuid),
+        });
+    };
 
     componentDidUpdate(prevProps, prevState, snapshot) {
     }
 
     componentDidMount() {
         document.addEventListener("keydown", this.onKeyDown);
-        this.updateData();
+        this.loadData();
     }
 
     componentWillUnmount() {
@@ -159,19 +193,12 @@ export default class Dashboard extends React.Component {
     };
 
     // ItemTree => Open Node
-    handleTreeNodeSelection = (node) =>{
+    handleTreeNodeSelectView = (node) =>{
+        // Просмотр выбранной ноды в ListItem
         const { treeData, listData } = this.state;
         this.setState({
-            treeSelection: node,
+            nodeView: node,
             displayListData: this.displayListData(treeData, listData, node.uuid)
-        });
-    };
-
-    handleListSelectionChange = (selection) =>{
-        // console.log(selection);
-        // Дублируется в ListItem.  Потом Удалить лишнее
-        this.setState({
-            listSelection: selection
         });
     };
 
@@ -193,38 +220,26 @@ export default class Dashboard extends React.Component {
             .concat(listData.filter(item => item.parentUuid === nodeUuid));
     };
 
-    onDataLoaded = (data) =>{
-        // первоначальное заполнение данных
-        const treeData = data.filter(item => item.group === true);
-        const listData = data.filter(item => item.group === false);
-        const children = transformTreeData(treeData, null);
-        this.setState({
-            listData: listData,
-            treeData: treeData,
-            transformTreeData: addRootNode(children, this.state.store.name),
-            displayListData: this.displayListData(treeData, listData, null),
-            loading: false,
-            menu: null
-        });
-    };
-
-    updateData(){
-        const store_id = 0;
-        this.evotorService
-            .getAllProducts(store_id)
-            .then(this.onDataLoaded);
-    }
-
     handleKeyDown = (event) =>{
         console.log("Key down event", event);
     };
 
-    handleDragStart = (item) => {
-        this.setState({ dragItem: item })
+    handleDropListItem = (node) => {
+        // Todo Каждое действие отправляется на сервер для Redo/Undo
+        // Тут делаем операции с даннымы
+        const data = this.state.listData;
+        for (let dragItem of this.state.dragItems){
+           data.find(item=>item.uuid === dragItem.uuid).parentUuid = node.uuid;
+           //console.log("Drop ", item.name , " =>", node.text);
+        }
+        // Обновление ItemList
+        this.updateListData(data);
     };
 
-    handleDrop = (scope) =>{
-        console.log(scope);
+    handleDragListItem = (items) =>{
+        this.setState({
+            dragItems: items
+        })
     };
 
     render() {
@@ -243,23 +258,18 @@ export default class Dashboard extends React.Component {
                     <LayoutPanel
                         title="Группы товаров"
                         collapsible
-                        collapsed = { this.state.collapsedWest}
+                        collapsed = { this.state.collapsedWest }
                         expander
                         region="west"
                         split
                         style={{ minWidth: 150, maxWidth: 400 }}>
                         <ErrorBoundry>
-                            <Droppable
-                                onDrop={ this.handleDrop.bind(this) }
-                            >
-                                <div>
-                                    <ItemTree
-                                        data = { this.state.transformTreeData }
-                                        handleTreeSelectionChange = { this.handleTreeSelectionChange }
-                                        handleTreeNodeSelection = { this.handleTreeNodeSelection }
-                                    />
-                                </div>
-                            </Droppable>
+                            <ItemTree
+                                data = { this.state.transformTreeData }
+                                onDrop = { this.handleDropListItem }
+                                handleTreeSelectionChange = { this.handleTreeSelectionChange }
+                                handleTreeNodeSelection = { this.handleTreeNodeSelectView }
+                            />
                         </ErrorBoundry>
                     </LayoutPanel>
 
@@ -267,9 +277,10 @@ export default class Dashboard extends React.Component {
                         <ErrorBoundry>
                             <ItemList
                                 { ...this.state.constants }
+                                onDrag = { this.handleDragListItem }
                                 node = { this.state.treeSelection }
                                 listData = { this.state.displayListData }
-                                handleListSelectionChange = { this.handleListSelectionChange }
+                                //handleListSelectionChange = { this.handleListSelectionChange }
                             />
                         </ErrorBoundry>
                     </LayoutPanel>
