@@ -23,69 +23,69 @@
 */
 
 export const addRootNode = (children, text) => {
-        return([
-            {
-                uuid: null,
-                text,
-                state: 'opened',
-                iconCls: "icon-evotor-folder-user",
-                children
-            }
-        ]);
-    };
+    return([
+        {
+            uuid: null,
+            text,
+            state: 'opened',
+            iconCls: "icon-evotor-folder-user",
+            children
+        }
+    ]);
+};
 
 export const transformTreeData = (data, parentUuid=null) => {
-        // Возвращает коренной список, parentUuid = null
-        // Алгоритм преобразования данных в объект для listTree
-        const dataFilter = data.filter(item => parentUuid === item.parentUuid);
-        // alert(children.toSource());
-        if (dataFilter.length > 0){
-            // Выбираем элементы имеющие children
-            return  dataFilter.map((child)=>{
-                let children = transformTreeData(data, child.uuid);
-                if (children.length > 0){
-                    // Родительский узел
-                    return{
-                        uuid: child.uuid,
-                        text: child.name,
-                        iconCls: "icon-evotor-folder-sub",
-                        state: 'closed',
-                        children
-                    };
-                }
-                else{
-                    // Конечный узел
-                    return{
-                        uuid: child.uuid,
-                        text: child.name,
-                        iconCls: "icon-evotor-folder",
-                    };
-                }
-            });
-        } else {
-            return [];
-        }
-    };
+    // Возвращает коренной список, parentUuid = null
+    // Алгоритм преобразования данных в объект для listTree
+    const dataFilter = data.filter(item => parentUuid === item.parentUuid);
+    // alert(children.toSource());
+    if (dataFilter.length > 0){
+        // Выбираем элементы имеющие children
+        return  dataFilter.map((child)=>{
+            let children = transformTreeData(data, child.uuid);
+            if (children.length > 0){
+                // Родительский узел
+                return{
+                    uuid: child.uuid,
+                    text: child.name,
+                    iconCls: "icon-evotor-folder-sub",
+                    state: 'closed',
+                    children
+                };
+            }
+            else{
+                // Конечный узел
+                return{
+                    uuid: child.uuid,
+                    text: child.name,
+                    iconCls: "icon-evotor-folder",
+                };
+            }
+        });
+    } else {
+        return [];
+    }
+};
 
 
 export const createNode = (data, node) =>{
-        // Todo Переделать по фенШую React:
-        //  вернем новый элемент и новый массив для изменения через setState
-        // а пока тупое изменение входящих данных
-        const itemUuid = require('uuid/v4');
-        const newNode = {
-            uuid: itemUuid(),
-            text: 'Новая папка',
-            iconCls: "icon-evotor-folder",
-        };
-        //console.log(newItemTree);
-        if(node.children === undefined){
-            node.children = [newNode]
-        }else{
-            node.children.push(newNode);
-        }
-        return newNode
+    // Todo Переделать по фенШую React:
+    //  вернем новый элемент и новый массив для изменения через setState
+    // а пока тупое изменение входящих данных
+    const itemUuid = require('uuid/v4');
+    const newNode = {
+        uuid: itemUuid(),
+        text: 'Новая папка',
+        iconCls: "icon-evotor-folder",
     };
+    //console.log(newItemTree);
+    if(node.children === undefined){
+        node.children = [newNode]
+    }else{
+        node.children.push(newNode);
+    }
+    return newNode
+};
 
 
 export const deleteNode = (data, node) =>{
@@ -97,4 +97,14 @@ export const deleteNode = (data, node) =>{
         }
         return item.uuid !== node.uuid
     })
+};
+
+export  const moveNode = (data, node, movingNode) =>{
+    // Функция виртуального перемещения ноды => на самом деле изменение parentUuid
+    // Запрет на перемещение "в себя" или в свои "дочерние" ноды
+    // if moveNode()
+    if (movingNode.uuid !== node.uuid){
+        //  Нужно проверить всю иерархию
+        data.find(item=>item.uuid === movingNode.uuid).parentUuid = node.uuid;
+    }
 };

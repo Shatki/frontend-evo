@@ -11,7 +11,7 @@ import './dashboard.css'
 import LoadingView from "../loading-view";
 import ErrorBoundry from "../error-boundry";
 
-import { addRootNode, transformTreeData } from "../../algorithms/node-services";
+import { addRootNode, moveNode, transformTreeData } from "../../algorithms/node-services";
 
 export default class Dashboard extends React.Component {
     evotorService = new EvotorService();
@@ -100,6 +100,7 @@ export default class Dashboard extends React.Component {
             isover: false,
             dragItems: null,
         };
+        this.menu = null;
         this.contextMenu ={
             treeMenuRef: React.createRef(),
             listMenuRef: React.createRef(),
@@ -144,28 +145,34 @@ export default class Dashboard extends React.Component {
             .then(this.onDataLoaded);
     };
 
+    updateListData = (treeData, listData, nodeView) => {
+        // Обновление данных в ListItem
+        this.setState({
+            listData: listData,
+            listSelection: [],
+            displayListData: this.displayListData(treeData, listData, nodeView === null ? null : nodeView.uuid),
+        });
+    };
+
+    updateTreeData = (treeData, nodeRoot = null) => {
+        // Обновление данных в ListItem
+        const { store } = this.state;
+        const children = transformTreeData(treeData, nodeRoot);
+        this.setState({
+            treeData: treeData,
+            transformTreeData: addRootNode(children, store.name),
+            treeSelection: [],
+        });
+    };
+
     onDataLoaded = (data) =>{
         // первоначальное заполнение данных
         const treeData = data.filter(item => item.group === true);
         const listData = data.filter(item => item.group === false);
-        const children = transformTreeData(treeData, null);
+        this.updateTreeData(treeData);
+        this.updateListData(treeData, listData, null);
         this.setState({
-            listData: listData,
-            treeData: treeData,
-            transformTreeData: addRootNode(children, this.state.store.name),
-            displayListData: this.displayListData(treeData, listData, this.state.nodeView),
             loading: false,
-            menu: null
-        });
-    };
-
-    updateListData = (data) => {
-        // Обновление данных в ListItem
-        const { treeData, nodeView } = this.state;
-        this.setState({
-            listData: data,
-            listSelection: [],
-            displayListData: this.displayListData(treeData, data, nodeView === null ? null : nodeView.uuid),
         });
     };
 
@@ -212,6 +219,8 @@ export default class Dashboard extends React.Component {
             .map((item)=>{
                 return{
                     code: item.code,
+                    uuid: item.uuid,
+                    parentUuid: item.parentUuid,
                     name: item.name,
                     group: true
                 }
@@ -227,13 +236,21 @@ export default class Dashboard extends React.Component {
     handleDropListItem = (node) => {
         // Todo Каждое действие отправляется на сервер для Redo/Undo
         // Тут делаем операции с даннымы
-        const data = this.state.listData;
+        const { listData, treeData, nodeView } = this.state;
         for (let dragItem of this.state.dragItems){
-           data.find(item=>item.uuid === dragItem.uuid).parentUuid = node.uuid;
-           //console.log("Drop ", item.name , " =>", node.text);
+            if (!dragItem.group){
+                // Для товаров
+                listData.find(item=>item.uuid === dragItem.uuid).parentUuid = node.uuid;
+            }else{
+                // Для групп запрет на перемещение "в себя" или в свои "дочерние" ноды
+                moveNode(treeData, node, dragItem);
+            }
+
+            //console.log("Drop ", item.name , " =>", node.text);
         }
-        // Обновление ItemList
-        this.updateListData(data);
+        // Обновление ListItem и TreeItem
+        this.updateListData(treeData, listData, nodeView);
+        this.updateTreeData(treeData);
     };
 
     handleDragListItem = (items) =>{

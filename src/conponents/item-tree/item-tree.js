@@ -14,7 +14,6 @@ export default class ItemTree extends Component {
         //this.handleNodeContextMenu.bind(this);
         //this.handleSelectionChange.bind(this);
         this.state = {
-            data: props.data,
             hasError: false,
             selection: null,
             editingNode: null,
@@ -26,12 +25,6 @@ export default class ItemTree extends Component {
             { key: "Удалить", function: this.handleTreeNodeDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ]
-    }
-
-    componentDidMount() {
-        this.setState({
-            data: this.props.data
-        })
     }
 
     handleNodeDragOver = (node) => {
@@ -155,7 +148,7 @@ export default class ItemTree extends Component {
                                     animate
                                     onNodeDblClick = { this.handleNodeDblClick }
                                     onSelectionChange = { this.handleSelectionChange }
-                                    data={ this.state.data }
+                                    data={ this.props.data }
                                     onNodeContextMenu={ this.handleNodeContextMenu }
                                     onEditBegin = { this.handleEditBegin }
                                     onEditEnd = { this.handleEditEnd }

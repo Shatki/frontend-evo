@@ -14,18 +14,16 @@ export default class ItemList extends Component {
             operators: ["nofilter", "equal", "notequal", "less", "greater"],
             allChecked: false,
             rowClicked: false,
-            selection: null,
-            data: [],
+            selection: [],
             drag: []
         };
-        //this.updateItemList();
-    }
-
-    componentDidMount() {
-        this.setState({
-            data: this.props.data,
-            selection: null
-        })
+        this.listContextMenuFunction = [
+            { key: "Создать", function: this.handleTreeNodeCreate },
+            { key: "Переименовать", function: this.handleTreeNodeRename },
+            { key: "Открыть", function: this.handleNodeDblClick },
+            { key: "Удалить", function: this.handleTreeNodeDelete },
+            { key: "Закрыть", function: this.handleContextMenuClose },
+        ]
     }
 
     renderRowStyle = (row) =>{
@@ -51,6 +49,8 @@ export default class ItemList extends Component {
 
     handleCellContextMenu = ({ row, column, originalEvent }) =>{
         originalEvent.preventDefault();
+        // При контекстном меню отменим выделения
+        this.list.clearSelections();
         console.log(row.name);
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY)
     };
@@ -61,7 +61,7 @@ export default class ItemList extends Component {
 
         // Сохраним в стейт
         this.setState({
-            selection: selection
+            selection: selection,
         });
     };
 
@@ -76,22 +76,18 @@ export default class ItemList extends Component {
     };
 
     renderColumn = ({ value, row, rowIndex }) => {
-        // style={{ width: '200px', height: '200px', border: '1px solid #ccc' }}
         const proxy = () => {
-            const { selection } = this.state;
-            let items = row.name;
+            const target = this.state.selection.length > 0 ? this.state.selection : [row] ;
+            const items = target.map((item)=>{
+                return(
+                    <div key = { item.uuid } className="datagrid-moving-proxy">
+                        { item.name }
+                    </div>
+                )
+            });
 
-            if(selection && selection.length > 1 ) {
-                items = this.state.selection.map((item)=>{
-                    return(
-                        <div key = { item.uuid } className="datagrid-moving-proxy">
-                            { item.name }
-                        </div>
-                    )
-                });
-            }
             return (
-                <div className="datagrid-moving-proxy">
+                <div >
                     { items }
                 </div>
             )
@@ -100,7 +96,6 @@ export default class ItemList extends Component {
         return (
             <Draggable
                 revert
-                proxyWrap={ <div></div> }
                 deltaX={ -5 }
                 deltaY={ -5 }
                 edge={ 5 }
@@ -142,6 +137,7 @@ export default class ItemList extends Component {
                                     filterable
                                     rowCss={ this.renderRowStyle }
                                     data={ this.props.listData }
+                                    editMode = "row"
                                     columnMoving
                                     onCellDblClick = { this.handleDblClick }
                                     columnResizing
