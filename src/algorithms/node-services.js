@@ -15,11 +15,24 @@
             text: node_name,
             iconCls: "icon-node",
             state: 'closed',
-            children: []
+            children: [
+                {   uuid: node_uuid,
+                    text: node_name,
+                    iconCls: "icon-node",
+                    state: 'closed',
+                    children: []
+                    },
+                {   uuid: node_uuid,
+                    text: node_name,
+                    iconCls: "icon-node",
+                    state: 'closed',
+                    children: []
+                    }
+
+            ]
          }
 
     У каждой ноды свойство children это массив дочерних нод
-
 */
 
 export const addRootNode = (children, text) => {
@@ -102,7 +115,23 @@ export const deleteNode = (data, node) =>{
 export  const moveNode = (data, node, movingNode) =>{
     // Функция виртуального перемещения ноды => на самом деле изменение parentUuid
     // Запрет на перемещение "в себя" или в свои "дочерние" ноды
-    // if moveNode()
+    // Если возвращает
+    // true - перемещение разрешено,
+    // false - перемещение запрещено,
+    // parentNode - проверяем дальше
+    const parentNode = data.find(item => item.uuid === node.parentUuid);
+    // Если есть не корневой родитель и
+    if(parentNode){
+        return
+    }
+    // if (moveNode()){
+    //  return True
+    // }else{
+    //  return False
+    // }
+
+
+
     if (movingNode.uuid !== node.uuid){
         //  Нужно проверить всю иерархию
         data.find(item=>item.uuid === movingNode.uuid).parentUuid = node.uuid;
