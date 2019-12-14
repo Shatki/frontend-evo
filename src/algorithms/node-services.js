@@ -115,25 +115,43 @@ export const deleteNode = (data, node) =>{
 export  const moveNode = (data, node, movingNode) =>{
     // Функция виртуального перемещения ноды => на самом деле изменение parentUuid
     // Запрет на перемещение "в себя" или в свои "дочерние" ноды
-    // Если возвращает
-    // true - перемещение разрешено,
-    // false - перемещение запрещено,
-    // parentNode - проверяем дальше
-    const parentNode = data.find(item => item.uuid === node.parentUuid);
-    // Если есть не корневой родитель и
-    if(parentNode){
-        return
+    // Возвращает 3 состояния:
+    // true - перемещение разрешено
+    //    (в случае, если дошли до Root(checkNode.parentUuid === null)
+    //    и не обнаружили что movingNode.uuid === checkNode.uuid)
+    // false - перемещение запрещено
+    // node - требуется дополнительная проверка родительской ноды
+    // Идея рекурсии: Пробуем переместить в родителя целевой ноды, и если это возможно и притом целевая
+    // нода и перемещаемая не одно и тоже, то перемещение возможно, что и осуществляем.
+    
+
+    // Поиск родительской ноды в данных (data) у ноды (node)
+    const checkNode = data.find(item => item.uuid === node.parentUuid);
+
+    // Если дошли до root node значит разрешаем перемещать
+    if (checkNode.parentUuid === null) {
+        movingNode.parentUuid = node.uuid;
+        return true;
+    }else{
+        const testMove = moveNode(data, checkNode, movingNode);
+        if (testMove === true){
+
+        }
+
+        // Если movingNode не перемещается "в себя"
+        if (movingNode.uuid !== node.uuid) {
+            return
+        }else{
+            return false
+        }
     }
-    // if (moveNode()){
-    //  return True
-    // }else{
-    //  return False
-    // }
+};
 
-
-
+/*
     if (movingNode.uuid !== node.uuid){
         //  Нужно проверить всю иерархию
         data.find(item=>item.uuid === movingNode.uuid).parentUuid = node.uuid;
     }
-};
+
+data.find(item=>item.uuid === movingNode.uuid).parentUuid = node.uuid;
+ */
