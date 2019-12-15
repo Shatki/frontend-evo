@@ -131,6 +131,15 @@ export default class ItemTree extends Component {
         })
     };
 
+    handleNodeExpand = (node) => {
+        // Сохраним state="opened" у ноды в dataTree
+        if (node.uuid !== null) this.props.onChangeNodeState(node, "open")
+    };
+
+    handleNodeCollapse = (node) => {
+        // Сохраним state="closed" у ноды в dataTree
+        if (node.uuid !== null) this.props.onChangeNodeState(node, "closed")
+    };
 
     render() {
         if(this.state.hasError)
@@ -147,6 +156,8 @@ export default class ItemTree extends Component {
                                     render = { this.renderNode }
                                     animate
                                     onNodeDblClick = { this.handleNodeDblClick }
+                                    onNodeExpand = { this.handleNodeExpand }
+                                    onNodeCollapse = { this.handleNodeCollapse }
                                     onSelectionChange = { this.handleSelectionChange }
                                     data={ this.props.data }
                                     onNodeContextMenu={ this.handleNodeContextMenu }

@@ -40,7 +40,7 @@ export const addRootNode = (children, text) => {
         {
             uuid: null,
             text,
-            state: 'opened',
+            state: 'open',
             iconCls: "icon-evotor-folder-user",
             children
         }
@@ -49,7 +49,7 @@ export const addRootNode = (children, text) => {
 
 export const transformTreeData = (data, parentUuid=null) => {
     // Возвращает коренной список, parentUuid = null
-    // Алгоритм преобразования данных в объект для listTree
+    // Алгоритм преобразования данных в объект для treeItem
     const dataFilter = data.filter(item => parentUuid === item.parentUuid);
     // alert(children.toSource());
     if (dataFilter.length > 0){
@@ -62,7 +62,7 @@ export const transformTreeData = (data, parentUuid=null) => {
                     uuid: child.uuid,
                     text: child.name,
                     iconCls: "icon-evotor-folder-sub",
-                    state: 'closed',
+                    state: child.nodeState || 'closed',
                     children
                 };
             }
@@ -113,45 +113,31 @@ export const deleteNode = (data, node) =>{
 };
 
 export  const moveNode = (data, node, movingNode) =>{
-    // Функция виртуального перемещения ноды => на самом деле изменение parentUuid
-    // Запрет на перемещение "в себя" или в свои "дочерние" ноды
-    // Возвращает 3 состояния:
-    // true - перемещение разрешено
-    //    (в случае, если дошли до Root(checkNode.parentUuid === null)
-    //    и не обнаружили что movingNode.uuid === checkNode.uuid)
-    // false - перемещение запрещено
-    // node - требуется дополнительная проверка родительской ноды
-    // Идея рекурсии: Пробуем переместить в родителя целевой ноды, и если это возможно и притом целевая
-    // нода и перемещаемая не одно и тоже, то перемещение возможно, что и осуществляем.
-    
+    /*  Функция виртуального перемещения ноды => на самом деле изменение parentUuid
 
-    // Поиск родительской ноды в данных (data) у ноды (node)
-    const checkNode = data.find(item => item.uuid === node.parentUuid);
+        Замечание: Все операции проходят над data, а не dataTree
+        Запрет на перемещение "в себя" или в свои "дочерние" ноды
 
-    // Если дошли до root node значит разрешаем перемещать
-    if (checkNode.parentUuid === null) {
-        movingNode.parentUuid = node.uuid;
-        return true;
-    }else{
-        const testMove = moveNode(data, checkNode, movingNode);
-        if (testMove === true){
-
-        }
-
-        // Если movingNode не перемещается "в себя"
-        if (movingNode.uuid !== node.uuid) {
-            return
-        }else{
-            return false
-        }
+    */
+    //console.log("node=>", node);
+    //console.log("movingNode=>", movingNode);
+    let checkStatus = true;
+    if ( node.uuid !== null ){
+        let testNode = { parentUuid: node.uuid };
+        do {
+            // Ищем родительскую ноду у целевой ноды.
+            testNode = data.find( item=>item.uuid === testNode.parentUuid );
+            //console.log("testNode=>", testNode);
+            // Если целевая нода это перемещаемая нода, то отмена перемещения
+            if( testNode.uuid === movingNode.uuid ) {
+                console.log("Отмена перемещения");
+                checkStatus = false
+            }
+        } while ( testNode.parentUuid !== null && checkStatus !== false );
     }
-};
-
-/*
-    if (movingNode.uuid !== node.uuid){
-        //  Нужно проверить всю иерархию
+    if( checkStatus===true ) {
+        console.log("Перемещаю");
+        // Перемещаю
         data.find(item=>item.uuid === movingNode.uuid).parentUuid = node.uuid;
     }
-
-data.find(item=>item.uuid === movingNode.uuid).parentUuid = node.uuid;
- */
+};

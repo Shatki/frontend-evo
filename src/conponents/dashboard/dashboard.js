@@ -243,9 +243,8 @@ export default class Dashboard extends React.Component {
                 listData.find(item=>item.uuid === dragItem.uuid).parentUuid = node.uuid;
             }else{
                 // Для групп запрет на перемещение "в себя" или в свои "дочерние" ноды
-                moveNode(treeData, node, dragItem);
+                   moveNode(treeData, node, dragItem)
             }
-
             //console.log("Drop ", item.name , " =>", node.text);
         }
         // Обновление ListItem и TreeItem
@@ -257,6 +256,15 @@ export default class Dashboard extends React.Component {
         this.setState({
             dragItems: items
         })
+    };
+
+    handleChangeNodeState = (node, nodeState) => {
+       const { treeData } = this.state;
+       const treeNode = treeData.find(item=>item.uuid===node.uuid);
+       treeNode.nodeState = nodeState;
+       this.setState({
+           treeData: treeData
+       })
     };
 
     render() {
@@ -286,6 +294,7 @@ export default class Dashboard extends React.Component {
                                 onDrop = { this.handleDropListItem }
                                 handleTreeSelectionChange = { this.handleTreeSelectionChange }
                                 handleTreeNodeSelection = { this.handleTreeNodeSelectView }
+                                onChangeNodeState = { this.handleChangeNodeState }
                             />
                         </ErrorBoundry>
                     </LayoutPanel>
