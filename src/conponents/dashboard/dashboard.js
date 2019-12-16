@@ -193,7 +193,7 @@ export default class Dashboard extends React.Component {
 
     // ***** Context Menu ***************************************************************************
     handleTreeSelectionChange = (node) =>{
-        console.log(node);
+        //console.log(node);
         this.setState({
             treeSelection: node,
         });
@@ -262,9 +262,7 @@ export default class Dashboard extends React.Component {
        const { treeData } = this.state;
        const treeNode = treeData.find(item=>item.uuid===node.uuid);
        treeNode.nodeState = nodeState;
-       this.setState({
-           treeData: treeData
-       })
+       this.setState({ treeData })
     };
 
     render() {

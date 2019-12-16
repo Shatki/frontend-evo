@@ -1,37 +1,40 @@
 /*
     Тут чисто JS
     Функции для работы с Нодами
-    Структура данных для easyui должны быть вида:
+
+    dataTree => линейный массив, в каждом элементе есть parentUuid указывающий uuid родителя:
+    uuid = null только у коренного элемента
+
         [
-            { node 1 },
-            { node 2 },
+            { node 1, parentUuid: null },
+            { node 2, parentUuid: node1 },
                 ...
-            { node x }
+            { node x, parentUuid: mode1 }
         ]
 
+    transformTreeData => трансформированный массив нод в древовидную структуру.
     Каждая Нода это объект вида:
        {
             uuid: node_uuid,
             text: node_name,
             iconCls: "icon-node",
-            state: 'closed',
+            state: 'open',
             children: [
                 {   uuid: node_uuid,
                     text: node_name,
                     iconCls: "icon-node",
                     state: 'closed',
-                    children: []
+                    children: [...]
                     },
                 {   uuid: node_uuid,
                     text: node_name,
                     iconCls: "icon-node",
                     state: 'closed',
-                    children: []
+                    children: [...]
                     }
 
             ]
          }
-
     У каждой ноды свойство children это массив дочерних нод
 */
 
@@ -80,7 +83,6 @@ export const transformTreeData = (data, parentUuid=null) => {
     }
 };
 
-
 export const createNode = (data, node) =>{
     // Todo Переделать по фенШую React:
     //  вернем новый элемент и новый массив для изменения через setState
@@ -115,7 +117,9 @@ export const deleteNode = (data, node) =>{
 export  const moveNode = (data, node, movingNode) =>{
     /*  Функция виртуального перемещения ноды => на самом деле изменение parentUuid
 
-        Замечание: Все операции проходят над data, а не dataTree
+        Замечание: Все операции проходят над dataTree, а не над обработанной transformTreeData
+        dataTree => линейный массив, не обработанный для хранения данных
+        transformTreeData = древовидный массив объектов, рабочий для отображения
         Запрет на перемещение "в себя" или в свои "дочерние" ноды
 
     */

@@ -47,22 +47,25 @@ export default class ItemList extends Component {
         console.log(row.name);
     };
 
+    changeSelections = (selection=[]) => {
+        // Основная функция изменения выделений строк в ItemList
+        // Сохраним в стейт
+        this.setState({
+            selection: selection,
+        });
+    };
     handleCellContextMenu = ({ row, column, originalEvent }) =>{
         originalEvent.preventDefault();
         // При контекстном меню отменим выделения
-        this.list.clearSelections();
+        this.changeSelections([row]);
         console.log(row.name);
-        this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY)
+        this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY);
     };
 
     handleSelectionChange = (selection) => {
         // Вызываем для сохранения стейта в Дашбоард
         if (this.state.editingNode !== null) this.list.cancelEdit();
-
-        // Сохраним в стейт
-        this.setState({
-            selection: selection,
-        });
+        this.changeSelections(selection)
     };
 
     handleContextMenuClick = (value) =>{
@@ -102,7 +105,7 @@ export default class ItemList extends Component {
                 proxy={ proxy }
                 onDragStart={(event) => this.handleRowDragStart(event, row)}
                 // Отмена выделений после перетаскивания
-                onDragEnd = { this.setState({ selection: [] }) }>
+                onDragEnd = { this.changeSelections([]) }>
                 <div>
                     { row.name }
                 </div>
