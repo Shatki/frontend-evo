@@ -115,7 +115,7 @@ export default class Dashboard extends React.Component {
                     submenu: [
                         { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" },
                         { key: "menu1", text:"Меню1", disabled: false },
-                        { key: "menu2", text:"Меню1", disabled: false },
+                        { key: "menu2", text:"Меню2", disabled: false },
                     ]
                 },
                 { key: "close", text: "Закрыть", disabled: false },
@@ -179,6 +179,10 @@ export default class Dashboard extends React.Component {
         this.setState({
             loading: false,
         });
+    };
+
+    handleDataOperations = (data, operations) =>{
+        // Через эту функцию проходят все операции по изменению данных
     };
 
     componentDidMount() {
@@ -297,7 +301,7 @@ export default class Dashboard extends React.Component {
                         style={{ minWidth: 150, maxWidth: 400 }}>
                         <ErrorBoundry>
                             <ItemTree
-                                data = { this.state.displayTreeData }
+                                treeData = { this.state.displayTreeData }
                                 onDrop = { this.handleDropListItem }
                                 onTreeSelectionChange = { this.handleTreeSelectionChange }
                                 onTreeNodeSelection = { this.handleTreeNodeSelectView }
@@ -310,10 +314,10 @@ export default class Dashboard extends React.Component {
                         <ErrorBoundry>
                             <ItemList
                                 { ...this.state.constants }
+                                listData = { this.state.displayListData }
                                 onDrag = { this.handleDragListItem }
                                 onListRowSelection = { this.handleListRowSelection }
                                 node = { this.state.treeSelection }
-                                listData = { this.state.displayListData }
                                 //handleListSelectionChange = { this.handleListSelectionChange }
                             />
                         </ErrorBoundry>

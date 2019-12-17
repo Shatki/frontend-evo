@@ -21,11 +21,13 @@ export default class ContextMenu extends Component {
     };
 
     render() {
-        const { menu, handleItemClick } = this.props;
+        const { menu, handleItemClick, menuRef } = this.props;
 
         return (
-            <Menu ref={ this.props.menuRef }
-                  onItemClick={ handleItemClick }>
+            <Menu
+                ref = { menuRef }
+                onItemClick={ handleItemClick }
+            >
                 { this.renderMenu(menu) }
             </Menu>
         )

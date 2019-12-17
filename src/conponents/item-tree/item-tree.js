@@ -85,12 +85,17 @@ export default class ItemTree extends Component {
         this.tree.cancelEdit();
     };
 
+    changeSelections = (selection=null) => {
+        // Основная функция изменения выделений строк в ItemTree
+        this.setState({
+            selection: selection,
+        });
+    };
+
     handleNodeContextMenu = ({ node, originalEvent }) => {
         originalEvent.preventDefault();
         this.tree.selectNode(node);
-        this.setState({
-            selection: node
-        });
+        this.changeSelections(node);
         //console.log(node.text);
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY);
     };
@@ -149,18 +154,19 @@ export default class ItemTree extends Component {
                 {
                     ({ treeMenu: menu, treeMenuRef: menuRef }) =>{
                         this.menu = menuRef.current;
+                        console.log(this.menu);
                         return(
                             <>
                                 <Tree
-                                    ref = {(tree)=>{ this.tree = tree }}
+                                    ref = { tree=>this.tree=tree }
                                     render = { this.renderNode }
                                     animate
                                     onNodeDblClick = { this.handleNodeDblClick }
                                     onNodeExpand = { this.handleNodeExpand }
                                     onNodeCollapse = { this.handleNodeCollapse }
                                     onSelectionChange = { this.handleSelectionChange }
-                                    data={ this.props.data }
-                                    onNodeContextMenu={ this.handleNodeContextMenu }
+                                    data = { this.props.treeData }
+                                    onNodeContextMenu = { this.handleNodeContextMenu }
                                     onEditBegin = { this.handleEditBegin }
                                     onEditEnd = { this.handleEditEnd }
                                     onEditCancel = { this.handleEditCancel }

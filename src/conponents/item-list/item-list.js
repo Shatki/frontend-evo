@@ -172,20 +172,20 @@ export default class ItemList extends Component {
                         return (
                             <>
                                 <DataGrid
-                                    ref = {(list)=>{ this.list = list }}
+                                    ref = { list=>this.list=list }
                                     //renderItem = { this.renderRow }
-                                    style={{ height: 'calc(100vh - 60px)' }}
+                                    style = {{ height: 'calc(100vh - 60px)' }}
                                     filterable
-                                    rowCss={ this.renderRowStyle }
-                                    data={ this.props.listData }
+                                    rowCss = { this.renderRowStyle }
+                                    data = { this.props.listData }
                                     editMode = "row"
                                     columnMoving
                                     onCellDblClick = { this.handleRowDblClick }
                                     columnResizing
                                     selectionMode ='multiple'
                                     selection={ this.state.selection }
-                                    onSelectionChange={ this.handleSelectionChange }
-                                    onCellContextMenu={ this.handleCellContextMenu }
+                                    onSelectionChange = { this.handleSelectionChange }
+                                    onCellContextMenu = { this.handleCellContextMenu }
                                 >
                                         <GridColumn
                                             //render = { this.renderColumn }
