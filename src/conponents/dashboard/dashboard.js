@@ -11,7 +11,7 @@ import './dashboard.css'
 import LoadingView from "../loading-view";
 import ErrorBoundry from "../error-boundry";
 
-import { addRootNode, moveNode, transformTreeData } from "../../algorithms/node-services";
+import { addRootNode, moveNode, displayTreeData, transformTreeData } from "../../algorithms/node-services";
 
 export default class Dashboard extends React.Component {
     evotorService = new EvotorService();
@@ -59,7 +59,7 @@ export default class Dashboard extends React.Component {
             listData: [],
             treeData: [],
 
-            transformTreeData: [],
+            displayTreeData: [],
             displayListData: [],
             itemData: [
                 {
@@ -123,7 +123,13 @@ export default class Dashboard extends React.Component {
             listMenu: [
                 { key: "create", text: "Создать", disabled: false },
                 { key: "open", text: "Открыть", disabled: false },
-                { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" },
+                { key: "edit", text: "Изменить", disabled: false },
+                { key: "main_sep", separator: true },
+                { key: "copy", text: "Копировать", disabled: false },
+                { key: "paste", text: "Вставить", disabled: false },
+                { key: "duplicate", text: "Дублировать", disabled: false },
+                { key: "delete", text: "Удалить", disabled: false, iconCls: "icon-evotor-folder-delete" },
+                { key: "close_sep", separator: true },
                 { key: "close", text: "Закрыть", disabled: false },
             ],
             itemMenu: [
@@ -138,8 +144,7 @@ export default class Dashboard extends React.Component {
         };
     };
 
-    loadData = () =>{
-        const store_id = 0;
+    loadData = (store_id = 0) =>{
         this.evotorService
             .getAllProducts(store_id)
             .then(this.onDataLoaded);
@@ -157,10 +162,10 @@ export default class Dashboard extends React.Component {
     updateTreeData = (treeData, nodeRoot = null) => {
         // Обновление данных в ListItem
         const { store } = this.state;
-        const children = transformTreeData(treeData, nodeRoot);
+        const children = displayTreeData(treeData, nodeRoot);
         this.setState({
             treeData: treeData,
-            transformTreeData: addRootNode(children, store.name),
+            displayTreeData: addRootNode(children, store.name),
             treeSelection: [],
         });
     };
@@ -175,9 +180,6 @@ export default class Dashboard extends React.Component {
             loading: false,
         });
     };
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-    }
 
     componentDidMount() {
         document.addEventListener("keydown", this.onKeyDown);
@@ -265,6 +267,13 @@ export default class Dashboard extends React.Component {
        this.setState({ treeData })
     };
 
+    // ***** ItemList events ************************************************************************
+    // ItemList => DblClick open
+    handleListRowSelection = (row) => {
+        const node = transformTreeData(row);
+        this.handleTreeNodeSelectView(node)
+    };
+
     render() {
         if(this.state.loading)
             return(<LoadingView/>);
@@ -288,10 +297,10 @@ export default class Dashboard extends React.Component {
                         style={{ minWidth: 150, maxWidth: 400 }}>
                         <ErrorBoundry>
                             <ItemTree
-                                data = { this.state.transformTreeData }
+                                data = { this.state.displayTreeData }
                                 onDrop = { this.handleDropListItem }
-                                handleTreeSelectionChange = { this.handleTreeSelectionChange }
-                                handleTreeNodeSelection = { this.handleTreeNodeSelectView }
+                                onTreeSelectionChange = { this.handleTreeSelectionChange }
+                                onTreeNodeSelection = { this.handleTreeNodeSelectView }
                                 onChangeNodeState = { this.handleChangeNodeState }
                             />
                         </ErrorBoundry>
@@ -302,6 +311,7 @@ export default class Dashboard extends React.Component {
                             <ItemList
                                 { ...this.state.constants }
                                 onDrag = { this.handleDragListItem }
+                                onListRowSelection = { this.handleListRowSelection }
                                 node = { this.state.treeSelection }
                                 listData = { this.state.displayListData }
                                 //handleListSelectionChange = { this.handleListSelectionChange }

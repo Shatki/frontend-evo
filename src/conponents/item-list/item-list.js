@@ -18,10 +18,13 @@ export default class ItemList extends Component {
             drag: []
         };
         this.listContextMenuFunction = [
-            { key: "Создать", function: this.handleTreeNodeCreate },
-            { key: "Переименовать", function: this.handleTreeNodeRename },
-            { key: "Открыть", function: this.handleNodeDblClick },
-            { key: "Удалить", function: this.handleTreeNodeDelete },
+            { key: "Создать", function: this.handleListRowCreate },
+            { key: "Изменить", function: this.handleRowDblClick },
+            { key: "Открыть", function: this.handleRowDblClick },   // для row.group === true
+            { key: "Копировать", function: this.handleListRowCopy },
+            { key: "Вставить", function: this.handleListRowPaste },
+            { key: "Дублировать", function: this.handleListRowDublicate },
+            { key: "Удалить", function: this.handleListRowDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ]
     }
@@ -43,8 +46,14 @@ export default class ItemList extends Component {
         })
     };
 
-    handleDblClick = ({ row }) =>{
-        console.log(row.name);
+    handleRowDblClick = (row) =>{
+        // реакция на двойной клик
+        console.log("Редактируем=>", row);
+        if(row.group){
+            this.props.onListRowSelection(row);
+        }else{
+            console.log("Редактируем=>", row.name);
+        }
     };
 
     changeSelections = (selection=[]) => {
@@ -54,13 +63,39 @@ export default class ItemList extends Component {
             selection: selection,
         });
     };
+
     handleCellContextMenu = ({ row, column, originalEvent }) =>{
         originalEvent.preventDefault();
         // При контекстном меню отменим выделения
         this.changeSelections([row]);
-        console.log(row.name);
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY);
     };
+
+    // ItemList => Close menu
+    handleContextMenuClose = (row) =>{
+        this.list.cancelEdit();
+    };
+
+    handleListRowCreate = (row) =>{
+        console.log("Создаем новый row ", row);
+    };
+
+    handleListRowDelete = (row) =>{
+        console.log("Удляем row ", row);
+    };
+
+    handleListRowCopy = (row) =>{
+        console.log("Копируем row", row);
+    };
+
+    handleListRowPaste = (row) =>{
+        console.log("Вставляем скопированный row", row);
+    };
+
+    handleListRowDublicate = (row) =>{
+        console.log("Дублируем row", row);
+    };
+
 
     handleSelectionChange = (selection) => {
         // Вызываем для сохранения стейта в Дашбоард
@@ -69,7 +104,10 @@ export default class ItemList extends Component {
     };
 
     handleContextMenuClick = (value) =>{
-        console.log(value);
+        this.listContextMenuFunction
+            .find(m => m.key === value)
+            // выбираем [0] т.к e ItemList selections это массив
+            .function(this.state.selection[0]);
     };
 
     handleRowDragStart = (event, row) => {
@@ -142,7 +180,7 @@ export default class ItemList extends Component {
                                     data={ this.props.listData }
                                     editMode = "row"
                                     columnMoving
-                                    onCellDblClick = { this.handleDblClick }
+                                    onCellDblClick = { this.handleRowDblClick }
                                     columnResizing
                                     selectionMode ='multiple'
                                     selection={ this.state.selection }

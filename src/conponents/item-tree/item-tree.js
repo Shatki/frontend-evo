@@ -103,14 +103,14 @@ export default class ItemTree extends Component {
 
     handleNodeDblClick = (node) =>{
         // Вызываем головную функцию из Дашбоарда
-        this.props.handleTreeNodeSelection(node)
+        this.props.onTreeNodeSelection(node)
     };
 
     handleSelectionChange = (node) => {
         // Вызываем для сохранения стейта в Дашбоард
         if (this.state.editingNode !== null) this.tree.cancelEdit();
 
-        this.props.handleTreeSelectionChange(node);
+        this.props.onTreeSelectionChange(node);
     };
 
     handleEditBegin = ({ node, originalValue }) =>{

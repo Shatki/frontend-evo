@@ -1,10 +1,10 @@
 import React, { Component } from "react";
-import { Menu, MenuItem, SubMenu } from 'rc-easyui';
+import { Menu, MenuItem, SubMenu, MenuSep } from 'rc-easyui';
 
 export default class ContextMenu extends Component {
     renderMenu = (data) =>{
         return data.map((item)=>{
-            const { submenu, ...itemProps } = item;
+            const { submenu, separator, ...itemProps } = item;
             if(submenu !== undefined){
                 return(
                     <MenuItem { ...itemProps }>
@@ -13,6 +13,8 @@ export default class ContextMenu extends Component {
                         </SubMenu>
                     </MenuItem>
                 )
+            } if (separator === true){
+                return (<MenuSep {...itemProps }/>)
             } else
                 return (<MenuItem {...itemProps }/>)
         });

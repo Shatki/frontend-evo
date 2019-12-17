@@ -12,7 +12,7 @@
             { node x, parentUuid: mode1 }
         ]
 
-    transformTreeData => трансформированный массив нод в древовидную структуру.
+    displayTreeData => трансформированный массив нод в древовидную структуру.
     Каждая Нода это объект вида:
        {
             uuid: node_uuid,
@@ -50,7 +50,30 @@ export const addRootNode = (children, text) => {
     ]);
 };
 
-export const transformTreeData = (data, parentUuid=null) => {
+export const transformTreeData = (row, children=[]) =>{
+    // Конвертирует row в node
+    if (children.length > 0){
+        // Родительский узел
+        return{
+            uuid: row.uuid,
+            text: row.name,
+            iconCls: "icon-evotor-folder-sub",
+            state: row.nodeState || 'closed',
+            children
+        };
+    }
+    else{
+        // Конечный узел
+        return{
+            uuid: row.uuid,
+            text: row.name,
+            iconCls: "icon-evotor-folder",
+        };
+    }
+};
+
+
+export const displayTreeData = (data, parentUuid=null) => {
     // Возвращает коренной список, parentUuid = null
     // Алгоритм преобразования данных в объект для treeItem
     const dataFilter = data.filter(item => parentUuid === item.parentUuid);
@@ -58,25 +81,8 @@ export const transformTreeData = (data, parentUuid=null) => {
     if (dataFilter.length > 0){
         // Выбираем элементы имеющие children
         return  dataFilter.map((child)=>{
-            let children = transformTreeData(data, child.uuid);
-            if (children.length > 0){
-                // Родительский узел
-                return{
-                    uuid: child.uuid,
-                    text: child.name,
-                    iconCls: "icon-evotor-folder-sub",
-                    state: child.nodeState || 'closed',
-                    children
-                };
-            }
-            else{
-                // Конечный узел
-                return{
-                    uuid: child.uuid,
-                    text: child.name,
-                    iconCls: "icon-evotor-folder",
-                };
-            }
+            let children = displayTreeData(data, child.uuid);
+            return transformTreeData(child, children)
         });
     } else {
         return [];
@@ -119,7 +125,7 @@ export  const moveNode = (data, node, movingNode) =>{
 
         Замечание: Все операции проходят над dataTree, а не над обработанной transformTreeData
         dataTree => линейный массив, не обработанный для хранения данных
-        transformTreeData = древовидный массив объектов, рабочий для отображения
+        displayTreeData = древовидный массив объектов, рабочий для отображения
         Запрет на перемещение "в себя" или в свои "дочерние" ноды
 
     */
