@@ -3,8 +3,9 @@ import { Tree, Droppable } from 'rc-easyui';
 import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import ErrorView from "../error-view";
 import { deleteNode, createNode } from "../../algorithms/node-services";
-
+import ErrorBoundry from "../error-boundry";
 import './item-tree.css'
+
 
 
 export default class ItemTree extends Component {
@@ -154,9 +155,8 @@ export default class ItemTree extends Component {
                 {
                     ({ treeMenu: menu, treeMenuRef: menuRef }) =>{
                         this.menu = menuRef.current;
-                        console.log(this.menu);
                         return(
-                            <>
+                            <ErrorBoundry>
                                 <Tree
                                     ref = { tree=>this.tree=tree }
                                     render = { this.renderNode }
@@ -176,7 +176,7 @@ export default class ItemTree extends Component {
                                     menuRef = { menuRef }
                                     handleItemClick = { this.handleContextMenuClick }
                                 />
-                            </>
+                            </ErrorBoundry>
                         )
                     }
                 }

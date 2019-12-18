@@ -4,6 +4,7 @@ import { NumberBox, TextBox, SwitchButton, ComboBox } from  'rc-easyui'
 import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import './item-detail.css'
 import { Menu, MenuItem, SubMenu } from 'rc-easyui';
+import ErrorBoundry from "../error-boundry";
 
 
 export default class ItemDetail extends Component {
@@ -112,7 +113,7 @@ export default class ItemDetail extends Component {
                     ({ itemMenuRef: menuRef, itemMenu: menu }) =>{
                         this.menu = menuRef.current;
                         return (
-                            <>
+                            <ErrorBoundry>
                                 <DataGrid
                                     data={ this.updateData() }
                                     columnResizing
@@ -137,7 +138,7 @@ export default class ItemDetail extends Component {
                                     menu={ menu }
                                     handleItemClick={ this.handleItemClick }
                                 />
-                            </>
+                            </ErrorBoundry>
                         );
                     }
                 }

@@ -3,6 +3,7 @@ import { DataGrid, GridColumn, NumberBox, ComboBox} from 'rc-easyui';
 import { Draggable } from 'rc-easyui';
 import ContextMenu, { ContextMenuConsumer } from "../context-menu";
 import './item-list.css';
+import ErrorBoundry from "../error-boundry";
 
 
 
@@ -170,7 +171,7 @@ export default class ItemList extends Component {
                     ({ listMenuRef: menuRef, listMenu: menu })=>{
                         this.menu = menuRef.current;
                         return (
-                            <>
+                            <ErrorBoundry>
                                 <DataGrid
                                     ref = { list=>this.list=list }
                                     //renderItem = { this.renderRow }
@@ -212,7 +213,7 @@ export default class ItemList extends Component {
                                     menu = { menu }
                                     menuRef = { menuRef }
                                     handleItemClick = { this.handleContextMenuClick }/>
-                            </>
+                            </ErrorBoundry>
                         );
                     }
                 }

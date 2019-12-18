@@ -9,7 +9,6 @@ import EvotorService from "../../services/evotor-service";
 
 import './dashboard.css'
 import LoadingView from "../loading-view";
-import ErrorBoundry from "../error-boundry";
 
 import { addRootNode, moveNode, displayTreeData, transformTreeData } from "../../algorithms/node-services";
 
@@ -249,7 +248,7 @@ export default class Dashboard extends React.Component {
                 listData.find(item=>item.uuid === dragItem.uuid).parentUuid = node.uuid;
             }else{
                 // Для групп запрет на перемещение "в себя" или в свои "дочерние" ноды
-                   moveNode(treeData, node, dragItem)
+                moveNode(treeData, node, dragItem)
             }
             //console.log("Drop ", item.name , " =>", node.text);
         }
@@ -265,10 +264,10 @@ export default class Dashboard extends React.Component {
     };
 
     handleChangeNodeState = (node, nodeState) => {
-       const { treeData } = this.state;
-       const treeNode = treeData.find(item=>item.uuid===node.uuid);
-       treeNode.nodeState = nodeState;
-       this.setState({ treeData })
+        const { treeData } = this.state;
+        const treeNode = treeData.find(item=>item.uuid===node.uuid);
+        treeNode.nodeState = nodeState;
+        this.setState({ treeData })
     };
 
     // ***** ItemList events ************************************************************************
@@ -283,8 +282,9 @@ export default class Dashboard extends React.Component {
             return(<LoadingView/>);
         return (
             <ContextMenuProvider value = { this.contextMenu }>
-                <Layout style={{ width: '100%', height: '100%' }}
-                        onKeyDown={ this.handleKeyDown }>
+                <Layout
+                    style={{ width: '100%', height: '100%' }}
+                    onKeyDown={ this.handleKeyDown }>
                     <LayoutPanel
                         region="north"
                         style={{ height: 60 }}>
@@ -292,35 +292,33 @@ export default class Dashboard extends React.Component {
                     </LayoutPanel>
 
                     <LayoutPanel
+                        region="west"
                         title="Группы товаров"
                         collapsible
                         collapsed = { this.state.collapsedWest }
                         expander
-                        region="west"
                         split
                         style={{ minWidth: 150, maxWidth: 400 }}>
-                        <ErrorBoundry>
-                            <ItemTree
-                                treeData = { this.state.displayTreeData }
-                                onDrop = { this.handleDropListItem }
-                                onTreeSelectionChange = { this.handleTreeSelectionChange }
-                                onTreeNodeSelection = { this.handleTreeNodeSelectView }
-                                onChangeNodeState = { this.handleChangeNodeState }
-                            />
-                        </ErrorBoundry>
+                        <ItemTree
+                            treeData = { this.state.displayTreeData }
+                            onDrop = { this.handleDropListItem }
+                            onTreeSelectionChange = { this.handleTreeSelectionChange }
+                            onTreeNodeSelection = { this.handleTreeNodeSelectView }
+                            onChangeNodeState = { this.handleChangeNodeState }
+                        />
                     </LayoutPanel>
 
-                    <LayoutPanel region="center">
-                        <ErrorBoundry>
-                            <ItemList
-                                { ...this.state.constants }
-                                listData = { this.state.displayListData }
-                                onDrag = { this.handleDragListItem }
-                                onListRowSelection = { this.handleListRowSelection }
-                                node = { this.state.treeSelection }
-                                //handleListSelectionChange = { this.handleListSelectionChange }
-                            />
-                        </ErrorBoundry>
+                    <LayoutPanel
+                        region="center">
+                        <ItemList
+                            { ...this.state.constants }
+                            listData = { this.state.displayListData }
+                            onDrag = { this.handleDragListItem }
+                            onListRowSelection = { this.handleListRowSelection }
+                            //node = { this.state.treeSelection }
+                            //handleListSelectionChange = { this.handleListSelectionChange }
+                        />
+
                     </LayoutPanel>
 
                     <LayoutPanel
@@ -332,12 +330,10 @@ export default class Dashboard extends React.Component {
                         region="east"
                         split
                         style={{ minWidth: 200, maxWidth: 400 }}>
-                        <ErrorBoundry>
-                            <ItemDetail
-                                { ...this.state.constants }
-                                itemData = { this.state.itemData }
-                            />
-                        </ErrorBoundry>
+                        <ItemDetail
+                            { ...this.state.constants }
+                            itemData = { this.state.itemData }
+                        />
                     </LayoutPanel>
                 </Layout>
             </ContextMenuProvider>
