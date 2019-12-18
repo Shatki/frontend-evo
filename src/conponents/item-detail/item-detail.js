@@ -106,45 +106,42 @@ export default class ItemDetail extends Component {
         console.log(value);
     }
 
+    renderContextMenu = (menu) => {
+        return(
+            <ContextMenu
+                menu = { menu }
+                menuRef = { (ref)=>this.menu=ref }
+                handleItemClick = { this.handleContextMenuClick }
+            />
+        )
+    };
+
     render() {
         return(
-            <ContextMenuConsumer>
-                {
-                    ({ itemMenuRef: menuRef, itemMenu: menu }) =>{
-                        this.menu = menuRef.current;
-                        return (
-                            <ErrorBoundry>
-                                <DataGrid
-                                    data={ this.updateData() }
-                                    columnResizing
-                                    clickToEdit
-                                    expanderWidth ={ 20 }
-                                    selectionMode="row"
-                                    editMode="row"
-                                    groupField="groupField"
-                                    renderGroup={ this.renderGroup }
-                                    onCellContextMenu={this.handleItemContextMenu.bind(this)}>
 
-                                    <GridColumn width={ 20 }/>
-                                    <GridColumn field="titleField" title="Имя поля"/>
-                                    <GridColumn field="valueField" title="Параметр"
-                                                editable
-                                                editor={ this.renderEditor }
-                                                render={ this.renderView }
-                                    />
-                                </DataGrid>
-                                <ContextMenu
-                                    menuRef={ menuRef }
-                                    menu={ menu }
-                                    handleItemClick={ this.handleItemClick }
-                                />
-                            </ErrorBoundry>
-                        );
-                    }
-                }
-            </ContextMenuConsumer>
-        );
+            <ErrorBoundry>
+                <DataGrid
+                    data={ this.updateData() }
+                    columnResizing
+                    clickToEdit
+                    expanderWidth ={ 20 }
+                    selectionMode="row"
+                    editMode="row"
+                    groupField="groupField"
+                    renderGroup={ this.renderGroup }
+                    onCellContextMenu={this.handleItemContextMenu.bind(this)}>
 
+                    <GridColumn width={ 20 }/>
+                    <GridColumn field="titleField" title="Имя поля"/>
+                    <GridColumn field="valueField" title="Параметр"
+                                editable
+                                editor={ this.renderEditor }
+                                render={ this.renderView }
+                    />
+                </DataGrid>
+                { this.renderContextMenu(this.props.contextMenu) }
+            </ErrorBoundry>
+        )
 
     }
 }

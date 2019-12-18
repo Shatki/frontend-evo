@@ -95,8 +95,11 @@ export default class ItemTree extends Component {
 
     handleNodeContextMenu = ({ node, originalEvent }) => {
         originalEvent.preventDefault();
-        this.tree.selectNode(node);
+        //this.props.onTreeSelectionChange(node);
+        // Выделим ноду
         this.changeSelections(node);
+        // Выберем ноду
+        this.tree.selectNode(node);
         //console.log(node.text);
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY);
     };
@@ -147,40 +150,37 @@ export default class ItemTree extends Component {
         if (node.uuid !== null) this.props.onChangeNodeState(node, "closed")
     };
 
+    renderContextMenu = (menu) => {
+        return(
+            <ContextMenu
+                menu = { menu }
+                menuRef = { (ref)=>this.menu=ref }
+                handleItemClick = { this.handleContextMenuClick }
+            />
+        )
+    };
+
     render() {
         if(this.state.hasError)
             return (<ErrorView/>);
         return (
-            <ContextMenuConsumer>
-                {
-                    ({ treeMenu: menu, treeMenuRef: menuRef }) =>{
-                        this.menu = menuRef.current;
-                        return(
-                            <ErrorBoundry>
-                                <Tree
-                                    ref = { tree=>this.tree=tree }
-                                    render = { this.renderNode }
-                                    animate
-                                    onNodeDblClick = { this.handleNodeDblClick }
-                                    onNodeExpand = { this.handleNodeExpand }
-                                    onNodeCollapse = { this.handleNodeCollapse }
-                                    onSelectionChange = { this.handleSelectionChange }
-                                    data = { this.props.treeData }
-                                    onNodeContextMenu = { this.handleNodeContextMenu }
-                                    onEditBegin = { this.handleEditBegin }
-                                    onEditEnd = { this.handleEditEnd }
-                                    onEditCancel = { this.handleEditCancel }
-                                />
-                                <ContextMenu
-                                    menu={ menu }
-                                    menuRef = { menuRef }
-                                    handleItemClick = { this.handleContextMenuClick }
-                                />
-                            </ErrorBoundry>
-                        )
-                    }
-                }
-            </ContextMenuConsumer>
+            <ErrorBoundry>
+                <Tree
+                    ref = { tree=>this.tree=tree }
+                    render = { this.renderNode }
+                    animate
+                    onNodeDblClick = { this.handleNodeDblClick }
+                    onNodeExpand = { this.handleNodeExpand }
+                    onNodeCollapse = { this.handleNodeCollapse }
+                    onSelectionChange = { this.handleSelectionChange }
+                    data = { this.props.treeData }
+                    onNodeContextMenu = { this.handleNodeContextMenu }
+                    onEditBegin = { this.handleEditBegin }
+                    onEditEnd = { this.handleEditEnd }
+                    onEditCancel = { this.handleEditCancel }
+                />
+                { this.renderContextMenu(this.props.contextMenu) }
+            </ErrorBoundry>
         )
     }
 }

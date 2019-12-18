@@ -101,9 +101,6 @@ export default class Dashboard extends React.Component {
         };
         this.menu = null;
         this.contextMenu ={
-            treeMenuRef: React.createRef(),
-            listMenuRef: React.createRef(),
-            itemMenuRef: React.createRef(),
             treeMenu: [
                 { key: "create", text: "Создать", disabled: false, iconCls: "icon-evotor-folder-add" },
                 { key: "rename", text: "Переименовать", disabled: false, iconCls: "icon-evotor-folder-edit" },
@@ -281,62 +278,63 @@ export default class Dashboard extends React.Component {
         if(this.state.loading)
             return(<LoadingView/>);
         return (
-            <ContextMenuProvider value = { this.contextMenu }>
-                <Layout
-                    style={{ width: '100%', height: '100%' }}
-                    onKeyDown={ this.handleKeyDown }>
-                    <LayoutPanel
-                        region="north"
-                        style={{ height: 60 }}>
-                        <Header/>
-                    </LayoutPanel>
+            <Layout
+                style={{ width: '100%', height: '100%' }}
+                onKeyDown={ this.handleKeyDown }>
+                <LayoutPanel
+                    region="north"
+                    style={{ height: 60 }}>
+                    <Header/>
+                </LayoutPanel>
 
-                    <LayoutPanel
-                        region="west"
-                        title="Группы товаров"
-                        collapsible
-                        collapsed = { this.state.collapsedWest }
-                        expander
-                        split
-                        style={{ minWidth: 150, maxWidth: 400 }}>
-                        <ItemTree
-                            treeData = { this.state.displayTreeData }
-                            onDrop = { this.handleDropListItem }
-                            onTreeSelectionChange = { this.handleTreeSelectionChange }
-                            onTreeNodeSelection = { this.handleTreeNodeSelectView }
-                            onChangeNodeState = { this.handleChangeNodeState }
-                        />
-                    </LayoutPanel>
+                <LayoutPanel
+                    region="west"
+                    title="Группы товаров"
+                    collapsible
+                    collapsed = { this.state.collapsedWest }
+                    expander
+                    split
+                    style={{ minWidth: 150, maxWidth: 400 }}>
+                    <ItemTree
+                        treeData = { this.state.displayTreeData }
+                        onDrop = { this.handleDropListItem }
+                        onTreeSelectionChange = { this.handleTreeSelectionChange }
+                        onTreeNodeSelection = { this.handleTreeNodeSelectView }
+                        onChangeNodeState = { this.handleChangeNodeState }
+                        contextMenu = { this.contextMenu.treeMenu }
+                    />
+                </LayoutPanel>
 
-                    <LayoutPanel
-                        region="center">
-                        <ItemList
-                            { ...this.state.constants }
-                            listData = { this.state.displayListData }
-                            onDrag = { this.handleDragListItem }
-                            onListRowSelection = { this.handleListRowSelection }
-                            //node = { this.state.treeSelection }
-                            //handleListSelectionChange = { this.handleListSelectionChange }
-                        />
+                <LayoutPanel
+                    region="center">
+                    <ItemList
+                        { ...this.state.constants }
+                        listData = { this.state.displayListData }
+                        onDrag = { this.handleDragListItem }
+                        onListRowSelection = { this.handleListRowSelection }
+                        contextMenu = { this.contextMenu.listMenu }
+                        //node = { this.state.treeSelection }
+                        //handleListSelectionChange = { this.handleListSelectionChange }
+                    />
 
-                    </LayoutPanel>
+                </LayoutPanel>
 
-                    <LayoutPanel
-                        title="Свойства"
-                        collapsible
-                        collapsed ={ this.state.collapsedEast}
-                        //expand = { this.handleExpandEast.bind(this) }
-                        expander
-                        region="east"
-                        split
-                        style={{ minWidth: 200, maxWidth: 400 }}>
-                        <ItemDetail
-                            { ...this.state.constants }
-                            itemData = { this.state.itemData }
-                        />
-                    </LayoutPanel>
-                </Layout>
-            </ContextMenuProvider>
+                <LayoutPanel
+                    title="Свойства"
+                    collapsible
+                    collapsed ={ this.state.collapsedEast}
+                    //expand = { this.handleExpandEast.bind(this) }
+                    expander
+                    region="east"
+                    split
+                    style={{ minWidth: 200, maxWidth: 400 }}>
+                    <ItemDetail
+                        { ...this.state.constants }
+                        itemData = { this.state.itemData }
+                        contextMenu = { this.contextMenu.itemMenu }
+                    />
+                </LayoutPanel>
+            </Layout>
         );
     }
 }
