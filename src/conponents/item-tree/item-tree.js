@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Tree, Droppable } from 'rc-easyui';
-import ContextMenu, { ContextMenuConsumer } from "../context-menu";
+import ContextMenu from "../context-menu";
 import ErrorView from "../error-view";
 import { deleteNode, createNode } from "../../algorithms/node-services";
 import ErrorBoundry from "../error-boundry";
@@ -95,7 +95,6 @@ export default class ItemTree extends Component {
 
     handleNodeContextMenu = ({ node, originalEvent }) => {
         originalEvent.preventDefault();
-        //this.props.onTreeSelectionChange(node);
         // Выделим ноду
         this.changeSelections(node);
         // Выберем ноду

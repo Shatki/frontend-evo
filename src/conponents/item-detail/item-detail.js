@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
 import { DataGrid, GridColumn } from 'rc-easyui'
 import { NumberBox, TextBox, SwitchButton, ComboBox } from  'rc-easyui'
-import ContextMenu, { ContextMenuConsumer } from "../context-menu";
+import ContextMenu from "../context-menu";
 import './item-detail.css'
-import { Menu, MenuItem, SubMenu } from 'rc-easyui';
 import ErrorBoundry from "../error-boundry";
 
 

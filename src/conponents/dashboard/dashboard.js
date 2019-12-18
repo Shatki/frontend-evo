@@ -1,6 +1,5 @@
 import React from 'react';
 import { Layout, LayoutPanel } from 'rc-easyui';
-import { ContextMenuProvider } from "../context-menu";
 import Header from "../header"
 import ItemTree from "../item-tree";
 import ItemList from "../item-list";
@@ -32,7 +31,7 @@ export default class Dashboard extends React.Component {
 
                 ],
                 measureTypes: [
-                    {value: null, text: "Любые"},
+                    {value: null, text: "Без единиц"},
                     {value: "шт", text: "шт"},
                     {value: "кг", text: "кг"},
                     {value: "л", text: "л"},

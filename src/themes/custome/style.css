@@ -735,9 +735,9 @@
   background: linear-gradient(to bottom,#ffffff 0,#e6e6e6 100%);
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ffffff,endColorstr=#e6e6e6,GradientType=0);
-  -moz-border-radius: 5px 5px 5px 5px;
-  -webkit-border-radius: 5px 5px 5px 5px;
-  border-radius: 5px 5px 5px 5px;
+  -moz-border-radius: 0px 0px 0px 0px;
+  -webkit-border-radius: 0px 0px 0px 0px;
+  border-radius: 0px 0px 0px 0px;
 }
 .l-btn:hover {
   background: #e6e6e6;
@@ -879,7 +879,7 @@
 }
 .textbox-label {
   display: inline-block;
-  width: 80px;
+  width: 120px;
   height: 30px;
   line-height: 30px;
   vertical-align: middle;
@@ -938,6 +938,13 @@
   border-color: #ffa8a8;
   background-color: #fff3f3;
 }
+
+.error {
+    color: red;
+    font-size: 12px;
+    margin: 4px 0 4px 120px;
+}
+
 .form-floating-label.form-field .textbox-text {
   padding: 0;
 }

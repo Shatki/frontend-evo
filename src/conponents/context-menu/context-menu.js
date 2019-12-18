@@ -25,7 +25,6 @@ export default class ContextMenu extends Component {
 
         return (
             <Menu
-                //ref = { menuRef }
                 ref = { this.props.menuRef }
                 onItemClick={ handleItemClick }
             >

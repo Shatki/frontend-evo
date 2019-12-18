@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { DataGrid, GridColumn, NumberBox, ComboBox } from 'rc-easyui';
 import { Draggable } from 'rc-easyui';
-import { Form, Dialog, TextBox, Label, LinkButton, ButtonGroup } from 'rc-easyui';
-import ContextMenu, { ContextMenuConsumer } from "../context-menu";
+import { Form, Dialog, TextBox, Label, LinkButton } from 'rc-easyui';
+import ContextMenu from "../context-menu";
 import './item-list.css';
 import ErrorBoundry from "../error-boundry";
 
@@ -23,7 +23,8 @@ export default class ItemList extends Component {
             model: {},
             rules: {
                 'code': 'required',
-                'name': ['required', 'length[5,10]']
+                'name': ['required', 'length[1,100]'],
+                'measureName': ['required']
             },
             errors: {},
             title: '',
@@ -194,34 +195,55 @@ export default class ItemList extends Component {
             <Dialog modal title={ title } closed={ closed } onClose={() => this.setState({ closed: true })}>
                 <div className="f-full" style={{ padding: '20px 50px' }}>
                     <Form className="f-full"
-                          ref={ref => this.form = ref}
-                          model={row}
-                          rules={rules}
-                          onValidate={(errors) => this.setState({ errors: errors })}
+                          ref={ ref => this.form = ref }
+                          model={ row }
+                          rules={ rules }
+                          onValidate={ (errors) => this.setState({ errors: errors }) }
                     >
                         <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="barcode">Item ID:</Label>
-                            <TextBox inputId="barcode" name="barcode" value={row.itemid} style={{ width: 220 }}/>
-                            <div className="error">{this.getError('barcode')}</div>
+                            <Label htmlFor="name">Наименование:</Label>
+                            <TextBox
+                                inputId="name"
+                                name="name"
+                                value={ row.name }
+                                style={{ width: 450 }}/>
+                            <div className="error">{ this.getError('name') }</div>
                         </div>
                         <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="name">Name:</Label>
-                            <TextBox inputId="name" name="name" value={row.name} style={{ width: 220 }}/>
-                            <div className="error">{this.getError('name')}</div>
+                            <Label
+                                htmlFor="measure">Единица:</Label>
+                            <ComboBox
+                                inputId="measureName"
+                                name="measureName"
+                                data={ this.props.measureTypes }
+                                value={ row.measureName }
+                                style={{ width: 450 }}/>
+                            <div className="error">{ this.getError('measureName') }</div>
                         </div>
                         <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="listprice">List Price:</Label>
-                            <NumberBox inputId="price" name="price" value={row.listprice} precision={1} style={{ width: 220 }}/>
+                            <Label htmlFor="price">Цена продажи:</Label>
+                            <NumberBox
+                                inputId="price"
+                                name="price"
+                                value={ row.price }
+                                precision={2}
+                                style={{ width: 450 }}/>
                         </div>
                         <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="unitcost">Unit Cost:</Label>
-                            <NumberBox inputId="unitcost" name="unitcost" value={row.unitcost} style={{ width: 220 }}/>
+                            <Label htmlFor="costPrice">Цена закупки:</Label>
+                            <NumberBox
+                                inputId="costPrice"
+                                name="costPrice"
+                                value={ row.costPrice }
+                                precision={2}
+                                style={{ width: 450 }}
+                            />
                         </div>
                     </Form>
                 </div>
                 <div className="dialog-button">
-                    <LinkButton style={{ width: 80 }} onClick={() => this.saveRow()}>Save</LinkButton>
-                    <LinkButton style={{ width: 80 }} onClick={() => this.setState({ closed: true })}>Close</LinkButton>
+                    <LinkButton style={{ width: 80 }} onClick={() => this.saveRow()}>Сохранить</LinkButton>
+                    <LinkButton style={{ width: 80 }} onClick={() => this.setState({ closed: true })}>Закрыть</LinkButton>
                 </div>
             </Dialog>
         )
