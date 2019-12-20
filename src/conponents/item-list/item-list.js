@@ -77,7 +77,11 @@ export default class ItemList extends Component {
     };
 
     handleListRowDelete = (row) =>{
-        console.log("Удляем row ", row);
+        ///////
+        this.setState({
+            data: this.state.data.filter(item => item.uuid !== row.uuid)
+        });
+        //console.log("Удляем row ", row);
     };
 
     handleListRowCopy = (row) =>{
@@ -182,17 +186,16 @@ export default class ItemList extends Component {
         })
     };
 
-    deleteRow = (row) => {
-        this.setState({
-            data: this.state.data.filter(r => r !== row)
-        })
-    };
-
     renderDialog = () => {
         const row = this.state.model;
         const { title, closed, rules } = this.state;
         return (
-            <Dialog modal title={ title } closed={ closed } onClose={() => this.setState({ closed: true })}>
+            <Dialog
+                modal
+                draggable
+                title={ title }
+                closed={ closed }
+                onClose={() => this.setState({ closed: true })}>
                 <div className="f-full" style={{ padding: '20px 50px' }}>
                     <Form className="f-full"
                           ref={ ref => this.form = ref }
@@ -215,7 +218,7 @@ export default class ItemList extends Component {
                             <ComboBox
                                 inputId="measureName"
                                 name="measureName"
-                                data={ this.props.measureTypes }
+                                data={ this.props.measureTypes.filter(e=>e.value!==null) }
                                 value={ row.measureName }
                                 style={{ width: 450 }}/>
                             <div className="error">{ this.getError('measureName') }</div>

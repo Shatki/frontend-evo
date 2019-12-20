@@ -59,25 +59,28 @@ export default class Dashboard extends React.Component {
 
             displayTreeData: [],
             displayListData: [],
-            itemData: [
-                {
+            itemData: {
                     "uuid": "01ba18b6-8707-5f47-3d9c-4db058054cb2",
                     "code": "6",
                     "barCodes": [
-                        "2000000000060"
+                        "2000000000060",
+                        "2000000000061",
+                        "2000000000062",
                     ],
                     "alcoCodes": [
-                        "0000000000000000001"
+                        "0000000000000000001",
+                        "0000000000000000002",
+                        "0000000000000000003"
                     ],
                     "name": "Сидр",
                     "price": 123.12,
                     "quantity": 12,
-                    "costPrice": 100.123,
+                    //"costPrice": 100.123,
                     "measureName": "шт",
                     "tax": "VAT_20",
                     "allowToSell": true,
                     "description": "Вкусный яблочный сидр.",
-                    "articleNumber": "сид123",
+                    //"articleNumber": "сид123",
                     "parentUuid": "1ddea16b-971b-dee5-3798-1b29a7aa2e27",
                     "group": false,
                     "type": "ALCOHOL_NOT_MARKED",
@@ -85,7 +88,6 @@ export default class Dashboard extends React.Component {
                     "alcoholProductKindCode": 123,
                     "tareVolume": 0.57
                 },
-            ],
 
             treeSelection: null, // target node
             nodeView: null, // view node
