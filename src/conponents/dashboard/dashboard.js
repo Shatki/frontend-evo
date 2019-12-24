@@ -70,7 +70,8 @@ export default class Dashboard extends React.Component {
                     "alcoCodes": [
                         "0000000000000000001",
                         "0000000000000000002",
-                        "0000000000000000003"
+                        "0000000000000000003",
+                        "0000000000000000004"
                     ],
                     "name": "Сидр",
                     "price": 123.12,
@@ -99,7 +100,10 @@ export default class Dashboard extends React.Component {
             // Drag'n'Drop
             isover: false,
             dragItems: null,
+            keyboardEventListener: null,  // Пробное V2
+            keyboardEventsTable: null  // Пробное V1
         };
+
         this.menu = null;
         this.contextMenu ={
             treeMenu: [
@@ -183,16 +187,33 @@ export default class Dashboard extends React.Component {
     };
 
     componentDidMount() {
-        document.addEventListener("keydown", this.onKeyDown);
+        document.addEventListener("keydown", this.handleKeyboardEvent);
         this.loadData();
     }
 
     componentWillUnmount() {
-        document.removeEventListener("keydown", this.onKeyDown);
+        document.removeEventListener("keydown", this.handleKeyboardEvent);
     }
 
     // Todo Undo/Redo event + other
-    onKeyDown = e => console.log(e);
+    setKeyboardEventsTable = (table) => {
+        this.setState({
+            keyboardEventsTable:  table
+        });
+        console.log(table)
+    };
+
+    handleKeyboardEvent = e => {
+        // Первый вариант обработки клавиатуры
+        //console.log(e);
+        //console.log(this.state.keyboardEventsTable)
+        this.state.keyboardEventsTable.forEach((item)=>{
+            if(e.key === item.key &&
+                e.code === item.code &&
+                e.ctrlKey === item.ctrlKey)
+                item.function(e)
+        })
+    };
 
     // ***** Context Menu ***************************************************************************
     handleTreeSelectionChange = (node) =>{
@@ -230,10 +251,6 @@ export default class Dashboard extends React.Component {
             })
             // Приcоединяем items и передаем
             .concat(listData.filter(item => item.parentUuid === nodeUuid));
-    };
-
-    handleKeyDown = (event) =>{
-        console.log("Key down event", event);
     };
 
     handleDropListItem = (node) => {
@@ -280,8 +297,7 @@ export default class Dashboard extends React.Component {
             return(<LoadingView/>);
         return (
             <Layout
-                style={{ width: '100%', height: '100%' }}
-                onKeyDown={ this.handleKeyDown }>
+                style={{ width: '100%', height: '100%' }}>
                 <LayoutPanel
                     region="north"
                     style={{ height: 60 }}>
@@ -324,7 +340,7 @@ export default class Dashboard extends React.Component {
                     title="Свойства"
                     collapsible
                     collapsed ={ this.state.collapsedEast}
-                    //expand = { this.handleExpandEast.bind(this) }
+                    //expand = { this.handleExpandEast }
                     expander
                     region="east"
                     split
@@ -333,6 +349,7 @@ export default class Dashboard extends React.Component {
                         { ...this.state.constants }
                         itemData = { this.state.itemData }
                         contextMenu = { this.contextMenu.itemMenu }
+                        setKeyboardEventsTable = { this.setKeyboardEventsTable }
                     />
                 </LayoutPanel>
             </Layout>

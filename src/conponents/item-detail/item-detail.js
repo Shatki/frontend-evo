@@ -1,8 +1,7 @@
-import React, { Component } from 'react'
-import { DataGrid, GridColumn, Dialog, LinkButton } from 'rc-easyui'
-import { NumberBox, TextBox, SwitchButton, ComboBox } from  'rc-easyui'
-import ContextMenu from "../context-menu";
-import ErrorBoundry from "../error-boundry";
+import React, {Component} from 'react'
+import {ComboBox, DataGrid, Dialog, GridColumn, LinkButton, NumberBox, SwitchButton, TextBox} from 'rc-easyui'
+import ContextMenu from '../context-menu'
+import ErrorBoundry from '../error-boundry'
 import './item-detail.css'
 
 export default class ItemDetail extends Component {
@@ -37,19 +36,32 @@ export default class ItemDetail extends Component {
             itemData : [],
             data: [],
             editingRow: null,
+            editingData: null,
             comboDlgTitle: "Редактирование кодов",
+            comboDlgCancelTitle: "Отмена",
+            comboDlgSaveTitle: "Сохранить",
             comboDlgClosed: true
         };
     }
 
-    editComboValues = (row, value) => {
-        console.log(row, value);
-        //this.setState({ itemProps.valueField: value })}
+
+    handleDialogEndEdit = () => {
+        this.editorDlg.endEdit()
     };
 
     handleClickComboValueChange = (row) => {
-        //this.setState();
-        console.log(row);
+        this.setState({
+            editingData: row.valueField.map((item)=>{return { code: item }}),
+            comboDlgClosed: false
+        });
+        this.props.setKeyboardEventsTable([
+            {
+                key: "Enter",
+                code: "Enter",
+                ctrlKey: false,
+                function: this.handleDialogEndEdit
+            },
+        ]);
     };
 
     updateData = () => {
@@ -77,32 +89,65 @@ export default class ItemDetail extends Component {
         console.log(value);
     };
 
+    handleKeyboardEvents = (event) =>{
+    };
+
     renderComboEditDialog = () => {
-        const { comboDlgTitle, comboDlgClosed } = this.state;
+        const {
+            comboDlgTitle, comboDlgClosed, editingData: data,
+            comboDlgSaveTitle, comboDlgCancelTitle } = this.state;
         return(
             <Dialog
+                modal
+                draggable
                 title= { comboDlgTitle }
                 closed = { comboDlgClosed }
-                style={{ width: 400, height: 200 }}
-                bodyCls="f-column"
-                modal
+                style={{ width: 210 }}
                 onClose={() => this.setState({ comboDlgClosed: true })}
-                ref={ref => this.dlg = ref}
-            >
+                >
                 <div className="dialog-toolbar">
                     <LinkButton iconCls="icon-edit" plain>Edit</LinkButton>
                     <LinkButton iconCls="icon-help" plain>Help</LinkButton>
                 </div>
                 <div className="f-full">
-                    <p style={{ textAlign: 'center', margin: '20px 0', fontSize: '16px' }}>The Dialog Content.</p>
-
-
+                    <DataGrid
+                        ref={ ref => this.editorDlg = ref }
+                        clickToEdit
+                        selectionMode = "row"
+                        editMode = "cell"
+                        showHeader = { false }
+                        idField = "code"
+                        data={ data }>
+                        <GridColumn field="rn" align="center" width="20px"
+                                    cellCss="datagrid-td-rownumber"
+                                    render={({rowIndex}) => (
+                                        <span>{ rowIndex+1 }</span>
+                                    )}
+                        />
+                        <GridColumn
+                            editable
+                            field="code"
+                            title="Коды"
+                            editor={({ row }) => (<NumberBox spinners = { false } value={ row.code }/>)}
+                            align="center"/>
+                    </DataGrid>
                 </div>
                 <div className="dialog-button">
-                    <LinkButton style={{ width: 80 }}>Сохранить</LinkButton>
                     <LinkButton
-                        onClose={() => this.setState({ comboDlgClosed: true })}
-                        style={{ width: 80 }}>Отмена</LinkButton>
+                        style={{ width: 80 }}>
+                        { comboDlgSaveTitle }
+                    </LinkButton>
+                    <LinkButton
+                        style={{ width: 80 }}
+                        onClick={() =>{
+                            this.setState({
+                                comboDlgClosed: true
+                            })}
+                        }
+                    >
+                        { comboDlgCancelTitle }
+                    </LinkButton>
+
                 </div>
             </Dialog>
         )
@@ -192,7 +237,7 @@ export default class ItemDetail extends Component {
                     renderGroup={ this.renderGroup }
                     onCellContextMenu={ this.handleItemContextMenu }>
 
-                    <GridColumn width={ 20 }/>
+                    <GridColumn width={ 25 }/>
                     <GridColumn field="titleField" title="Имя поля" width="40%"/>
                     <GridColumn field="valueField" title="Параметр" width="60%"
                                 editable
