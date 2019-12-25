@@ -44,24 +44,21 @@ export default class ItemDetail extends Component {
         };
     }
 
-
-    handleDialogEndEdit = () => {
+    // Keyboard event functions
+    handleEndDialogEndEdit = () => {
         this.editorDlg.endEdit()
     };
 
+
+
+    // -----
     handleClickComboValueChange = (row) => {
         this.setState({
             editingData: row.valueField.map((item)=>{return { code: item }}),
             comboDlgClosed: false
         });
-        this.props.setKeyboardEventsTable([
-            {
-                key: "Enter",
-                code: "Enter",
-                ctrlKey: false,
-                function: this.handleDialogEndEdit
-            },
-        ]);
+        // Передадим в родителя обработчик клавиатурных событий
+        this.props.setKeyboardEventsListener(this.handleKeyboardEvents);
     };
 
     updateData = () => {
@@ -89,7 +86,10 @@ export default class ItemDetail extends Component {
         console.log(value);
     };
 
-    handleKeyboardEvents = (event) =>{
+    handleKeyboardEvents = (e) =>{
+        if(e.key === 'Enter' && e.code === 'Enter' && e.ctrlKey === false)
+                    this.handleEndDialogEndEdit(e)
+
     };
 
     renderComboEditDialog = () => {

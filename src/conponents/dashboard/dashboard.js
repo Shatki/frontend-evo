@@ -101,7 +101,6 @@ export default class Dashboard extends React.Component {
             isover: false,
             dragItems: null,
             keyboardEventListener: null,  // Пробное V2
-            keyboardEventsTable: null  // Пробное V1
         };
 
         this.menu = null;
@@ -196,23 +195,26 @@ export default class Dashboard extends React.Component {
     }
 
     // Todo Undo/Redo event + other
-    setKeyboardEventsTable = (table) => {
+    setKeyboardEventsListener = (listener) => {
         this.setState({
-            keyboardEventsTable:  table
+            keyboardEventListener:  listener
         });
-        console.log(table)
     };
 
     handleKeyboardEvent = e => {
         // Первый вариант обработки клавиатуры
         //console.log(e);
         //console.log(this.state.keyboardEventsTable)
+        if(this.state.keyboardEventListener !== null)
+            this.state.keyboardEventListener(e)
+        /*
         this.state.keyboardEventsTable.forEach((item)=>{
             if(e.key === item.key &&
                 e.code === item.code &&
                 e.ctrlKey === item.ctrlKey)
                 item.function(e)
         })
+        */
     };
 
     // ***** Context Menu ***************************************************************************
@@ -349,7 +351,7 @@ export default class Dashboard extends React.Component {
                         { ...this.state.constants }
                         itemData = { this.state.itemData }
                         contextMenu = { this.contextMenu.itemMenu }
-                        setKeyboardEventsTable = { this.setKeyboardEventsTable }
+                        setKeyboardEventsListener = { this.setKeyboardEventsListener }
                     />
                 </LayoutPanel>
             </Layout>
