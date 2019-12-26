@@ -35,31 +35,18 @@ export default class ItemDetail extends Component {
             ],
             itemData : [],
             data: [],
-            editingRow: null,
-            editingData: null,
+
+            editingData: null,  // Редактируемые данные у редактора кодов
+            editingCode: null,  // Редактируемая ячейка у редактора кодов
+
             comboDlgTitle: "Редактирование кодов",
             comboDlgCancelTitle: "Отмена",
+            comboDlgAddTitle: "Добавить",
+            comboDlgRemoveTitle: "Удалить",
             comboDlgSaveTitle: "Сохранить",
             comboDlgClosed: true
         };
     }
-
-    // Keyboard event functions
-    handleEndDialogEndEdit = () => {
-        this.editorDlg.endEdit()
-    };
-
-
-
-    // -----
-    handleClickComboValueChange = (row) => {
-        this.setState({
-            editingData: row.valueField.map((item)=>{return { code: item }}),
-            comboDlgClosed: false
-        });
-        // Передадим в родителя обработчик клавиатурных событий
-        this.props.setKeyboardEventsListener(this.handleKeyboardEvents);
-    };
 
     updateData = () => {
         const { itemData } = this.props;
@@ -76,6 +63,62 @@ export default class ItemDetail extends Component {
         })
     };
 
+    // Keyboard event functions
+    // Enter
+    handleDialogEndEdit = () => {
+        //if()
+        this.comboDlg.endEdit()
+    };
+    // Escape
+    handleDialogCancelEdit = () => {
+        this.comboDlg.cancelEdit()
+    };
+
+
+    /* ----------------- Обработка событий ComboDlg ----------------------------------- */
+    handleComboDlgBeginEdit = ({ row }) => {
+        this.setState({
+            editingCode: row.code
+        })
+
+    };
+
+    handleComboDlgEndEdit = ({ row }) => {
+        this.setState({
+            editingCode: null
+        })
+    };
+
+    handleComboDlgCancelEdit = ({ row }) => {
+        this.setState({
+            editingCode: null
+        })
+    };
+
+    // Методы для редактирования кодов
+    handleClickAddCode = () =>{
+        console.log(this.state.editingData);
+        const { editingData } = this.state;
+        const newData = [{ code: "0" }];
+        this.setState({
+            editingData: newData.concat(editingData)
+        })
+    };
+
+        handleClickRemoveCode = () => {
+
+    };
+
+    /* ----------------- Обработка событий ItemDetail --------------------------------- */
+    handleClickComboValueChange = (row) => {
+        this.setState({
+            editingData: row.valueField.map((item)=>{return { code: item }}),
+            comboDlgClosed: false
+        });
+        // Передадим в родителя обработчик клавиатурных событий
+        this.props.setKeyboardEventsListener(this.handleKeyboardEvents);
+    };
+
     handleItemContextMenu = ({ row, column, originalEvent }) => {
         originalEvent.preventDefault();
         console.log(row.nameField);
@@ -88,14 +131,20 @@ export default class ItemDetail extends Component {
 
     handleKeyboardEvents = (e) =>{
         if(e.key === 'Enter' && e.code === 'Enter' && e.ctrlKey === false)
-                    this.handleEndDialogEndEdit(e)
+                    this.handleDialogEndEdit();
+        if(e.key === 'Escape' && e.code === 'Escape' && e.ctrlKey === false)
+                    this.handleDialogCancelEdit()
 
     };
 
-    renderComboEditDialog = () => {
+    handleComboDlgClose = () => {
+        this.setState({ comboDlgClosed: true })
+    };
+
+    renderComboDlg = () => {
         const {
             comboDlgTitle, comboDlgClosed, editingData: data,
-            comboDlgSaveTitle, comboDlgCancelTitle } = this.state;
+            comboDlgSaveTitle, comboDlgCancelTitle, comboDlgAddTitle, comboDlgRemoveTitle } = this.state;
         return(
             <Dialog
                 modal
@@ -103,20 +152,27 @@ export default class ItemDetail extends Component {
                 title= { comboDlgTitle }
                 closed = { comboDlgClosed }
                 style={{ width: 210 }}
-                onClose={() => this.setState({ comboDlgClosed: true })}
+                onClose={() => this.handleComboDlgClose }
                 >
                 <div className="dialog-toolbar">
-                    <LinkButton iconCls="icon-edit" plain>Edit</LinkButton>
-                    <LinkButton iconCls="icon-help" plain>Help</LinkButton>
+                    <LinkButton
+                        onClick ={ this.handleClickAddCode }
+                        iconCls="icon-add" plain/>
+                    <LinkButton
+                        onClick ={ this.handleClickRemoveCode }
+                        iconCls="icon-remove" plain/>
                 </div>
                 <div className="f-full">
                     <DataGrid
-                        ref={ ref => this.editorDlg = ref }
-                        clickToEdit
-                        selectionMode = "row"
+                        ref={ ref => this.comboDlg = ref }
+                        dblclickToEdit
+                        selectionMode = "single"
                         editMode = "cell"
                         showHeader = { false }
                         idField = "code"
+                        onEditBegin = { this.handleComboDlgBeginEdit }
+                        onEditEnd = { this.handleComboDlgEndEdit }
+                        onEditCancel = { this.handleComboDlgCancelEdit }
                         data={ data }>
                         <GridColumn field="rn" align="center" width="20px"
                                     cellCss="datagrid-td-rownumber"
@@ -128,7 +184,7 @@ export default class ItemDetail extends Component {
                             editable
                             field="code"
                             title="Коды"
-                            editor={({ row }) => (<NumberBox spinners = { false } value={ row.code }/>)}
+                            editor={({ row }) => (<TextBox value={ row.code }/>)}
                             align="center"/>
                     </DataGrid>
                 </div>
@@ -229,7 +285,7 @@ export default class ItemDetail extends Component {
                 <DataGrid
                     data={ this.updateData() }
                     columnResizing
-                    clickToEdit
+                    dblclickToEdit
                     expanderWidth ={ 20 }
                     selectionMode="row"
                     editMode="row"
@@ -246,7 +302,7 @@ export default class ItemDetail extends Component {
                     />
                 </DataGrid>
                 { this.renderContextMenu(this.props.contextMenu) }
-                { this.renderComboEditDialog() }
+                { this.renderComboDlg() }
             </ErrorBoundry>
         )
 

@@ -203,8 +203,7 @@ export default class Dashboard extends React.Component {
 
     handleKeyboardEvent = e => {
         // Первый вариант обработки клавиатуры
-        //console.log(e);
-        //console.log(this.state.keyboardEventsTable)
+        console.log(e);
         if(this.state.keyboardEventListener !== null)
             this.state.keyboardEventListener(e)
         /*
