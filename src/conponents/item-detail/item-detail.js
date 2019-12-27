@@ -2,6 +2,8 @@ import React, {Component} from 'react'
 import {ComboBox, DataGrid, Dialog, GridColumn, LinkButton, NumberBox, SwitchButton, TextBox} from 'rc-easyui'
 import ContextMenu from '../context-menu'
 import ErrorBoundry from '../error-boundry'
+import { handleClickAddCode, handleClickRemoveCode, handleComboDlgBeginEdit,
+    handleComboDlgCancelEdit, handleComboDlgEndEdit, handleComboDlgClose } from "./code-editor";
 import './item-detail.css'
 
 export default class ItemDetail extends Component {
@@ -74,41 +76,6 @@ export default class ItemDetail extends Component {
         this.comboDlg.cancelEdit()
     };
 
-
-    /* ----------------- Обработка событий ComboDlg ----------------------------------- */
-    handleComboDlgBeginEdit = ({ row }) => {
-        this.setState({
-            editingCode: row.code
-        })
-
-    };
-
-    handleComboDlgEndEdit = ({ row }) => {
-        this.setState({
-            editingCode: null
-        })
-    };
-
-    handleComboDlgCancelEdit = ({ row }) => {
-        this.setState({
-            editingCode: null
-        })
-    };
-
-    // Методы для редактирования кодов
-    handleClickAddCode = () =>{
-        console.log(this.state.editingData);
-        const { editingData } = this.state;
-        const newData = [{ code: "0" }];
-        this.setState({
-            editingData: newData.concat(editingData)
-        })
-    };
-
-        handleClickRemoveCode = () => {
-
-    };
-
     /* ----------------- Обработка событий ItemDetail --------------------------------- */
     handleClickComboValueChange = (row) => {
         this.setState({
@@ -137,9 +104,6 @@ export default class ItemDetail extends Component {
 
     };
 
-    handleComboDlgClose = () => {
-        this.setState({ comboDlgClosed: true })
-    };
 
     renderComboDlg = () => {
         const {
@@ -152,14 +116,14 @@ export default class ItemDetail extends Component {
                 title= { comboDlgTitle }
                 closed = { comboDlgClosed }
                 style={{ width: 210 }}
-                onClose={() => this.handleComboDlgClose }
+                onClose={() => handleComboDlgClose }
                 >
                 <div className="dialog-toolbar">
                     <LinkButton
-                        onClick ={ this.handleClickAddCode }
+                        onClick ={ handleClickAddCode }
                         iconCls="icon-add" plain/>
                     <LinkButton
-                        onClick ={ this.handleClickRemoveCode }
+                        onClick ={ handleClickRemoveCode }
                         iconCls="icon-remove" plain/>
                 </div>
                 <div className="f-full">
@@ -170,9 +134,9 @@ export default class ItemDetail extends Component {
                         editMode = "cell"
                         showHeader = { false }
                         idField = "code"
-                        onEditBegin = { this.handleComboDlgBeginEdit }
-                        onEditEnd = { this.handleComboDlgEndEdit }
-                        onEditCancel = { this.handleComboDlgCancelEdit }
+                        onEditBegin = { handleComboDlgBeginEdit }
+                        onEditEnd = { handleComboDlgEndEdit }
+                        onEditCancel = { handleComboDlgCancelEdit }
                         data={ data }>
                         <GridColumn field="rn" align="center" width="20px"
                                     cellCss="datagrid-td-rownumber"
