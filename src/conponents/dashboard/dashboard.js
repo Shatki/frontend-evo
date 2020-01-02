@@ -206,14 +206,6 @@ export default class Dashboard extends React.Component {
         console.log(e);
         if(this.state.keyboardEventListener !== null)
             this.state.keyboardEventListener(e)
-        /*
-        this.state.keyboardEventsTable.forEach((item)=>{
-            if(e.key === item.key &&
-                e.code === item.code &&
-                e.ctrlKey === item.ctrlKey)
-                item.function(e)
-        })
-        */
     };
 
     // ***** Context Menu ***************************************************************************

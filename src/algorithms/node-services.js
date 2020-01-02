@@ -136,6 +136,7 @@ export  const moveNode = (data, node, movingNode) =>{
         let testNode = { parentUuid: node.uuid };
         do {
             // Ищем родительскую ноду у целевой ноды.
+            // Todo:  Что-то тут не то, итератора нет
             testNode = data.find( (item)=>{ return item.uuid === testNode.parentUuid } );
             //console.log("testNode=>", testNode);
             // Если целевая нода это перемещаемая нода, то отмена перемещения
