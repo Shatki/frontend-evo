@@ -99,7 +99,7 @@ export default class ItemDetail extends Component {
         * */
         if (rules === undefined) return [];
         return rules.map((rule)=>{
-            
+
             return rule
         });
     };
