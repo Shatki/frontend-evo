@@ -6,6 +6,7 @@ import ErrorBoundry from '../error-boundry'
 import './item-detail.css'
 
 export default class ItemDetail extends Component {
+    "use strict";
     constructor(props) {
         super(props);
         this.state = {
@@ -14,7 +15,7 @@ export default class ItemDetail extends Component {
                 {"nameField": "name", "valueField": "", "titleField": "Наименование", "groupField": "Основные", "editorField": "text" },
                 {"nameField": "code", "valueField": "", "titleField": "Код", "groupField": "Основные", "editorField": "number" },
                 {"nameField": "articleNumber", "valueField": "", "titleField": "Артикул", "groupField": "Основные", "editorField": "text" },
-                {"nameField": "barCodes", "valueField": [], "titleField": "Штрихкоды", "groupField": "Коды", "editorField": "combo_add", "rules": ["required", "digital", "length[12]"] },
+                {"nameField": "barCodes", "valueField": [], "titleField": "Штрихкоды", "groupField": "Коды", "editorField": "combo_add", "rules": ["required", "digital", "length13"] },
 
                 {"nameField": "price", "valueField": "", "titleField": "Цена продажи", "groupField": "Цены", "editorField": "number", "precision": 2 },
                 {"nameField": "costPrice", "valueField": "", "titleField": "Цена закупки", "groupField": "Цены", "editorField": "number", "precision": 2 },
@@ -26,7 +27,7 @@ export default class ItemDetail extends Component {
 
                 {"nameField": "type", "valueField": this.props.productTypes, "titleField": "Вид номенклатуры", "groupField": "Основные", "editorField": "combo" },
 
-                {"nameField": "alcoCodes", "valueField": [], "titleField": "Алко код", "groupField": "Коды", "editorField": "combo_add", "rules": ["required", "digital", "length[19]"] },
+                {"nameField": "alcoCodes", "valueField": [], "titleField": "Алко код", "groupField": "Коды", "editorField": "combo_add", "rules": ["required", "digital", "length19"] },
                 {"nameField": "alcoholProductKindCode", "valueField": "", "titleField": "Код вида продукции", "groupField": "ЕГАИС", "editorField": "number" },
                 {"nameField": "alcoholByVolume", "valueField": "", "titleField": "Крепкость", "groupField": "ЕГАИС", "editorField": "number", "precision": 2 },
                 {"nameField": "tareVolume", "valueField": "", "titleField": "Объем тары", "groupField": "ЕГАИС", "editorField": "number", "precision": 2 },
@@ -36,22 +37,30 @@ export default class ItemDetail extends Component {
             ],
             validateRules: {
                 "required": {
-                    "validator": (value, param) =>{
-                        return (value.length > 0);
+                    "validator": (value) =>{
+                        return null != value && ("boolean" == typeof value ? value : String(value).trim().length > 0);
                     },
                     message: 'Поле не может быть пустым'
                 },
                 "digital": {
-                    "validator": (value, param) =>{
-                        return (value.match(/^\d+$/));
+                    "validator": (value) =>{
+                        return /^\d+$/.test(value);
                     },
                     message: 'Код может состоять только из цифр'
                 },
-                "length": {
-                    "validator": (value, param) => {
-                        return value.length === parseInt(param[0], 10);
+                "length13": {
+                    "validator": (value) => {
+                        return value.length === 13;
                     },
-                    message: 'Длина кода должна быть {0}'
+                    message: 'Длина штрих кода должна быть 13',
+                },
+                "length19": {
+                    "validator": (value) => {
+                        //const n = value ? String(value).trim().length : 0;
+                        //return value.length === parseInt(param[0], 10);
+                        return value.length === 19;
+                    },
+                    message: 'Длина алкокода должна быть 19',
                 },
             },
             itemData : [],
@@ -90,18 +99,28 @@ export default class ItemDetail extends Component {
         })
     };
 
-    getRules = (rules) =>{
-        const { validateRules } =this.state;
+    getRules = (rules) => {
         /* Правила валидации поля Код
         * /[0-9]/ - [один] символ входящий в диапазон 0-9 в [любом] месте строки
         * /^[0-9]$/ - строка состоящая из [одного] символа входящего в диапазон 0-9
         * /^\d+$/ - строка состоящая из [одного или более] символа входящего в диапазон 0-9(\d)
-        * */
-        if (rules === undefined) return [];
-        return rules.map((rule)=>{
+        *
+        *  rules на входе это массив
+        */
+        const { validateRules } = this.state;
 
-            return rule
+        if (rules === undefined) return [];
+        let objectRules = {};
+
+        console.log("get rules=>", rules, validateRules);
+
+        rules.forEach(function (item) {
+            if (item in validateRules) objectRules[item] = validateRules[item];
+            else objectRules[item] = item
         });
+
+        return objectRules;
+
     };
 
     /* ----------------- Обработка событий ItemDetail --------------------------------- */
@@ -153,7 +172,7 @@ export default class ItemDetail extends Component {
 
     // Enter => End Edit
     handleComboDlgKeyEnter = () => {
-           this.setState((state)=> {
+        this.setState((state)=> {
             // Если мы в режиме редактирования
             if (state.editing) {
                 const cell = state.editingCell;
@@ -185,7 +204,7 @@ export default class ItemDetail extends Component {
                     };
                 }
             }
-           });
+        });
     };
 
     // Escape
@@ -254,9 +273,9 @@ export default class ItemDetail extends Component {
     };
 
     handleComboDlgSelectionsChange = (selection) =>{
-      this.setState({
-          selection
-      })
+        this.setState({
+            selection
+        })
     };
 
     // ------  Методы для редактирования кодов -------
