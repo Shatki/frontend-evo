@@ -111,8 +111,7 @@ export default class ItemDetail extends Component {
 
         if (rules === undefined) return [];
         let objectRules = {};
-
-        console.log("get rules=>", rules, validateRules);
+        //console.log("get rules=>", rules, validateRules);
 
         rules.forEach(function (item) {
             if (item in validateRules) objectRules[item] = validateRules[item];
@@ -207,25 +206,27 @@ export default class ItemDetail extends Component {
         });
     };
 
+    backupData = (state) =>{
+        return state.codesData.map(
+            (i) => {
+                if(i.id === state.oldId)
+                    i.code = state.oldCode;
+                return i
+            }
+        );
+    };
+
     // Escape
-    handleComboDlgKeyEscape = (row) => {
+    handleComboDlgKeyEscape = (props) => {
         this.setState((state) => {
             if(state.editing){
-                const backupData = state.codesData.map(
-                    (i) => {
-                        if(i.id === state.oldId)
-                            i.code = state.oldCode;
-                        return i
-                    }
-                );
                 this.comboDlg.cancelEdit();
                 return{
-                    codesData: backupData,
+                    codesData: this.backupData(state),
                     editing: !state.editing,
                     editingCell: null,
                     oldId: null,        // Clear a backup after cancel
                     oldCode: null,      // Clear a backup after cancel
-                    //adding: null
                 }
             }
         });
@@ -301,11 +302,38 @@ export default class ItemDetail extends Component {
     };
 
     handleClickRemoveCode = () => {
-
+        console.log('remove', this.state.selection);
+        this.setState((state) => {
+            const { codesData, selection} = state;
+            if(!state.editing){
+                const afterRomoveData = codesData.filter(i=>i.id !== selection.id );
+                // Почему-то теряет контекст
+                //this.comboDlg.cancelEdit();
+                return{
+                    codesData: afterRomoveData,
+                    // editingCell: null,
+                    selection: null,
+                }
+            }
+        });
     };
 
     handleComboDlgClose = () => {
-        this.setState({ comboDlgClosed: true })
+        this.setState((state) => {
+            if(state.editing){
+                // Почему-то теряет контекст
+                //this.comboDlg.cancelEdit();
+                return{
+                    codesData: this.backupData(state),
+                    editing: !state.editing,
+                    editingCell: null,
+                    oldId: null,        // Clear a backup after cancel
+                    oldCode: null,      // Clear a backup after cancel
+                    comboDlgClosed: true,
+                    selection: null,
+                }
+            }
+        });
     };
 
     renderTextBoxEditor = ({ row, error }) =>{
