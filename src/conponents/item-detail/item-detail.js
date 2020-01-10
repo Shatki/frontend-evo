@@ -233,7 +233,10 @@ export default class ItemDetail extends Component {
             return(<SwitchButton value={ row.valueField }/>);
         else if (row.editorField === "combo")
             if(row.dataField===undefined && Array.isArray(row.valueField)){
-                const comboData = row.valueField.map((code)=>{ return { value: code, text: code} });
+                const data = row.dataField === undefined ?
+                    row.valueField.map((code)=>{ return { value: code, text: code} }): row.dataField;
+                const value = row.dataField === undefined ? row.valueField[0] :
+                    row.dataField.find(item => (item.value === row.valueField));
                 const addonEditor = row.dataField === undefined ? () => (
                     <span
                         className="textbox-icon icon-evotor-edit"
@@ -241,29 +244,13 @@ export default class ItemDetail extends Component {
                         onClick = { ()=>this.handleClickComboValueChange(row) }>
                 </span>) : null;
                 return(<ComboBox
-                    data={ comboData }
-                    value={ row.valueField[0] }
+                    data={ data }
+                    value={ value }
                     editable={ false }
                     //onChange={(value) => { this.editComboValues(row, value) }}
                     addonRight={ addonEditor }
                 />);
             }
-
-
-
-        return(<ComboBox data={ row.dataField } value={ row.valueField }/>);
-
-
-
-
-
-            else if (row.editorField === "combo_add"){
-
-
-
-
-
-        }
     };
 
     renderView = ({ row }) => {
