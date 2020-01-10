@@ -120,35 +120,33 @@ export const deleteNode = (data, node) =>{
     })
 };
 
-export  const moveNode = (data, node, movingNode) =>{
+export const moveNode = (data, node, movingNode) =>{
     /*  Функция виртуального перемещения ноды => на самом деле изменение parentUuid
 
         Замечание: Все операции проходят над dataTree, а не над обработанной transformTreeData
         dataTree => линейный массив, не обработанный для хранения данных
         displayTreeData = древовидный массив объектов, рабочий для отображения
         Запрет на перемещение "в себя" или в свои "дочерние" ноды
-
+        node(dataTree) => Parent
+        movingNode(dataTree) => Child
     */
+    //console.log("--------------------------");
     //console.log("node=>", node);
     //console.log("movingNode=>", movingNode);
-    let checkStatus = true;
-    if ( node.uuid !== null ){
-        let testNode = { parentUuid: node.uuid };
-        do {
-            // Ищем родительскую ноду у целевой ноды.
-            // Todo:  Что-то тут не то, итератора нет
-            testNode = data.find( (item)=>{ return item.uuid === testNode.parentUuid } );
-            //console.log("testNode=>", testNode);
-            // Если целевая нода это перемещаемая нода, то отмена перемещения
-            if( testNode.uuid === movingNode.uuid ) {
-                console.log("Отмена перемещения");
-                checkStatus = false
-            }
-        } while ( testNode.parentUuid !== null && checkStatus !== false );
+
+    if(node === undefined){
+        //console.log("Перемещаю в корень", Object.assign(movingNode, { parentUuid: null }));
+        return Object.assign(movingNode, { parentUuid: null });
+    }else if ( node.uuid !== movingNode.uuid ) {
+        // найдем родительскую ноду у целевой node
+        const parentNode = data.find( (item)=>{ return item.uuid === node.parentUuid } );
+        // если возможно перемещение в родительскую целевой, то можно и в целевую
+        if( moveNode(data, parentNode, movingNode) !== null ){
+            // Если возможно такое перемещение то
+            //console.log("Перемещаю в ", node.name);
+            return Object.assign(movingNode, { parentUuid: node.uuid });
+        }
     }
-    if( checkStatus===true ) {
-        console.log("Перемещаю");
-        // Перемещаю
-        data.find(item=>item.uuid === movingNode.uuid).parentUuid = node.uuid;
-    }
+    //console.log("Отмена перемещения");
+    return null;
 };

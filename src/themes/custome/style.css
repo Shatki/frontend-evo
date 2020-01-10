@@ -941,8 +941,9 @@
 
 .error {
     color: red;
-    font-size: 12px;
-    margin: 4px 0 4px 120px;
+    font-size: 15px;
+    /* margin: 4px 0 4px 120px; */
+    margin: auto
 }
 
 .form-floating-label.form-field .textbox-text {

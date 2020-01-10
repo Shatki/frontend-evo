@@ -1,3 +1,3 @@
 import ItemDetail from './item-detail'
 
-export default ItemDetail;
+export default ItemDetail

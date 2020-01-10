@@ -5,11 +5,10 @@ import ItemTree from "../item-tree";
 import ItemList from "../item-list";
 import ItemDetail from "../item-detail";
 import EvotorService from "../../services/evotor-service";
-
-import './dashboard.css'
 import LoadingView from "../loading-view";
-
 import { addRootNode, moveNode, displayTreeData, transformTreeData } from "../../algorithms/node-services";
+import './dashboard.css'
+
 
 export default class Dashboard extends React.Component {
     evotorService = new EvotorService();
@@ -60,35 +59,35 @@ export default class Dashboard extends React.Component {
             displayTreeData: [],
             displayListData: [],
             itemData: {
-                    "uuid": "01ba18b6-8707-5f47-3d9c-4db058054cb2",
-                    "code": "6",
-                    "barCodes": [
-                        "2000000000060",
-                        "2000000000061",
-                        "2000000000062",
-                    ],
-                    "alcoCodes": [
-                        "0000000000000000001",
-                        "0000000000000000002",
-                        "0000000000000000003",
-                        "0000000000000000004"
-                    ],
-                    "name": "Сидр",
-                    "price": 123.12,
-                    "quantity": 12,
-                    //"costPrice": 100.123,
-                    "measureName": "шт",
-                    "tax": "VAT_20",
-                    "allowToSell": true,
-                    "description": "Вкусный яблочный сидр.",
-                    //"articleNumber": "сид123",
-                    "parentUuid": "1ddea16b-971b-dee5-3798-1b29a7aa2e27",
-                    "group": false,
-                    "type": "ALCOHOL_NOT_MARKED",
-                    "alcoholByVolume": 5.45,
-                    "alcoholProductKindCode": 123,
-                    "tareVolume": 0.57
-                },
+                "uuid": "01ba18b6-8707-5f47-3d9c-4db058054cb2",
+                "code": "6",
+                "barCodes": [
+                    "2000000000060",
+                    "2000000000061",
+                    "2000000000062",
+                ],
+                "alcoCodes": [
+                    "0000000000000000001",
+                    "0000000000000000002",
+                    "0000000000000000003",
+                    "0000000000000000004"
+                ],
+                "name": "Сидр",
+                "price": 123.12,
+                "quantity": 12,
+                "costPrice": 100.123,
+                "measureName": "шт",
+                "tax": "VAT_20",
+                "allowToSell": true,
+                "description": "Вкусный яблочный сидр.",
+                //"articleNumber": "сид123",
+                "parentUuid": "1ddea16b-971b-dee5-3798-1b29a7aa2e27",
+                "group": false,
+                "type": "ALCOHOL_NOT_MARKED",
+                "alcoholByVolume": 5.45,
+                "alcoholProductKindCode": 123,
+                "tareVolume": 0.57
+            },
 
             treeSelection: null, // target node
             nodeView: null, // view node
@@ -100,9 +99,9 @@ export default class Dashboard extends React.Component {
             // Drag'n'Drop
             isover: false,
             dragItems: null,
-            keyboardEventListener: null,  // Пробное V2
         };
 
+        this.keyboardEventListener = null;  // Пробное V2
         this.menu = null;
         this.contextMenu ={
             treeMenu: [
@@ -196,16 +195,14 @@ export default class Dashboard extends React.Component {
 
     // Todo Undo/Redo event + other
     setKeyboardEventsListener = (listener) => {
-        this.setState({
-            keyboardEventListener:  listener
-        });
+        this.keyboardEventListener =  listener
     };
 
     handleKeyboardEvent = e => {
         // Первый вариант обработки клавиатуры
         console.log(e);
-        if(this.state.keyboardEventListener !== null)
-            this.state.keyboardEventListener(e)
+        if(this.keyboardEventListener !== null)
+            this.keyboardEventListener(e)
     };
 
     // ***** Context Menu ***************************************************************************
@@ -256,7 +253,14 @@ export default class Dashboard extends React.Component {
                 listData.find(item=>item.uuid === dragItem.uuid).parentUuid = node.uuid;
             }else{
                 // Для групп запрет на перемещение "в себя" или в свои "дочерние" ноды
-                moveNode(treeData, node, dragItem)
+                const targetNode = treeData.find( (item)=>{ return item.uuid === node.uuid } );
+                const dragNode = treeData.find( (item)=>{ return item.uuid === dragItem.uuid } );
+                const movingNode = moveNode(treeData, targetNode, dragNode);
+                if(movingNode !== null) {
+                    this.setState({
+                        treeData:  Object.assign(treeData, movingNode)
+                    });
+                }
             }
             //console.log("Drop ", item.name , " =>", node.text);
         }
@@ -273,9 +277,14 @@ export default class Dashboard extends React.Component {
 
     handleChangeNodeState = (node, nodeState) => {
         const { treeData } = this.state;
-        const treeNode = treeData.find(item=>item.uuid===node.uuid);
-        treeNode.nodeState = nodeState;
-        this.setState({ treeData })
+        const findNode = treeData.find(item=>item.uuid===node.uuid);
+        if(findNode){
+            const treeNode = Object.assign(findNode, { nodeState });
+            treeNode.nodeState = nodeState;
+            this.setState({
+                treeData: Object.assign(treeData, treeNode)
+            })
+        }
     };
 
     // ***** ItemList events ************************************************************************

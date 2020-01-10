@@ -6,8 +6,8 @@ import GearsLoading from "../gears";
 export const LoadingView = () => {
     return (
         <div className="container">
+                <div className="loadingtext">Загрузка...</div>
                 <GearsLoading/>
-                <h1>Загрузка...</h1>
             </div>
         )
 };

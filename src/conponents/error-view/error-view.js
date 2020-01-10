@@ -29,8 +29,8 @@ export default class ErrorView extends Component {
     render() {
         return (
             <div className={ this.state.loadingClass ? 'loading': null }>
-                <h1><b>:(</b></h1>
-                <h2>Что-то сломалось </h2>
+                <div className="errortext">Что-то</div>
+                <div className="errortext">сломалось...</div>
                 <GearsError/>
             </div>
         )
