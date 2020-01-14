@@ -186,6 +186,10 @@ export default class ItemList extends Component {
         })
     };
 
+    dialogBtnClose = () => {
+       this.setState({ closed: true });
+    };
+
     renderDialog = () => {
         const row = this.state.model;
         const { title, closed, rules } = this.state;
@@ -245,8 +249,8 @@ export default class ItemList extends Component {
                     </Form>
                 </div>
                 <div className="dialog-button">
-                    <LinkButton style={{ width: 80 }} onClick={() => this.saveRow()}>Сохранить</LinkButton>
-                    <LinkButton style={{ width: 80 }} onClick={() => this.setState({ closed: true })}>Закрыть</LinkButton>
+                    <LinkButton style={{ width: 80 }} onClick={ () => this.saveRow() }>Сохранить</LinkButton>
+                    <LinkButton style={{ width: 80 }} onClick={ () => this.dialogBtnClose() }>Закрыть</LinkButton>
                 </div>
             </Dialog>
         )

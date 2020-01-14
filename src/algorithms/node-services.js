@@ -150,3 +150,24 @@ export const moveNode = (data, node, movingNode) =>{
     //console.log("Отмена перемещения");
     return null;
 };
+
+export const getNodeByUuid = (data, uuid) =>{
+    /*  Функция возвращает искомую Ноду по uuid или null
+
+        Замечание: Все операции проходят над displayTreeData(transformTreeData)
+        Выполняется по рекурсивному принципу
+
+        displayTreeData => древовидный массив объектов, рабочий для отображения
+
+        data => древовидный массив
+        uuid => итентификатор новы в формате uuid v4
+    */
+    let foundNode = null;
+    data.forEach((node)=>{
+        if(foundNode) return null;
+        //console.log("Ищем ноду=>", node);
+        if(node.uuid === uuid) foundNode = node;
+        else if(node.children !== undefined) foundNode = getNodeByUuid(node.children, uuid);
+    });
+    return foundNode
+};

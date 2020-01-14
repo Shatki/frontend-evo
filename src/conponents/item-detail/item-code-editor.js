@@ -3,34 +3,62 @@ import { Dialog, DataGrid, GridColumn, LinkButton, TextBox, Tooltip } from 'rc-e
 import './item-detail.css'
 
 export default class CodeEditor extends Component {
-
     constructor(props) {
         super(props);
         this.state = {
-            data: [],
+            data: null,                             // Редактируемые данные у редактора кодов
+            rules: null,
+            //reducer: null,                          // Строка для сравнения состояния свойства data
 
-            codesData: [],                          // Редактируемые данные у редактора кодов
-            old: null,                              // Значение codesData до изменения, для отката
+            old: null,                              // Значение data до изменения, для отката
             editing: false,                         // Маркер состояния редактирования кода
             //adding: null,                         // Маркер состояния добавления нового кода или id добавленного
             editingCell: null,                      // Значение ячейки с редактируемым кодом
             selection: null,                        // Выделенная ячейка с кодом
 
-            comboDlgAction: null,                   //  Команда на выполнение
+            comboDlgAction: null,                   // Команда на выполнение
             comboDlgTitle: "Редактирование кодов",
             comboDlgCancelTitle: "Отмена",
             comboDlgAddTitle: "Добавить",
             comboDlgRemoveTitle: "Удалить",
             comboDlgSaveTitle: "Сохранить",
         };
+        this.setKeyboardEventsListener = props.setKeyboardEventsListener;
+        // Менеджер диалога редактирования Combo кодов(CloseDlg/SaveData)
+        this.comboDlgManager = props.comboDlgManager;
+        // Доступ к закрытию и сохранению данных в стейт
+        this.comboDlgEndEdit = props.comboDlgEndEdit;
+    }
+
+    /* ----------------- Lifecycle methods -------------------------------------------- */
+    componentDidMount() {
+        this.updateData();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if(prevProps.comboDlgClosed !== this.props.comboDlgClosed)
+            this.updateData();
+            if(!this.props.comboDlgClosed) this.setKeyboardEventsListener(this.componentKeyboardEvents);
     }
 
     /* ----------------- Data operations ---------------------------------------------- */
+    updateData = () =>{
+        const { comboData, rules } = this.props;
+        //const reducer = data.reduce((res, el) => res + el.value, "");
+        if(Array.isArray(comboData)){
+            this.setState({
+                data: comboData.map((item)=>{ return{ value: item.value }}),
+                //reducer,
+                rules,
+            })
+        }
+    };
+
     backupData = (state) =>{
-        return state.codesData.map(
+        return state.data.map(
             (i) => {
                 if(i.id === state.oldId)
-                    i.code = state.oldCode;
+                    i.value = state.oldCode;
                 return i
             }
         );
@@ -40,10 +68,10 @@ export default class CodeEditor extends Component {
     componentKeyboardEvents = (e) =>{
         /*
         *  This argument contains a handful of properties:
-        *  "keyCode"
+        *  "key"
         *  Every key we press on your keyboard has a number associated with it.
         *  This read-only property returns that number.
-        *  "charCode"
+        *  "code"
         *  This property only exists on event arguments returned by the keypress event, and it contains the ASCII
         *  code for whatever character key you pressed.
         *  "ctrlKey", "altKey", "shiftKey"
@@ -60,24 +88,24 @@ export default class CodeEditor extends Component {
             this.handleComboDlgKeyEscape();
     };
 
-    // Enter => End Edit
+    // Enter => Start/End Edit
     handleComboDlgKeyEnter = () => {
         this.setState((state)=> {
             // Если мы в режиме редактирования
             if (state.editing) {
                 const cell = state.editingCell;
-                const duplicates = state.codesData.filter(
-                    (row) => row.code === cell.code
+                const duplicates = state.data.filter(
+                    (row) => row.value === cell.value
                 );
                 if (duplicates.length > 1) {
-                    console.log("Duplicate: ", state.codesData);
+                    console.log("Duplicate: ", state.data);
                 } else {
-                    this.comboDlg.endEdit();
+                    this.comboDlg.endEdit();                // Todo: setState?
                     return {
                         editing: !state.editing,
                         editingCell: null,
-                        oldId: null,    // Clear a backup after confirm
-                        oldCode: null,  // Clear a backup after confirm
+                        oldId: null,                        // Clear a backup after confirm
+                        oldCode: null,                      // Clear a backup after confirm
                         //adding: null,
                     }
                 }
@@ -85,25 +113,26 @@ export default class CodeEditor extends Component {
                 // Мы не в режиме редактирования => Начинаем редактирвоание
                 const { selection : row } = state;
                 if(row){
-                    this.comboDlg.beginEdit(row, "code"); // Todo: не дает фокус редактирования
+                    // Todo: не дает фокус редактирования
+                    this.comboDlg.beginEdit(row, "value");  // Todo: setState?
                     return {
                         editing: !state.editing,
-                        editingCell: state.codesData[row.id - 1],
-                        oldId: row.id,      //  make a backup
-                        oldCode: row.code   //  make a backup
+                        editingCell: state.data[row.id - 1],
+                        oldId: row.id,                      //  make a backup
+                        oldCode: row.value                  //  make a backup
                     };
                 }
             }
         });
     };
 
-    // Escape
+    // Escape => Cancel Edit
     handleComboDlgKeyEscape = (props) => {
         this.setState((state) => {
             if(state.editing){
                 this.comboDlg.cancelEdit();
                 return{
-                    codesData: this.backupData(state),
+                    data: this.backupData(state),
                     editing: !state.editing,
                     editingCell: null,
                     oldId: null,        // Clear a backup after cancel
@@ -119,9 +148,9 @@ export default class CodeEditor extends Component {
             if(!state.editing)
                 return{
                     editing: !state.editing,
-                    editingCell: state.codesData[row.id - 1],
+                    editingCell: state.data[row.id - 1],
                     oldId: row.id,      //  make a backup
-                    oldCode: row.code   //  make a backup
+                    oldCode: row.value   //  make a backup
                 }
         });
     };
@@ -133,16 +162,16 @@ export default class CodeEditor extends Component {
             if(!state.editing){
                 this.comboDlg.selectRow(row);
             }else if(state.selection !== row){
-                const backupData = state.codesData.map(
+                const backupData = state.data.map(
                     (i) => {
                         if(i.id === state.oldId)
-                            i.code = state.oldCode;
+                            i.value = state.oldCode;
                         return i
                     }
                 );
                 this.comboDlg.cancelEdit();
                 return{
-                    codesData: backupData,
+                    data: backupData,
                     editing: !state.editing,
                     editingCell: null,
                     oldId: null,        // Clear a backup after cancel
@@ -160,22 +189,23 @@ export default class CodeEditor extends Component {
         })
     };
 
-    // ------  Методы для редактирования кодов -------
+   /* ----------------- Методы обработки событий реакции элементов -------------------- */
     handleClickAddCode = () =>{
         // Добавляем код *
         // Делаем Selection *
         // Включаем его редактирование
         this.setState((state) => {
-            const zeros = state.codesData.filter((i)=>i.code === "0");
-            console.log(state.codesData, zeros);
+            console.log(state.data);
+            const zeros = state.data.filter((i)=>i.value === "0");
+            console.log(zeros);
             if(!state.editing && zeros.length === 0){
                 // Разрешение на добавление
-                // this.comboDlg.beginEdit(state.codesData[0], "code"); // Не работает
-                const { codesData } = state;
-                const row = { code: "0", id: 0 };
-                const newData = [ row, ...codesData ]; // Make a new codesData
+                // this.comboDlg.beginEdit(state.data[0], "code"); // Не работает
+                const { data } = state;
+                const row = { value: "0", id: 0 };
+                const newData = [ row, ...data ]; // Make a new data
                 return{
-                    codesData: newData,
+                    data: newData,
                     selection: row,
                 };
             }
@@ -185,12 +215,12 @@ export default class CodeEditor extends Component {
     handleClickRemoveCode = () => {
         console.log('remove', this.state.selection);
         this.setState((state) => {
-            const { codesData, selection} = state;
+            const { data, selection } = state;
             if(!state.editing){
                 // Почему-то теряет контекст
                 //this.comboDlg.cancelEdit();
                 return{
-                    codesData: codesData.filter(i=>i.id !== selection.id ),
+                    data: data.filter(i=>i.id !== selection.id ),
                     // editingCell: null,
                     selection: null,
                 }
@@ -199,55 +229,62 @@ export default class CodeEditor extends Component {
     };
 
     handleComboDlgClose = () => {
+        this.comboDlgManager();
         this.setState((state) => {
             if(state.editing){
                 // Почему-то теряет контекст
                 //this.comboDlg.cancelEdit();
                 return{
-                    codesData: this.backupData(state),
+                    data: this.backupData(state),
                     editing: !state.editing,
                     editingCell: null,
                     oldId: null,        // Clear a backup after cancel
                     oldCode: null,      // Clear a backup after cancel
-                    comboDlgClosed: true,
                     selection: null,
                 }
             }
         });
-        this.setKeyboardEventsListener(this.prevKeyboardListener);
-        this.comboDlgView(false);
     };
 
+    handleComboDlgSave = () => {
+        // Сохраняем данные и передаем их в ItemDetail
+        const { data } = this.state;
+        this.comboDlgManager(data);
+        this.setState((state) => {
+            if(state.editing){
+                return{
+                    //data:,
+                    editing: !state.editing,
+                    editingCell: null,
+                    oldId: null,        // Clear a backup after cancel
+                    oldCode: null,      // Clear a backup after cancel
+                    selection: null,
+                }
+            }
+        });
+    };
+
+    /* ----------------- Render методы отображения компонента ------------------------- */
     renderTextBoxEditor = ({ row, error }) =>{
         return(
             <Tooltip content={ error } tracking>
                 <TextBox
                     onFocus = { console.log("focus editor", error) }
-                    value={ row.code }/>
+                    value={ row.value }/>
             </Tooltip>
         )
     };
 
     render(){
-        const { comboDlgTitle, comboDlgSaveTitle, comboDlgCancelTitle, selection } = this.state;
-        const { data, rules, comboDlgView,
-            comboDlgClosed, setKeyboardEventsListener, prevKeyboardListener } = this.props;
-
-        // Захватим предыдущий прослушиватель и сеттер
-        this.prevKeyboardListener = prevKeyboardListener;
-        this.setKeyboardEventsListener = setKeyboardEventsListener;
+        const { data, rules, comboDlgTitle,
+            comboDlgSaveTitle, comboDlgCancelTitle, selection } = this.state;
         // Передадим в родителя обработчик клавиатурных событий
-        if(!comboDlgClosed)
-            this.setKeyboardEventsListener(this.componentKeyboardEvents);
-
-        this.comboDlgView = comboDlgView;
-
         return(
                 <Dialog
                     modal
                     draggable
                     title= { comboDlgTitle }
-                    closed = { comboDlgClosed }
+                    closed = { this.props.comboDlgClosed }
                     style={{ width: 210 }}
                     onClose={ this.handleComboDlgClose }
                 >
@@ -286,7 +323,7 @@ export default class CodeEditor extends Component {
                             <GridColumn
                                 editable
                                 editRules={ rules }
-                                field="code"
+                                field="value"
                                 title="Коды"
                                 editor={ this.renderTextBoxEditor }
                                 align="center"/>
@@ -294,7 +331,8 @@ export default class CodeEditor extends Component {
                     </div>
                     <div className="dialog-button">
                         <LinkButton
-                            style={{ width: 80 }}>
+                            style={{ width: 80 }}
+                            onClick={ this.handleComboDlgSave }>
                             { comboDlgSaveTitle }
                         </LinkButton>
                         <LinkButton

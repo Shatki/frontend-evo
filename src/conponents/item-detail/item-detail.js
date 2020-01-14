@@ -1,15 +1,17 @@
 import React, { Component } from 'react'
-import { ComboBox, DataGrid, GridColumn, NumberBox, SwitchButton, TextBox, Tooltip } from 'rc-easyui'
+import { ComboBox, DataGrid, GridColumn, NumberBox, SwitchButton, TextBox, Tooltip, ComboTree } from 'rc-easyui'
 import ContextMenu from '../context-menu'
 import ErrorBoundry from '../error-boundry'
-
-import './item-detail.css'
 import CodeEditor from "./item-code-editor";
+import { getNodeByUuid } from "../../algorithms/node-services";
+import './item-detail.css'
 
 export default class ItemDetail extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            data: null,                         // преобразованные, рабочие данные
+            itemData : null,                    // не обработанные данные, которые прининяли и будем отдавать
             itemProps: [
                 //{"nameField": "uuid", "valueField": null, "titleField": "UUID", "groupField": "Основные", "editorField": "text"},
                 {"nameField": "name", "valueField": null, "titleField": "Наименование", "groupField": "Основные",
@@ -19,7 +21,7 @@ export default class ItemDetail extends Component {
                 {"nameField": "articleNumber", "valueField": null, "titleField": "Артикул", "groupField": "Основные",
                     "editorField": "text", "rules": ["nullable",] },
                 {"nameField": "barCodes", "valueField": null, "titleField": "Штрихкоды", "groupField": "Коды",
-                    "editorField": "combo", "rules": ["required", "digital", "length13"] },
+                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable", "length12"] },
 
                 {"nameField": "price", "valueField": null, "titleField": "Цена продажи", "groupField": "Цены",
                     "editorField": "number", "precision": 2, "rules": ["required",] },
@@ -40,7 +42,7 @@ export default class ItemDetail extends Component {
                     "editorField": "combo", "dataField": this.props.productTypes, "rules": ["required",] },
 
                 {"nameField": "alcoCodes", "valueField": null, "titleField": "Алкокод", "groupField": "Коды",
-                    "editorField": "combo", "rules": ["required", "digital", "length19"] },
+                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable", "digital", "length19"] },
                 {"nameField": "alcoholProductKindCode", "valueField": null, "titleField": "Код вида продукции", "groupField": "ЕГАИС",
                     "editorField": "number" },
                 {"nameField": "alcoholByVolume", "valueField": null, "titleField": "Крепкость", "groupField": "ЕГАИС",
@@ -51,71 +53,89 @@ export default class ItemDetail extends Component {
                 {"nameField": "group", "valueField": null, "titleField": "Группа", "groupField": "Основные",
                     "editorField": "switch", "rules": ["required",] },
                 {"nameField": "parentUuid", "valueField": null, "titleField": "Группа товаров", "groupField": "Основные",
-                    "editorField": "text", "rules": ["nullable",] },
-            ],
-
-            rules: [],
-            itemData : [],
-            data: [],
+                    "editorField": "tree", "dataField": this.props.treeData, "rules": ["nullable",] },
+            ],                   // шаблон данных с настройками для преобразователя
+            parent: null,                       // Нода родитель, постоянная ссылка
+            rules: null,
             errors: null,
-            editing: false,         // Маркер редактирования ItemDetail props
-            selection: null,        // Выделенная ячейка с значением
-
-            codesData: null,        // Редактируемые данные у редактора кодов, если редактируем через него
-            comboDlgClosed: true
+            editing: false,                     // Маркер редактирования ItemDetail props
+            selection: null,                    // Выделенная ячейка с значением
+            comboData: null,                    // Данные для редактирования кодов
+            comboDlgClosed: true,
+            comboDlgEditRow: null               // редактируемая строка свойств через редактор кодов
         };
         this.validateRules= {
-                "required": {
-                    "validator": (value) => {
-                        return null != value && ("boolean" == typeof value ? value : String(value).trim().length > 0);
-                    },
-                    message: 'Поле не может быть пустым'
+            //const n = value ? String(value).trim().length : 0;
+            //return value.length === parseInt(param[0], 10);
+            "required": {
+                "validator": (value) => {
+                    return null != value && ("boolean" == typeof value ? value : String(value).trim().length > 0);
                 },
-                "nullable": {
-                    "validator": (value) => {
-                        return null === value && ("boolean" == typeof value ? value : String(value).trim().length > 0);
-                    },
-                    message: 'Поле может быть только null'
+                message: 'Поле является обязательным'
+            },
+            "nullable": {
+                "validator": (value) => {
+                    return null === value || ("boolean" == typeof value ? value : String(value).trim().length > 0);
                 },
-                "digital": {
-                    "validator": (value) => {
-                        return /^\d+$/.test(value);
-                    },
-                    message: 'Код может состоять только из цифр'
+                message: 'Созданное поле не может быть пустым'
+            },
+            "digital": {
+                "validator": (value) => {
+                    return /^\d+$/.test(value);
                 },
-                "length13": {
-                    "validator": (value) => {
-                        return value.length === 13;
-                    },
-                    message: 'Длина штрих кода должна быть 13',
+                message: 'Код может состоять только из цифр'
+            },
+            "length12": {
+                "validator": (value) => {
+                    return value.length === 12;
                 },
-                "length19": {
-                    "validator": (value) => {
-                        //const n = value ? String(value).trim().length : 0;
-                        //return value.length === parseInt(param[0], 10);
-                        return value.length === 19;
-                    },
-                    message: 'Длина алкокода должна быть 19',
+                message: 'Длина штрих кода должна быть 12',
+            },
+            "length19": {
+                "validator": (value) => {
+                    return value.length === 19;
                 },
-            };
+                message: 'Длина алкокода должна быть 19',
+            },
+        };
         this.cellErrorMessage = "Ошибка данных";
+
+        // Сохраним сеттер keyboard events listener для передачи другим компонентам
+        this.setKeyboardEventsListener = props.setKeyboardEventsListener;
     }
 
-    updateData = () => {
-        const { itemData } = this.props;
+    /* ----------------- Lifecycle methods -------------------------------------------- */
+    componentDidMount() {
+        this.updateData();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        //if(prevState.itemData !== this.state.itemData) this.updateData();
+    }
+
+    /* ----------------- Data operations ---------------------------------------------- */
+    updateData = (itemData = this.props.itemData) => {
         // Преобразование для групповых свойств
-        // Todo: тут кривой временный код
-        return this.state.itemProps.map((property) => {
-            if(itemData !== null){
-                // Todo: доработать: Если данных нет null или [], то пробуем взять их из data
-                //if (property["editorField"] !== "combo")
-                property.valueField = itemData[property.nameField];
+        if (itemData) {
+            // Todo: Временно разместим тут
+            // Установим Keyboard Events Listener
+            this.setKeyboardEventsListener(this.componentKeyboardEvents);
+            const data = this.state.itemProps.map((property) => {
+                // Если в свойстве пришел массив, то отправляем его в dataField
+                if(Array.isArray(itemData[property.nameField]))
+                    property.dataField = itemData[property.nameField]
+                        .map((code)=>{ return { value: code, text: code } });
+                else property.valueField = itemData[property.nameField];
                 //console.log(property);
-            }else{
-                console.log("itemData = null=>")
-            }
-            return property;
-        })
+                return property;
+            });
+            const parent = getNodeByUuid(this.props.treeData, itemData.parentUuid);
+            this.setState({
+                data,                       // рабочие данные
+                itemData,                   // не обработанные данные, для возврата
+                parent,
+            })
+        }
     };
 
     getRules = (rules) => {
@@ -127,17 +147,19 @@ export default class ItemDetail extends Component {
         *
         *  rules на входе это массив из itemProps
         */
-        const _rules = this.validateRules;
-        console.log("validateRules=>", _rules);
+        const allRules = this.validateRules;
+        console.log("validateRules=>", this.validateRules);
         if (rules === undefined) return [];
         let objectRules = {};
         rules.forEach(function (item) {
-            if (item in _rules) objectRules[item] = _rules[item];
+            if (item in allRules) objectRules[item] = allRules[item];
             else objectRules[item] = item
         });
         console.log("get rules=>", objectRules);
         return objectRules;
     };
+
+    getCodes = arr => arr.map((code)=>{ return{ value:code.value, text:code.value }});
 
     /* ----------------- Keyboard event functions ------------------------------------- */
     componentKeyboardEvents = (e) =>{
@@ -175,28 +197,57 @@ export default class ItemDetail extends Component {
 
     /* ----------------- Combo Code Editor Dialog ------------------------------------- */
     // Метод для управления видимостью диалога редактирования кодов
-    comboDlgView = (status) => {
-        if(status===undefined) return !this.state.comboDlgClosed;
-        this.setState({
-            comboDlgClosed: !status
+    comboDlgManager = (arr) => {
+        this.setState((state)=>{
+            // Todo: Почему-то так и не меняет отображение кода после редактирования
+            if(!state.comboDlgClosed){
+                // Восстановим реактор клавиатуры
+                this.setKeyboardEventsListener(this.componentKeyboardEvents);
+                // console.log("Save data=>", this.state.comboDlgEditRow, this.state.comboData, data);
+                if(Array.isArray(arr) && state.comboDlgEditRow){
+                    let dataFieldObject = {};
+                    // Для itemData чтобы потом отдать изменения
+                    dataFieldObject[state.comboDlgEditRow.nameField] = arr.map((code)=>code.value);
+                    const dataField = arr.map((code)=>{ return{ value:code.value, text:code.value }});
+                    const itemData = Object.assign(state.itemData, dataFieldObject );
+                    const comboDlgEditRow = Object.assign(state.comboDlgEditRow,
+                        { dataField },
+                        { valueField: dataField[0].text });
+                    const data = state.data.map((row)=>{
+                        if(row.nameField===state.comboDlgEditRow.nameField) return comboDlgEditRow;
+                        else return row;
+                    });
+
+                    //console.log("updated data=>", data, comboDlgEditRow);
+                    return{
+                        comboDlgClosed: true,
+                        data,
+                        itemData,
+                        comboDlgEditRow
+                    };
+                } else return{
+                    comboDlgClosed: true
+                };
+            }
         });
-        return !status;
+        // Закрываем диалог редактирования
+        this.detail.endEdit();
     };
 
-    /* ----------------- Обработка событий ItemDetail --------------------------------- */
-    handleClickComboValueChange = (row) => {
-        //this.comboDlgView(false);
+    handleClickComboDlgEditor = (row) => {
         this.setState((state)=>{
+            //console.log('Combo dlg Editor=>', row);
             if(state.comboDlgClosed){
                 return{
-                    codesData: row.valueField.map((item)=>{ return { code: item } }) ,
+                    comboData: row.dataField,
+                    comboDlgEditRow: row,
                     comboDlgClosed: !state.comboDlgClosed
                 }
             }
         });
-        this.detail.endEdit();
     };
 
+    /* ----------------- Обработка событий ItemDetail --------------------------------- */
     handleItemContextMenu = ({ row, column, originalEvent }) => {
         originalEvent.preventDefault();
         console.log(row.nameField);
@@ -204,11 +255,11 @@ export default class ItemDetail extends Component {
     };
 
     handleItemClick = (value) => {
-        console.log(value);
+        console.log(value, this.state.data);
     };
 
     handleItemDetailRowClick =(row)=>{
-        console.log("Click->", row, this);
+        //console.log("Click->", row, this);
     };
 
     handleItemDetailRowDblClick =(row)=>{
@@ -216,11 +267,11 @@ export default class ItemDetail extends Component {
         this.setState({
             rules: this.getRules(row.rules)
         });
-        console.log("DblClick->", row);
+        //console.log("DblClick->", row);
     };
 
     renderEditor = ({ row, error }) =>{
-         // Todo: Доделать
+        // Todo: Доделать
         if (row.editorField === "number")
             return(<NumberBox value={ row.valueField } precision={ row.precision }/>);
         else if (row.editorField === "text")
@@ -228,48 +279,68 @@ export default class ItemDetail extends Component {
                 <Tooltip content={ error } tracking>
                     <TextBox value={ row.valueField } placeholder={ row.titleField }/>
                 </Tooltip>
-                );
+            );
         else if (row.editorField === "switch")
             return(<SwitchButton value={ row.valueField }/>);
-        else if (row.editorField === "combo")
-            if(row.dataField===undefined && Array.isArray(row.valueField)){
-                const data = row.dataField === undefined ?
-                    row.valueField.map((code)=>{ return { value: code, text: code} }): row.dataField;
-                const value = row.dataField === undefined ? row.valueField[0] :
-                    row.dataField.find(item => (item.value === row.valueField));
-                const addonEditor = row.dataField === undefined ? () => (
-                    <span
-                        className="textbox-icon icon-evotor-edit"
-                        title="Править коды"
-                        onClick = { ()=>this.handleClickComboValueChange(row) }>
+        else if(row.editorField === "tree")
+            return(
+                <ComboTree
+                    animate
+                    placeholder="Выберите группу"
+                    valueField = "uuid"
+                    textField = "text"
+                    data={ row.dataField }
+                    value={ this.state.parent }
+                    onChange={(value) => {
+                        const parent = getNodeByUuid(row.dataField, value);
+                        console.log("Мемяем ноду =>", value, parent);
+                        this.setState({ parent })
+                    }}
+                />
+            );
+        else if (row.editorField === "combo"){
+            // const dataRow =
+            // console.log("ROW=>",row);
+            const data = row.dataField;
+            const value = row.valueField === null ?
+                row.dataField[0] : row.dataField.find(item => (item.value === row.valueField));
+            const addEditor = row.edit ? () => (<span
+                className="textbox-icon icon-evotor-edit"
+                title="Править коды"
+                onClick = { ()=>this.handleClickComboDlgEditor(row) }>
                 </span>) : null;
-                return(<ComboBox
-                    data={ data }
-                    value={ value }
-                    editable={ false }
-                    //onChange={(value) => { this.editComboValues(row, value) }}
-                    addonRight={ addonEditor }
-                />);
-            }
+            return(<ComboBox
+                data={ data }
+                value={ value }
+                editable={ false }
+                //onChange={(value) => { this.editComboValues(row, value) }}
+                addonRight={ addEditor }
+            />);
+        }
     };
 
     renderView = ({ row }) => {
         if (row.editorField === "text")
             return(<div>{ row.valueField }</div>);
-        else if (row.editorField === "number")
+        else if(row.editorField === "number")
             return(<div>{ row.valueField }</div>);
-        else if (row.editorField === "switch")
+        else if(row.editorField === "switch")
             return(<SwitchButton value={row.valueField}/>);
-        else if (row.editorField === "combo") {
-            if(row.dataField===undefined && Array.isArray(row.valueField))
-                return(<div>{ row.valueField[0] }</div>);
+        else if(row.editorField === "tree"){
+            // const node = getNodeByUuid(row.dataField, row.valueField);
+            console.log("render view Node=>", this.state.parent);
+            if(this.state.parent) return(<div>{ this.state.parent.text }</div>);}
+        else if(row.editorField === "combo"){
+            if(row.valueField===null && Array.isArray(row.dataField))
+                return(<div>{ row.dataField[0].text }</div>);
             if(row.valueField !== null && Array.isArray(row.dataField)){
                 const value = row.dataField.find(item => (item.value === row.valueField));
                 if (value !== undefined) return(<div>{ value.text }</div>);
             }
-            // Ошибка
-            return(<div className="error">{ this.cellErrorMessage }</div>);
         }
+
+        // Ошибка
+        return(<div className="error">{ this.cellErrorMessage }</div>);
     };
 
     renderGroup = ({ value, rows }) =>{
@@ -290,17 +361,14 @@ export default class ItemDetail extends Component {
     };
 
     render() {
-        const { codesData, comboDlgClosed, rules } = this.state;
-        const { setKeyboardEventsListener } = this.props;
-        // Сохраним сеттер keyboard events listener для передачи другим компонентам
-        this.setKeyboardEventsListener = setKeyboardEventsListener;
-        this.setKeyboardEventsListener(this.componentKeyboardEvents);
+        const { data, rules, comboData, comboDlgClosed } = this.state;
 
         return(
             <ErrorBoundry>
                 <DataGrid
                     ref = { detail=>this.detail=detail }
-                    data={ this.updateData() }
+                    data={ data }
+                    idField = "nameField"
                     columnResizing
                     dblclickToEdit
                     expanderWidth ={ 20 }
@@ -311,7 +379,7 @@ export default class ItemDetail extends Component {
                     onCellContextMenu={ this.handleItemContextMenu }
                     onRowClick = { this.handleItemDetailRowClick }
                     onRowDblClick = { this.handleItemDetailRowDblClick }
-                    >
+                >
                     <GridColumn width={ 25 }/>
                     <GridColumn field="titleField" title="Имя поля" width="40%"/>
                     <GridColumn field="valueField" title="Параметр" width="60%"
@@ -322,12 +390,11 @@ export default class ItemDetail extends Component {
                     />
                 </DataGrid>
                 <CodeEditor
-                    data = { codesData }
+                    comboData = { comboData }
                     rules = { rules }
                     comboDlgClosed = { comboDlgClosed }
-                    comboDlgView = { this.comboDlgView }
-                    setKeyboardEventsListener = { setKeyboardEventsListener }
-                    prevKeyboardListener = { this.componentKeyboardEvents }
+                    comboDlgManager = { this.comboDlgManager }
+                    setKeyboardEventsListener = { this.setKeyboardEventsListener }
                 />
                 { this.renderContextMenu(this.props.contextMenu) }
             </ErrorBoundry>

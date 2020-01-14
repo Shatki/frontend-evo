@@ -53,11 +53,11 @@ export default class Dashboard extends React.Component {
                 ],
             },
 
-            listData: [],
-            treeData: [],
+            listData: null,
+            treeData: null,
 
-            displayTreeData: [],
-            displayListData: [],
+            displayTreeData: null,
+            displayListData: null,
             itemData: {
                 "uuid": "01ba18b6-8707-5f47-3d9c-4db058054cb2",
                 "code": "6",
@@ -81,7 +81,7 @@ export default class Dashboard extends React.Component {
                 "allowToSell": true,
                 "description": "Вкусный яблочный сидр.",
                 //"articleNumber": "сид123",
-                "parentUuid": "1ddea16b-971b-dee5-3798-1b29a7aa2e27",
+                "parentUuid": "e12a2d7b-d3b7-4d4d-8e81-b581f652b9e8",
                 "group": false,
                 "type": "ALCOHOL_NOT_MARKED",
                 "alcoholByVolume": 5.45,
@@ -100,6 +100,8 @@ export default class Dashboard extends React.Component {
             isover: false,
             dragItems: null,
         };
+        // Массив штришкодов
+        this.barCodes = null;
 
         this.keyboardEventListener = null;  // Пробное V2
         this.menu = null;
@@ -146,7 +148,7 @@ export default class Dashboard extends React.Component {
     loadData = (store_id = 0) =>{
         this.evotorService
             .getAllProducts(store_id)
-            .then(this.onDataLoaded);
+            .then(this.updateData);
     };
 
     updateListData = (treeData, listData, nodeView) => {
@@ -169,10 +171,12 @@ export default class Dashboard extends React.Component {
         });
     };
 
-    onDataLoaded = (data) =>{
+    updateData = (data) =>{
         // первоначальное заполнение данных
         const treeData = data.filter(item => item.group === true);
         const listData = data.filter(item => item.group === false);
+
+
         this.updateTreeData(treeData);
         this.updateListData(treeData, listData, null);
         this.setState({
@@ -350,6 +354,7 @@ export default class Dashboard extends React.Component {
                     <ItemDetail
                         { ...this.state.constants }
                         itemData = { this.state.itemData }
+                        treeData = { this.state.displayTreeData }
                         contextMenu = { this.contextMenu.itemMenu }
                         setKeyboardEventsListener = { this.setKeyboardEventsListener }
                     />
