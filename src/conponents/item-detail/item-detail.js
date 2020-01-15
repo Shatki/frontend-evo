@@ -69,12 +69,14 @@ export default class ItemDetail extends Component {
             //return value.length === parseInt(param[0], 10);
             "required": {
                 "validator": (value) => {
+                    if(Array.isArray(value)) return true; // Todo доделать!!!
                     return null != value && ("boolean" == typeof value ? value : String(value).trim().length > 0);
                 },
                 message: 'Поле является обязательным'
             },
             "nullable": {
                 "validator": (value) => {
+                    if(Array.isArray(value)) return true; // Todo доделать!!!
                     return null === value || ("boolean" == typeof value ? value : String(value).trim().length > 0);
                 },
                 message: 'Созданное поле не может быть пустым'
@@ -87,6 +89,7 @@ export default class ItemDetail extends Component {
             },
             "length12": {
                 "validator": (value) => {
+                    if(Array.isArray(value)) return true; // Todo доделать!!!
                     return value.length === 12;
                 },
                 message: 'Длина штрих кода должна быть 12',
