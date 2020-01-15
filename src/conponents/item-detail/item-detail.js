@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { ComboBox, DataGrid, GridColumn, NumberBox, SwitchButton, TextBox, Tooltip, ComboTree } from 'rc-easyui'
+import { ComboBox, DataGrid, GridColumn, SwitchButton, TextBox, Tooltip, ComboTree } from 'rc-easyui'
 import ContextMenu from '../context-menu'
 import ErrorBoundry from '../error-boundry'
 import CodeEditor from "./item-code-editor";
@@ -17,18 +17,20 @@ export default class ItemDetail extends Component {
                 {"nameField": "name", "valueField": null, "titleField": "Наименование", "groupField": "Основные",
                     "editorField": "text", "rules": ["required",] },
                 {"nameField": "code", "valueField": null, "titleField": "Код", "groupField": "Основные",
-                    "editorField": "number", "rules": ["required",] },
+                    "editorField": "text", "rules": ["required", "positive"] },
                 {"nameField": "articleNumber", "valueField": null, "titleField": "Артикул", "groupField": "Основные",
                     "editorField": "text", "rules": ["nullable",] },
                 {"nameField": "barCodes", "valueField": null, "titleField": "Штрихкоды", "groupField": "Коды",
-                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable", "length12"] },
+                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable"] },
 
                 {"nameField": "price", "valueField": null, "titleField": "Цена продажи", "groupField": "Цены",
-                    "editorField": "number", "precision": 2, "rules": ["required",] },
+                    "editorField": "text", "rules": ["required", "precision2",] },
                 {"nameField": "costPrice", "valueField": null, "titleField": "Цена закупки", "groupField": "Цены",
-                    "editorField": "number", "precision": 2, "rules": ["required",] },
+                    "editorField": "text", "rules": ["required", "precision2"] },
+
                 {"nameField": "quantity", "valueField": null, "titleField": "Остаток", "groupField": "Склад",
-                    "editorField": "number", "rules": ["required",] },
+                    "editorField": "text", "rules": ["required", "precision3"] },
+
                 {"nameField": "measureName", "valueField": null, "titleField": "Единицы", "groupField": "Цены",
                     "editorField": "combo", "dataField": this.props.measureTypes, "rules": ["required",]},
                 {"nameField": "tax", "valueField": null, "titleField": "Ставка НДС", "groupField": "Цены",
@@ -44,11 +46,11 @@ export default class ItemDetail extends Component {
                 {"nameField": "alcoCodes", "valueField": null, "titleField": "Алкокод", "groupField": "Коды",
                     "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable", "digital", "length19"] },
                 {"nameField": "alcoholProductKindCode", "valueField": null, "titleField": "Код вида продукции", "groupField": "ЕГАИС",
-                    "editorField": "number" },
+                    "editorField": "text", "rules": ["positive",] },
                 {"nameField": "alcoholByVolume", "valueField": null, "titleField": "Крепкость", "groupField": "ЕГАИС",
-                    "editorField": "number", "precision": 2 },
+                    "editorField": "text", "rules": ["positive", "precision2"] },
                 {"nameField": "tareVolume", "valueField": null, "titleField": "Объем тары", "groupField": "ЕГАИС",
-                    "editorField": "number", "precision": 2 },
+                    "editorField": "text","rules": ["positive", "precision2"] },
 
                 {"nameField": "group", "valueField": null, "titleField": "Группа", "groupField": "Основные",
                     "editorField": "switch", "rules": ["required",] },
@@ -69,37 +71,70 @@ export default class ItemDetail extends Component {
             //return value.length === parseInt(param[0], 10);
             "required": {
                 "validator": (value) => {
-                    if(Array.isArray(value)) return true; // Todo доделать!!!
+                    console.log("required validation", value);
+                    //if(Array.isArray(value)) return true; // Todo доделать!!!
                     return null != value && ("boolean" == typeof value ? value : String(value).trim().length > 0);
                 },
                 message: 'Поле является обязательным'
             },
             "nullable": {
                 "validator": (value) => {
-                    if(Array.isArray(value)) return true; // Todo доделать!!!
+                    console.log("nullable validation", value);
+                    //if(Array.isArray(value)) return true; // Todo доделать!!!
                     return null === value || ("boolean" == typeof value ? value : String(value).trim().length > 0);
                 },
                 message: 'Созданное поле не может быть пустым'
             },
             "digital": {
                 "validator": (value) => {
+                    console.log("digital validation", value);
                     return /^\d+$/.test(value);
                 },
                 message: 'Код может состоять только из цифр'
             },
-            "length12": {
+            "float": {
                 "validator": (value) => {
-                    if(Array.isArray(value)) return true; // Todo доделать!!!
-                    return value.length === 12;
+                    console.log("float validation", value);
+                    return /^\d*\.?\d+$/.test(value);
                 },
-                message: 'Длина штрих кода должна быть 12',
+                message: 'Значение должно быть десятичным числом'
+            },
+            "positive": {
+                "validator": (value) => {
+                    console.log("positive validation", value);
+                    //if(Array.isArray(value)) return true; // Todo доделать!!!
+                    return parseInt(value, 10) > 0;
+                },
+                message: 'Значение не может быть отрицательным',
+            },
+            "precision2": {
+                "validator": (value) => {
+                    const parts = String(value).split('.');
+                    console.log("precision validation", value);
+                    //if(Array.isArray(value)) return true; // Todo доделать!!!
+                    if (parts.length === 2) return parts[1].length === 2;
+                    else return false
+                },
+                message: 'Точность числа только до двух знаков',
+            },
+            "precision3": {
+                "validator": (value) => {
+                    const parts = String(value).split('.');
+                    console.log("precision validation", value);
+                    //if(Array.isArray(value)) return true; // Todo доделать!!!
+                    if (parts.length === 2) return parts[1].length === 3;
+                    else return false
+                },
+                message: 'Точность числа только до трех знаков',
             },
             "length19": {
                 "validator": (value) => {
+                    console.log("lenght19 validation", value);
                     return value.length === 19;
                 },
                 message: 'Длина алкокода должна быть 19',
             },
+
         };
         this.cellErrorMessage = "Ошибка данных";
 
@@ -189,6 +224,7 @@ export default class ItemDetail extends Component {
     };
 
     handleItemDetailKeyEnter = () =>{
+
         this.detail.endEdit();
         console.log("Item Detail Enter Key");
     };
@@ -257,6 +293,10 @@ export default class ItemDetail extends Component {
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY)
     };
 
+    handleEndEdit = ({ row, originalValue, errors } ) =>{
+        console.log("EndEdit=>", row, originalValue, errors );
+    };
+
     handleItemClick = (value) => {
         console.log(value, this.state.data);
     };
@@ -275,14 +315,10 @@ export default class ItemDetail extends Component {
 
     renderEditor = ({ row, error }) =>{
         // Todo: Доделать
-        if (row.editorField === "number")
-            return(<NumberBox value={ row.valueField } precision={ row.precision }/>);
-        else if (row.editorField === "text")
-            return(
-                <Tooltip content={ error } tracking>
-                    <TextBox value={ row.valueField } placeholder={ row.titleField }/>
-                </Tooltip>
-            );
+        if (row.editorField === "text")
+            return( <Tooltip content={ error } tracking>
+                        <TextBox value={ row.valueField } placeholder={ row.titleField }/>
+                    </Tooltip>);
         else if (row.editorField === "switch")
             return(<SwitchButton value={ row.valueField }/>);
         else if(row.editorField === "tree")
@@ -296,7 +332,7 @@ export default class ItemDetail extends Component {
                     value={ this.state.parent }
                     onChange={(value) => {
                         const parent = getNodeByUuid(row.dataField, value);
-                        console.log("Мемяем ноду =>", value, parent);
+                        //console.log("Меняем ноду =>", value, parent);
                         this.setState({ parent })
                     }}
                 />
@@ -382,6 +418,8 @@ export default class ItemDetail extends Component {
                     onCellContextMenu={ this.handleItemContextMenu }
                     onRowClick = { this.handleItemDetailRowClick }
                     onRowDblClick = { this.handleItemDetailRowDblClick }
+                    onEditEnd = { this.handleEndEdit }
+                    //onEditValidate = { this.handleEditValidate }
                 >
                     <GridColumn width={ 25 }/>
                     <GridColumn field="titleField" title="Имя поля" width="40%"/>

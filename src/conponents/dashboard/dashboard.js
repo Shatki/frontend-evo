@@ -62,9 +62,9 @@ export default class Dashboard extends React.Component {
                 "uuid": "01ba18b6-8707-5f47-3d9c-4db058054cb2",
                 "code": "6",
                 "barCodes": [
-                    "2000000000060",
-                    "2000000000061",
-                    "2000000000062",
+                    "200000000060",
+                    "200000000061",
+                    "200000000062",
                 ],
                 "alcoCodes": [
                     "0000000000000000001",
