@@ -12,7 +12,7 @@
             { node x, parentUuid: mode1 }
         ]
 
-    displayTreeData => трансформированный массив нод в древовидную структуру.
+    processingTreeData => трансформированный массив нод в древовидную структуру.
     Каждая Нода это объект вида:
        {
             uuid: node_uuid,
@@ -72,8 +72,7 @@ export const transformTreeData = (row, children=[]) =>{
     }
 };
 
-
-export const displayTreeData = (data, parentUuid=null) => {
+export const processingTreeData = (data, parentUuid=null) => {
     // Возвращает коренной список, parentUuid = null
     // Алгоритм преобразования данных в объект для treeItem
     const dataFilter = data.filter(item => parentUuid === item.parentUuid);
@@ -81,13 +80,32 @@ export const displayTreeData = (data, parentUuid=null) => {
     if (dataFilter.length > 0){
         // Выбираем элементы имеющие children
         return  dataFilter.map((child)=>{
-            let children = displayTreeData(data, child.uuid);
+            let children = processingTreeData(data, child.uuid);
             return transformTreeData(child, children)
         });
     } else {
         return [];
     }
 };
+
+export const processingListData = (treeData, listData, nodeUuid) => {
+        /* Преобразование данных из Стейта в данные плагина для отображения в ListItem */
+        // Сначала выбираем каталоги нужного node, затем добавляем items
+        let data =  treeData.filter(item => item.parentUuid === nodeUuid);
+        return data
+        // Передаем в ItemList только наименование и код nodes
+            .map((item)=>{
+                return{
+                    code: item.code,
+                    uuid: item.uuid,
+                    parentUuid: item.parentUuid,
+                    name: item.name,
+                    group: true
+                }
+            })
+            // Приcоединяем items и передаем
+            .concat(listData.filter(item => item.parentUuid === nodeUuid));
+    };
 
 export const createNode = (data, node) =>{
     // Todo Переделать по фенШую React:
@@ -125,7 +143,7 @@ export const moveNode = (data, node, movingNode) =>{
 
         Замечание: Все операции проходят над dataTree, а не над обработанной transformTreeData
         dataTree => линейный массив, не обработанный для хранения данных
-        displayTreeData = древовидный массив объектов, рабочий для отображения
+        processingTreeData = древовидный массив объектов, рабочий для отображения
         Запрет на перемещение "в себя" или в свои "дочерние" ноды
         node(dataTree) => Parent
         movingNode(dataTree) => Child
@@ -154,10 +172,10 @@ export const moveNode = (data, node, movingNode) =>{
 export const getNodeByUuid = (data, uuid) =>{
     /*  Функция возвращает искомую Ноду по uuid или null
 
-        Замечание: Все операции проходят над displayTreeData(transformTreeData)
+        Замечание: Все операции проходят над processingTreeData(transformTreeData)
         Выполняется по рекурсивному принципу
 
-        displayTreeData => древовидный массив объектов, рабочий для отображения
+        processingTreeData => древовидный массив объектов, рабочий для отображения
 
         data => древовидный массив
         uuid => итентификатор новы в формате uuid v4

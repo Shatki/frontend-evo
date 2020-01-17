@@ -13,6 +13,8 @@ export default class ItemList extends Component {
         super(props);
 
         this.state = {
+            data: [],
+            nodeView: null,
             operators: ["nofilter", "equal", "notequal", "less", "greater"],
             allChecked: false,
             rowClicked: false,
@@ -28,7 +30,8 @@ export default class ItemList extends Component {
             },
             errors: {},
             title: '',
-            closed: true
+            closed: true,
+            collapsed: props.collapsed,
         };
         this.listContextMenuFunction = [
             { key: "Создать", function: this.handleListRowCreate },
@@ -40,16 +43,58 @@ export default class ItemList extends Component {
             { key: "Удалить", function: this.handleListRowDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ]
+        this.onListRowSelection = props.onListRowSelection;
     }
 
+    /* ----------------- Lifecycle methods -------------------------------------------- */
+    componentDidMount() {
+        this.updateData();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if( prevState.nodeView.uuid)
+        if( prevState.nodeView.uuid !== this.state.nodeView.uuid)
+            this.updateData();
+    }
+
+    /* ----------------- Data operations ---------------------------------------------- */
+    updateData = () => {
+        const { listData: data, nodeView } = this.props;
+        this.setState({
+            data,
+            nodeView,
+            loading: false
+        })
+    };
+
+    getError = (name) => {
+        const { errors } = this.state;
+        if (!errors){
+            return null;
+        }
+        return errors[name] && errors[name].length
+            ? errors[name][0]
+            : null;
+    };
+    /* ----------------- Keyboard event functions ------------------------------------- */
+
+
+
+    /* ----------------- Обработка событий ItemList ----------------------------------- */
     handleRowDblClick = ({ row }) =>{
         // реакция на двойной клик
         if(row.group){
-            this.props.onListRowSelection(row);
+            this.onListRowSelection(row);
         }else{
             this.editRow(row);
             console.log("Редактируем=>", row.name);
         }
+    };
+
+    handleRowDragStart = (event, row) => {
+        //  Либо выделенные элементы либо один, что выбран
+        const items = this.state.selection.length > 0 ? this.state.selection: [row];
+        this.props.onDrag(items);
     };
 
     changeSelections = (selection=[]) => {
@@ -67,11 +112,24 @@ export default class ItemList extends Component {
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY);
     };
 
-    // ItemList => Close menu
+    handleSelectionChange = (selection) => {
+        // Вызываем для сохранения стейта в Дашбоард
+        if (this.state.editingNode !== null) this.list.cancelEdit();
+        this.changeSelections(selection)
+    };
+
+    handleContextMenuClick = (value) =>{
+        this.listContextMenuFunction
+            .find(m => m.key === value)
+            // выбираем [0] т.к e ItemList selections это массив
+            .function(this.state.selection[0]);
+    };
+
     handleContextMenuClose = (row) =>{
         this.list.cancelEdit();
     };
 
+    // ItemList => Close menu
     handleListRowCreate = (row) =>{
         console.log("Создаем новый row ", row);
     };
@@ -96,27 +154,37 @@ export default class ItemList extends Component {
         console.log("Дублируем row", row);
     };
 
-
-    handleSelectionChange = (selection) => {
-        // Вызываем для сохранения стейта в Дашбоард
-        if (this.state.editingNode !== null) this.list.cancelEdit();
-        this.changeSelections(selection)
+    /* ----------------- Обработка формы редактирования ------------------------------- */
+    editRow = (row) => {
+        this.setState({
+            editingRow: row,
+            model: Object.assign({}, row),
+            title: 'Edit',
+            closed: false
+        });
     };
 
-    handleContextMenuClick = (value) =>{
-        this.listContextMenuFunction
-            .find(m => m.key === value)
-            // выбираем [0] т.к e ItemList selections это массив
-            .function(this.state.selection[0]);
+    saveRow = () => {
+        this.form.validate(() => {
+            if (this.form.valid()) {
+                let row = Object.assign({}, this.state.editingRow, this.state.model);
+                let data = this.state.data.slice();
+                let index = data.indexOf(this.state.editingRow);
+                data.splice(index, 1, row);
+                this.setState({
+                    data: data,
+                    closed: true
+                })
+            }
+        })
     };
 
-    handleRowDragStart = (event, row) => {
-        //  Либо выделенные элементы либо один, что выбран
-        const items = this.state.selection.length > 0 ? this.state.selection: [row];
-        this.props.onDrag(items);
+    dialogBtnClose = () => {
+       this.setState({ closed: true });
     };
 
-    renderColumn = ({ value, row, rowIndex }) => {
+    /* ----------------- Render методы отображения компонента ------------------------- */
+    renderColumn = ({ value, row }) => {
         const proxy = () => {
             const target = this.state.selection.length > 0 ? this.state.selection : [row] ;
             const items = target.map((item)=>{
@@ -149,45 +217,6 @@ export default class ItemList extends Component {
                 </div>
             </Draggable>
         )
-    };
-
-    // ----------------------------------------------------------------------------------------------------------------
-    getError = (name) => {
-        const { errors } = this.state;
-        if (!errors){
-            return null;
-        }
-        return errors[name] && errors[name].length
-            ? errors[name][0]
-            : null;
-    };
-
-    editRow = (row) => {
-        this.setState({
-            editingRow: row,
-            model: Object.assign({}, row),
-            title: 'Edit',
-            closed: false
-        });
-    };
-
-    saveRow = () => {
-        this.form.validate(() => {
-            if (this.form.valid()) {
-                let row = Object.assign({}, this.state.editingRow, this.state.model);
-                let data = this.state.data.slice();
-                let index = data.indexOf(this.state.editingRow);
-                data.splice(index, 1, row);
-                this.setState({
-                    data: data,
-                    closed: true
-                })
-            }
-        })
-    };
-
-    dialogBtnClose = () => {
-       this.setState({ closed: true });
     };
 
     renderDialog = () => {
@@ -256,7 +285,7 @@ export default class ItemList extends Component {
         )
     };
 
-    renderRowStyle = (row) =>{
+    renderRowStyle = (row) => {
         // Придаем стиль nodes строкам
         if (row.group) {
             //console.log(row.name);
@@ -266,17 +295,10 @@ export default class ItemList extends Component {
         return null;
     };
 
-    onDataLoaded = (data) => {
-        this.setState({
-            data,
-            loading: false
-        })
-    };
-
-    renderContextMenu = (menu) => {
+    renderContextMenu = () => {
         return(
             <ContextMenu
-                menu = { menu }
+                menu = { this.props.contextMenu }
                 menuRef = { (ref)=>this.menu=ref }
                 handleItemClick = { this.handleContextMenuClick }
             />
@@ -284,7 +306,9 @@ export default class ItemList extends Component {
     };
 
     render() {
-        const numberBoxFilter = () =>{
+        const { data } = this.state;
+
+        const numberBoxFilter = () => {
             return (<NumberBox/>)
         };
 
@@ -304,7 +328,7 @@ export default class ItemList extends Component {
                     style = {{ height: 'calc(100vh - 60px)' }}
                     filterable
                     rowCss = { this.renderRowStyle }
-                    data = { this.props.listData }
+                    data = { data }
                     editMode = "row"
                     columnMoving
                     onCellDblClick = { this.handleRowDblClick }
@@ -335,7 +359,7 @@ export default class ItemList extends Component {
                                 filter={ comboBoxFilter }
                     />
                 </DataGrid>
-                { this.renderContextMenu(this.props.contextMenu) }
+                { this.renderContextMenu() }
                 { this.renderDialog() }
             </ErrorBoundry>
         )

@@ -10,7 +10,7 @@ export default class ItemDetail extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            data: null,                         // преобразованные, рабочие данные
+            data: [],                           // преобразованные, рабочие данные
             itemData : null,                    // не обработанные данные, которые прининяли и будем отдавать
             itemProps: [
                 //{"nameField": "uuid", "valueField": null, "titleField": "UUID", "groupField": "Основные", "editorField": "text"},
@@ -313,6 +313,7 @@ export default class ItemDetail extends Component {
         //console.log("DblClick->", row);
     };
 
+    /* ----------------- Render методы отображения компонента ------------------------- */
     renderEditor = ({ row, error }) =>{
         // Todo: Доделать
         if (row.editorField === "text")
@@ -389,10 +390,10 @@ export default class ItemDetail extends Component {
         )
     };
 
-    renderContextMenu = (menu) => {
+    renderContextMenu = () => {
         return(
             <ContextMenu
-                menu = { menu }
+                menu = { this.props.contextMenu }
                 menuRef = { (ref)=>this.menu=ref }
                 handleItemClick = { this.handleContextMenuClick }
             />
@@ -437,7 +438,7 @@ export default class ItemDetail extends Component {
                     comboDlgManager = { this.comboDlgManager }
                     setKeyboardEventsListener = { this.setKeyboardEventsListener }
                 />
-                { this.renderContextMenu(this.props.contextMenu) }
+                { this.renderContextMenu() }
             </ErrorBoundry>
         )
     }

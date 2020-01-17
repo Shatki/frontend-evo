@@ -11,10 +11,9 @@ import './item-tree.css'
 export default class ItemTree extends Component {
     constructor(props){
         super(props);
-        //this.handleContextMenuClick.bind(this);
-        //this.handleNodeContextMenu.bind(this);
-        //this.handleSelectionChange.bind(this);
         this.state = {
+            data: [],
+
             hasError: false,
             selection: null,
             editingNode: null,
@@ -26,8 +25,28 @@ export default class ItemTree extends Component {
             { key: "Удалить", function: this.handleTreeNodeDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ]
+        this.onTreeNodeSelectView = props.onTreeNodeSelectView;
+        this.onTreeSelectionChange = props.onTreeSelectionChange;
+        this.onChangeNodeState = props.onChangeNodeState;
     }
 
+    /* ----------------- Lifecycle methods -------------------------------------------- */
+    componentDidMount() {
+        this.updateData();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+    }
+
+    /* ----------------- Data operations ---------------------------------------------- */
+    updateData = () => {
+        const { treeData } = this.props;
+        this.setState({
+            data: treeData,
+        })
+    };
+
+   /* ----------------- Keyboard event functions ------------------------------------- */
     handleNodeDragOver = (node) => {
         this.tree.selectNode(node);
         console.log("Drag over =>", node.text);
@@ -40,20 +59,6 @@ export default class ItemTree extends Component {
     handleNodeDrop = (node) => {
         this.props.onDrop(node);
         //console.log("Drop =>", node.text);
-    };
-
-    renderNode = ({ node }) => {
-        return (
-            <Droppable
-                onDragOver={ () => this.handleNodeDragOver(node) }
-                onDragLeave={ () => this.handleNodeDragLeave(node) }
-                onDrop={ () => this.handleNodeDrop(node) }
-            >
-                <div tabIndex="0">
-                    {node.text}
-                </div>
-            </Droppable>
-        )
     };
 
     // ItemTree => Create new node
@@ -89,7 +94,7 @@ export default class ItemTree extends Component {
     changeSelections = (selection=null) => {
         // Основная функция изменения выделений строк в ItemTree
         this.setState({
-            selection: selection,
+            selection,
         });
     };
 
@@ -111,14 +116,14 @@ export default class ItemTree extends Component {
 
     handleNodeDblClick = (node) =>{
         // Вызываем головную функцию из Дашбоарда
-        this.props.onTreeNodeSelection(node)
+        this.onTreeNodeSelectView(node)
     };
 
     handleSelectionChange = (node) => {
         // Вызываем для сохранения стейта в Дашбоард
         if (this.state.editingNode !== null) this.tree.cancelEdit();
 
-        this.props.onTreeSelectionChange(node);
+        this.onTreeSelectionChange(node);
     };
 
     handleEditBegin = ({ node, originalValue }) =>{
@@ -141,26 +146,41 @@ export default class ItemTree extends Component {
 
     handleNodeExpand = (node) => {
         // Сохраним state="opened" у ноды в dataTree
-        if (node.uuid !== null) this.props.onChangeNodeState(node, "open")
+        if (node.uuid !== null) this.onChangeNodeState(node, "open")
     };
 
     handleNodeCollapse = (node) => {
         // Сохраним state="closed" у ноды в dataTree
-        if (node.uuid !== null) this.props.onChangeNodeState(node, "closed")
+        if (node.uuid !== null) this.onChangeNodeState(node, "closed")
     };
 
-    renderContextMenu = (menu) => {
+    renderContextMenu = () => {
         return(
             <ContextMenu
-                menu = { menu }
+                menu = { this.props.contextMenu }
                 menuRef = { (ref)=>this.menu=ref }
                 handleItemClick = { this.handleContextMenuClick }
             />
         )
     };
 
+    renderNode = ({ node }) => {
+        return (
+            <Droppable
+                onDragOver={ () => this.handleNodeDragOver(node) }
+                onDragLeave={ () => this.handleNodeDragLeave(node) }
+                onDrop={ () => this.handleNodeDrop(node) }
+            >
+                <div tabIndex="0">
+                    {node.text}
+                </div>
+            </Droppable>
+        )
+    };
+
     render() {
-        if(this.state.hasError)
+        const { data, hasError } = this.state;
+        if(hasError)
             return (<ErrorView/>);
         return (
             <ErrorBoundry>
@@ -172,13 +192,13 @@ export default class ItemTree extends Component {
                     onNodeExpand = { this.handleNodeExpand }
                     onNodeCollapse = { this.handleNodeCollapse }
                     onSelectionChange = { this.handleSelectionChange }
-                    data = { this.props.treeData }
+                    data = { data }
                     onNodeContextMenu = { this.handleNodeContextMenu }
                     onEditBegin = { this.handleEditBegin }
                     onEditEnd = { this.handleEditEnd }
                     onEditCancel = { this.handleEditCancel }
                 />
-                { this.renderContextMenu(this.props.contextMenu) }
+                { this.renderContextMenu() }
             </ErrorBoundry>
         )
     }

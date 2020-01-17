@@ -6,7 +6,7 @@ import ItemList from "../item-list";
 import ItemDetail from "../item-detail";
 import EvotorService from "../../services/evotor-service";
 import LoadingView from "../loading-view";
-import { addRootNode, moveNode, displayTreeData, transformTreeData } from "../../algorithms/node-services";
+import { addRootNode, moveNode, processingTreeData, processingListData, getNodeByUuid } from "../../algorithms/node-services";
 import './dashboard.css'
 
 
@@ -53,11 +53,8 @@ export default class Dashboard extends React.Component {
                 ],
             },
 
-            listData: null,
-            treeData: null,
-
-            displayTreeData: null,
-            displayListData: null,
+            treeData: null,                     // Сырые данные для  ItemTree
+            listData: null,                     // Сырые данные для  ItemList
             itemData: {
                 "uuid": "01ba18b6-8707-5f47-3d9c-4db058054cb2",
                 "code": "6",
@@ -87,15 +84,20 @@ export default class Dashboard extends React.Component {
                 "alcoholByVolume": 5.45,
                 "alcoholProductKindCode": 123,
                 "tareVolume": 0.57
-            },
+            },      // Сырые данные для  ItemDetail
 
-            treeSelection: null, // target node
-            nodeView: null, // view node
-            //listSelection: [],
-            itemSelection: null,
+            processedTreeData: null,            // Обработанные данные для отображения в ItemTree
+            processedListData: null,            // Обработанные данные для отображения в ItemList
+
+            treeSelection: null,                //  Выделение в ItemTree
+            //listSelection: [],                //  Выделение в ItemList
+            itemSelection: null,                // ????Данные для отображения в ItemDetail
+
+            nodeView: null,                     //  Отображаемая Нода в ItemList выбранная в ItemTree
 
             collapsedWest: false,
             collapsedEast: true,
+
             // Drag'n'Drop
             isover: false,
             dragItems: null,
@@ -144,43 +146,76 @@ export default class Dashboard extends React.Component {
             ],
         };
     };
+    /* ----------------- Lifecycle methods -------------------------------------------- */
+    componentDidMount() {
+        document.addEventListener("keydown", this.handleKeyboardEvent);
+        this.loadData();
+    }
 
+    componentDidUpdate(prevProps, prevState) {
+        //if(prevState.nodeView.uuid !== state.nodeView.uuid)
+        //    this.updateListData()
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener("keydown", this.handleKeyboardEvent);
+    }
+
+    /* ----------------- Data operations ---------------------------------------------- */
     loadData = (store_id = 0) =>{
         this.evotorService
             .getAllProducts(store_id)
             .then(this.updateData);
     };
 
+    updateData = (data) =>{
+        const { nodeView } = this.state;
+
+        // первоначальное заполнение данных
+        const treeData = data.filter(item => item.group === true);
+        const listData = data.filter(item => item.group === false);
+
+        this.updateTreeData(treeData);
+        this.updateListData(treeData, listData, nodeView);
+        this.setState({
+            loading: false,
+        });
+    };
+
     updateListData = (treeData, listData, nodeView) => {
+        const processedListData = processingListData(treeData, listData, nodeView === null ? null : nodeView.uuid);
         // Обновление данных в ListItem
         this.setState({
-            listData: listData,
-            listSelection: [],
-            displayListData: this.displayListData(treeData, listData, nodeView === null ? null : nodeView.uuid),
+            listData,
+            nodeView,
+            processedListData,
+            listSelection: null,
         });
     };
 
     updateTreeData = (treeData, nodeRoot = null) => {
         // Обновление данных в ListItem
         const { store } = this.state;
-        const children = displayTreeData(treeData, nodeRoot);
+        const children = processingTreeData(treeData, nodeRoot);
+        const processedTreeData = addRootNode(children, store.name);
         this.setState({
-            treeData: treeData,
-            displayTreeData: addRootNode(children, store.name),
-            treeSelection: [],
+            treeData,
+            processedTreeData,
+            treeSelection: null,
         });
     };
 
-    updateData = (data) =>{
-        // первоначальное заполнение данных
-        const treeData = data.filter(item => item.group === true);
-        const listData = data.filter(item => item.group === false);
 
 
-        this.updateTreeData(treeData);
-        this.updateListData(treeData, listData, null);
+    // ItemTree => Open Node
+    handleTreeNodeSelectView = (node) =>{
+        // Просмотр выбранной ноды в ListItem
+        const { treeData, listData } = this.state;
+        const processedListData = processingListData(treeData, listData, node.uuid);
+        console.log("Выбрали ноду=>", node, processedListData);
         this.setState({
-            loading: false,
+            nodeView: node,
+            processedListData,
         });
     };
 
@@ -188,15 +223,7 @@ export default class Dashboard extends React.Component {
         // Через эту функцию проходят все операции по изменению данных
     };
 
-    componentDidMount() {
-        document.addEventListener("keydown", this.handleKeyboardEvent);
-        this.loadData();
-    }
-
-    componentWillUnmount() {
-        document.removeEventListener("keydown", this.handleKeyboardEvent);
-    }
-
+    /* ----------------- Keyboard event functions ------------------------------------- */
     // Todo Undo/Redo event + other
     setKeyboardEventsListener = (listener) => {
         this.keyboardEventListener =  listener
@@ -209,42 +236,12 @@ export default class Dashboard extends React.Component {
             this.keyboardEventListener(e)
     };
 
-    // ***** Context Menu ***************************************************************************
+    /* ----------------- Обработка событий Dashboard ---------------------------------- */
     handleTreeSelectionChange = (node) =>{
         //console.log(node);
         this.setState({
             treeSelection: node,
         });
-    };
-
-    // ItemTree => Open Node
-    handleTreeNodeSelectView = (node) =>{
-        // Просмотр выбранной ноды в ListItem
-        const { treeData, listData } = this.state;
-        this.setState({
-            nodeView: node,
-            displayListData: this.displayListData(treeData, listData, node.uuid)
-        });
-    };
-
-    // ***** Data Update ****************************************************************************
-    displayListData = (treeData, listData, nodeUuid) => {
-        /* Преобразование данных из Стейта в данные плагина для отображения в ListItem */
-        // Сначала выбираем каталоги нужного node, затем добавляем items
-        let data =  treeData.filter(item => item.parentUuid === nodeUuid);
-        return data
-        // Передаем в ItemList только наименование и код nodes
-            .map((item)=>{
-                return{
-                    code: item.code,
-                    uuid: item.uuid,
-                    parentUuid: item.parentUuid,
-                    name: item.name,
-                    group: true
-                }
-            })
-            // Приcоединяем items и передаем
-            .concat(listData.filter(item => item.parentUuid === nodeUuid));
     };
 
     handleDropListItem = (node) => {
@@ -291,14 +288,19 @@ export default class Dashboard extends React.Component {
         }
     };
 
-    // ***** ItemList events ************************************************************************
     // ItemList => DblClick open
     handleListRowSelection = (row) => {
-        const node = transformTreeData(row);
+        const node = getNodeByUuid(this.state.processedTreeData, row.uuid);
         this.handleTreeNodeSelectView(node)
     };
 
+    /* ----------------- Render методы отображения компонента ------------------------- */
     render() {
+        const { constants,
+            collapsedWest, collapsedEast, nodeView,
+            processedTreeData, processedListData, itemData } = this.state;
+
+
         if(this.state.loading)
             return(<LoadingView/>);
         return (
@@ -314,15 +316,15 @@ export default class Dashboard extends React.Component {
                     region="west"
                     title="Группы товаров"
                     collapsible
-                    collapsed = { this.state.collapsedWest }
+                    collapsed = { collapsedWest }
                     expander
                     split
                     style={{ minWidth: 150, maxWidth: 400 }}>
                     <ItemTree
-                        treeData = { this.state.displayTreeData }
+                        treeData = { processedTreeData }
                         onDrop = { this.handleDropListItem }
                         onTreeSelectionChange = { this.handleTreeSelectionChange }
-                        onTreeNodeSelection = { this.handleTreeNodeSelectView }
+                        onTreeNodeSelectView = { this.handleTreeNodeSelectView }
                         onChangeNodeState = { this.handleChangeNodeState }
                         contextMenu = { this.contextMenu.treeMenu }
                     />
@@ -331,11 +333,13 @@ export default class Dashboard extends React.Component {
                 <LayoutPanel
                     region="center">
                     <ItemList
-                        { ...this.state.constants }
-                        listData = { this.state.displayListData }
+                        { ...constants }
+                        nodeView = { nodeView }
+                        listData = { processedListData }
                         onDrag = { this.handleDragListItem }
                         onListRowSelection = { this.handleListRowSelection }
                         contextMenu = { this.contextMenu.listMenu }
+                        collapsed = { collapsedEast }
                         //node = { this.state.treeSelection }
                         //handleListSelectionChange = { this.handleListSelectionChange }
                     />
@@ -343,18 +347,18 @@ export default class Dashboard extends React.Component {
                 </LayoutPanel>
 
                 <LayoutPanel
-                    title="Свойства"
+                    title = "Свойства"
                     collapsible
-                    collapsed ={ this.state.collapsedEast}
+                    collapsed ={ collapsedEast }
                     //expand = { this.handleExpandEast }
                     expander
-                    region="east"
+                    region = "east"
                     split
-                    style={{ minWidth: 200, maxWidth: 400 }}>
+                    style = {{ minWidth: 200, maxWidth: 400 }}>
                     <ItemDetail
-                        { ...this.state.constants }
-                        itemData = { this.state.itemData }
-                        treeData = { this.state.displayTreeData }
+                        { ...constants }
+                        itemData = { itemData }
+                        treeData = { processedTreeData }
                         contextMenu = { this.contextMenu.itemMenu }
                         setKeyboardEventsListener = { this.setKeyboardEventsListener }
                     />
