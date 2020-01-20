@@ -195,6 +195,52 @@ export default class Dashboard extends React.Component {
                 { key: "close", text: "Закрыть", disabled: false },
             ],
         };
+        this.testNode = {
+            alcoCodes: null,
+            alcoholByVolume: null,
+            alcoholProductKindCode: null,
+            allowToSell: null,
+            articleNumber: null,
+            barCodes: null,
+            code: "700",
+            costPrice: null,
+            description: null,
+            group: true,
+            hasVariants: false,
+            measureName: "шт",
+            name: "Кабели",
+            parentUuid: "0d4aaf2a-fb90-404e-b84b-64c48ac116db",
+            price: null,
+            quantity: null,
+            tareVolume: null,
+            tax: null,
+            type: null,
+            uuid: "2818bd03-bc5f-445c-9964-cf42db512c5e",
+        };
+
+        this.targetNode = {
+            alcoCodes: null,
+            alcoholByVolume: null,
+            alcoholProductKindCode: null,
+            allowToSell: null,
+            articleNumber: null,
+            barCodes: null,
+            code: "606",
+            costPrice: null,
+            description: null,
+            group: true,
+            hasVariants: false,
+            measureName: "шт",
+            name: "Программное обеспечение",
+            parentUuid: null,
+            price: null,
+            quantity: null,
+            tareVolume: null,
+            tax: null,
+            type: null,
+            uuid: "bc2c289d-d71b-4021-9df1-bdf11b0b0ca5",
+        };
+
     };
     /* ----------------- Lifecycle methods -------------------------------------------- */
     componentDidMount() {
@@ -343,7 +389,7 @@ export default class Dashboard extends React.Component {
         if(dragTreeUuid.length>0){
             console.log("setState itemTreeData:", itemTreeData);
             const newTreeData = itemTreeData.map((item)=>{
-                console.log("itemTreeData:", item.uuid, dragTreeUuid, item.uuid in dragTreeUuid);
+                console.log("itemTreeData:", item, dragTreeUuid);
                 if(dragTreeUuid.indexOf(item.uuid) !== -1) {
                     const movingItem = moveNode(itemTreeData, target, item);
                     console.log("=>>>>>>>>>>>>>>>>>>>Перемещение Tree=>", movingItem, movingItem || item);
@@ -368,6 +414,8 @@ export default class Dashboard extends React.Component {
 
     handleChangeNodeState = (node, nodeState) => {
         // Todo Сильно тормозит, нужно что-то сделать
+        //moveNode(this.state.itemTreeData, node, this.testNode);
+        /*
         const { itemTreeData: treeData } = this.state;
 
         //treeNode.nodeState = nodeState;
@@ -380,7 +428,7 @@ export default class Dashboard extends React.Component {
         this.setState({
             itemTreeData,
         })
-
+        */
     };
 
     // ItemList => DblClick open
