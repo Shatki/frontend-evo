@@ -1,19 +1,20 @@
 /*
     Тут чисто JS
-    Функции для работы с Нодами
+    Библиотека функций для работы с данными
 
-    dataTree => линейный массив, в каждом элементе есть parentUuid указывающий uuid родителя:
+    itemDataTree, itemDataList => линейные массивы, состоящие из row,
+            в каждом row есть parentUuid указывающий uuid родителя:
     uuid = null только у коренного элемента
 
         [
-            { node 1, parentUuid: null },
-            { node 2, parentUuid: node1 },
+            { row 1, uuid: uuid_v4, parentUuid: null },
+            { row 2, uuid: uuid_v4, parentUuid: node1.uuid },
                 ...
-            { node x, parentUuid: mode1 }
+            { row x, uuid: uuid_v4, parentUuid: mode1.uuid }
         ]
 
-    processingTreeData => трансформированный массив нод в древовидную структуру.
-    Каждая Нода это объект вида:
+    processingTreeData => трансформированный массив в древовидную структуру.
+    Каждая элемент структуры это ноды вида:
        {
             uuid: node_uuid,
             text: node_name,
@@ -51,6 +52,10 @@ export const addRootNode = (children, text) => {
 };
 
 export const transformTreeData = (row, children=[]) =>{
+    /*
+    *   Конвертирование row в node
+    *
+    * */
     // Конвертирует row в node
     if (children.length > 0){
         // Родительский узел
@@ -72,15 +77,15 @@ export const transformTreeData = (row, children=[]) =>{
     }
 };
 
-export const processingTreeData = (data, parentUuid=null) => {
+export const processingTreeData = (treeData, parentUuid=null) => {
     // Возвращает коренной список, parentUuid = null
     // Алгоритм преобразования данных в объект для treeItem
-    const dataFilter = data.filter(item => parentUuid === item.parentUuid);
+    const dataFilter = treeData.filter(item => parentUuid === item.parentUuid);
     // alert(children.toSource());
     if (dataFilter.length > 0){
         // Выбираем элементы имеющие children
         return  dataFilter.map((child)=>{
-            let children = processingTreeData(data, child.uuid);
+            let children = processingTreeData(treeData, child.uuid);
             return transformTreeData(child, children)
         });
     } else {
@@ -89,25 +94,44 @@ export const processingTreeData = (data, parentUuid=null) => {
 };
 
 export const processingListData = (treeData, listData, nodeUuid) => {
-        /* Преобразование данных из Стейта в данные плагина для отображения в ListItem */
-        // Сначала выбираем каталоги нужного node, затем добавляем items
-        let data =  treeData.filter(item => item.parentUuid === nodeUuid);
-        return data
-        // Передаем в ItemList только наименование и код nodes
-            .map((item)=>{
-                return{
-                    code: item.code,
-                    uuid: item.uuid,
-                    parentUuid: item.parentUuid,
-                    name: item.name,
-                    group: true
-                }
-            })
-            // Приcоединяем items и передаем
-            .concat(listData.filter(item => item.parentUuid === nodeUuid));
-    };
+    /* Преобразование данных из Стейта в данные плагина для отображения в ListItem */
+    // Сначала выбираем каталоги нужного node, затем добавляем items
+    const tree =  treeData.filter(item => item.parentUuid === nodeUuid).map((item)=>{
+        // Передаем в ItemList только наименование и код групп
+        return{
+            code: item.code,
+            uuid: item.uuid,
+            parentUuid: item.parentUuid,
+            name: item.name,
+            group: true
+        }
 
-export const createNode = (data, node) =>{
+    });
+    //console.log("Приcоединяем items и передаем", tree, listData);
+
+    // Приcоединяем items и передаем
+    return tree.concat(listData.filter(item => item.parentUuid === nodeUuid));
+};
+
+export const processingItemData = (treeData, itemData, matrix) => {
+    console.log("processingItemData=>", itemData);
+    if(!itemData || !matrix)
+        return null;
+    else
+        return matrix.map((property) => {
+            // Если в свойстве пришел массив, то отправляем его в dataField
+            if(Array.isArray(itemData[property.nameField]))
+                property.dataField = itemData[property.nameField]
+                    .map((code)=>{ return { value: code, text: code } });
+            else property.valueField = itemData[property.nameField];
+            //console.log(property);
+            //if(property.nameField === "parentUuid") property.dataField = treeData;
+            return property;
+        });
+};
+
+
+export const createNode = (treeData, node) =>{
     // Todo Переделать по фенШую React:
     //  вернем новый элемент и новый массив для изменения через setState
     // а пока тупое изменение входящих данных
@@ -127,10 +151,10 @@ export const createNode = (data, node) =>{
 };
 
 
-export const deleteNode = (data, node) =>{
+export const deleteNode = (treeData, node) =>{
     // Функция удаления узла из объекта:
     // возвращает новый массив, но без узла node
-    return data.filter((item)=>{
+    return treeData.filter((item)=>{
         if(item.children !== undefined){
             item.children = deleteNode(item.children, node);
         }
@@ -138,15 +162,16 @@ export const deleteNode = (data, node) =>{
     })
 };
 
-export const moveNode = (data, node, movingNode) =>{
+export const moveNode = (treeData, node, movingNode) =>{
     /*  Функция виртуального перемещения ноды => на самом деле изменение parentUuid
 
-        Замечание: Все операции проходят над dataTree, а не над обработанной transformTreeData
-        dataTree => линейный массив, не обработанный для хранения данных
-        processingTreeData = древовидный массив объектов, рабочий для отображения
+        Замечание: Все операции проходят над itemTreeData, а не над обработанной processedTreeData
+        itemTreeData => линейный массив, не обработанный для хранения данных
+        processedTreeData = древовидный массив объектов, рабочий для отображения
+
         Запрет на перемещение "в себя" или в свои "дочерние" ноды
-        node(dataTree) => Parent
-        movingNode(dataTree) => Child
+        node(treeData) => Parent
+        movingNode(treeData) => Child
     */
     //console.log("--------------------------");
     //console.log("node=>", node);
@@ -157,9 +182,9 @@ export const moveNode = (data, node, movingNode) =>{
         return Object.assign(movingNode, { parentUuid: null });
     }else if ( node.uuid !== movingNode.uuid ) {
         // найдем родительскую ноду у целевой node
-        const parentNode = data.find( (item)=>{ return item.uuid === node.parentUuid } );
+        const parentNode = treeData.find( (item)=>{ return item.uuid === node.parentUuid } );
         // если возможно перемещение в родительскую целевой, то можно и в целевую
-        if( moveNode(data, parentNode, movingNode) !== null ){
+        if( moveNode(treeData, parentNode, movingNode) !== null ){
             // Если возможно такое перемещение то
             //console.log("Перемещаю в ", node.name);
             return Object.assign(movingNode, { parentUuid: node.uuid });
@@ -169,23 +194,52 @@ export const moveNode = (data, node, movingNode) =>{
     return null;
 };
 
-export const getNodeByUuid = (data, uuid) =>{
+export const getNodeByUuid = (treeData, uuid) =>{
     /*  Функция возвращает искомую Ноду по uuid или null
 
-        Замечание: Все операции проходят над processingTreeData(transformTreeData)
-        Выполняется по рекурсивному принципу
+        Замечание:
+        *   Все операции проходят над processedTreeData
+            Выполняется по рекурсивному принципу
 
-        processingTreeData => древовидный массив объектов, рабочий для отображения
+            processedTreeData => древовидный массив объектов, рабочий для отображения
 
-        data => древовидный массив
-        uuid => итентификатор новы в формате uuid v4
+        treeData => древовидный массив
+        uuid => итентификатор ноды в формате uuid v4
     */
     let foundNode = null;
-    data.forEach((node)=>{
+    treeData.forEach((node)=>{
         if(foundNode) return null;
         //console.log("Ищем ноду=>", node);
         if(node.uuid === uuid) foundNode = node;
         else if(node.children !== undefined) foundNode = getNodeByUuid(node.children, uuid);
     });
+    return foundNode
+};
+
+export const getNodeByRow = (treeData, row) =>{
+    /*  Функция возвращает искомую Ноду по uuid или null
+
+        Замечания:
+        *   Все операции проходят над processedTreeData
+            Выполняется по рекурсивному принципу
+        *   Если получили row === null и возвращаем null
+
+        processedTreeData => древовидный массив объектов, рабочий для отображения
+
+        treeData => древовидный массив
+        row => объект, строка линейного массива itemListData
+    */
+    let foundNode = null;
+    //console.log('ищем=>', row);
+    if (row){
+        treeData.forEach((node)=>{
+            if(foundNode) return null;
+            //console.log("Ищем ноду=>", node);
+            if(node.uuid === row.uuid) foundNode = node;
+            else if(node.children !== undefined)
+                foundNode = getNodeByRow(node.children, row);
+        });
+    }
+    //console.log('нашли=>', foundNode);
     return foundNode
 };

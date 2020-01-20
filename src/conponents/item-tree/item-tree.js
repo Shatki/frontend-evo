@@ -28,6 +28,9 @@ export default class ItemTree extends Component {
         this.onTreeNodeSelectView = props.onTreeNodeSelectView;
         this.onTreeSelectionChange = props.onTreeSelectionChange;
         this.onChangeNodeState = props.onChangeNodeState;
+
+        // Сохраним сеттер keyboard events listener для передачи другим компонентам
+        this.setKeyboardEventsListener = props.setKeyboardEventsListener;
     }
 
     /* ----------------- Lifecycle methods -------------------------------------------- */
@@ -36,17 +39,32 @@ export default class ItemTree extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
+        if(prevProps.data !== this.props.data)
+            this.updateData();
     }
 
     /* ----------------- Data operations ---------------------------------------------- */
     updateData = () => {
-        const { treeData } = this.props;
+        const { data } = this.props;
+        console.log("item-tree data:", data);
         this.setState({
-            data: treeData,
+            data,
         })
     };
 
-   /* ----------------- Keyboard event functions ------------------------------------- */
+    /* ----------------- Keyboard event functions ------------------------------------- */
+
+
+
+
+    /* ----------------- Обработка событий ItemList ----------------------------------- */
+    changeSelections = (selection=null) => {
+        // Основная функция изменения выделений строк в ItemTree
+        this.setState({
+            selection,
+        });
+    };
+
     handleNodeDragOver = (node) => {
         this.tree.selectNode(node);
         console.log("Drag over =>", node.text);
@@ -89,13 +107,6 @@ export default class ItemTree extends Component {
     // ItemTree => Close menu
     handleContextMenuClose = (node) =>{
         this.tree.cancelEdit();
-    };
-
-    changeSelections = (selection=null) => {
-        // Основная функция изменения выделений строк в ItemTree
-        this.setState({
-            selection,
-        });
     };
 
     handleNodeContextMenu = ({ node, originalEvent }) => {
@@ -154,6 +165,7 @@ export default class ItemTree extends Component {
         if (node.uuid !== null) this.onChangeNodeState(node, "closed")
     };
 
+    /* ----------------- Render методы отображения компонента ------------------------- */
     renderContextMenu = () => {
         return(
             <ContextMenu
@@ -189,8 +201,8 @@ export default class ItemTree extends Component {
                     render = { this.renderNode }
                     animate
                     onNodeDblClick = { this.handleNodeDblClick }
-                    onNodeExpand = { this.handleNodeExpand }
-                    onNodeCollapse = { this.handleNodeCollapse }
+                    //onNodeExpand = { this.handleNodeExpand }
+                    //onNodeCollapse = { this.handleNodeCollapse }
                     onSelectionChange = { this.handleSelectionChange }
                     data = { data }
                     onNodeContextMenu = { this.handleNodeContextMenu }

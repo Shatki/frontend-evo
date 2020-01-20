@@ -14,7 +14,7 @@ export default class ItemList extends Component {
 
         this.state = {
             data: [],
-            nodeView: null,
+            nodeView: props.nodeView,
             operators: ["nofilter", "equal", "notequal", "less", "greater"],
             allChecked: false,
             rowClicked: false,
@@ -43,7 +43,11 @@ export default class ItemList extends Component {
             { key: "Удалить", function: this.handleListRowDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ]
-        this.onListRowSelection = props.onListRowSelection;
+        this.onListNodeSelection = props.onListNodeSelection;
+        this.onListItemSelection = props.onListItemSelection;
+
+        // Сохраним сеттер keyboard events listener для передачи другим компонентам
+        this.setKeyboardEventsListener = props.setKeyboardEventsListener;
     }
 
     /* ----------------- Lifecycle methods -------------------------------------------- */
@@ -52,14 +56,13 @@ export default class ItemList extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if( prevState.nodeView.uuid)
-        if( prevState.nodeView.uuid !== this.state.nodeView.uuid)
+        if(prevProps.data !== this.props.data)
             this.updateData();
     }
 
     /* ----------------- Data operations ---------------------------------------------- */
     updateData = () => {
-        const { listData: data, nodeView } = this.props;
+        const { data, nodeView } = this.props;
         this.setState({
             data,
             nodeView,
@@ -81,13 +84,20 @@ export default class ItemList extends Component {
 
 
     /* ----------------- Обработка событий ItemList ----------------------------------- */
-    handleRowDblClick = ({ row }) =>{
+    handleRowDblClick = (row) =>{
+        const { collapsed } = this.props;
+        this.changeSelections([row]);  // ???? Нужно ли??
         // реакция на двойной клик
         if(row.group){
-            this.onListRowSelection(row);
+            this.onListNodeSelection(row);
         }else{
-            this.editRow(row);
-            console.log("Редактируем=>", row.name);
+            if(collapsed) {
+                // Редактирование в модальном режиме
+                this.editRow(row);
+            }else{
+                // Редактирование в окне свойств
+                this.onListItemSelection(row);
+            }
         }
     };
 
@@ -159,7 +169,7 @@ export default class ItemList extends Component {
         this.setState({
             editingRow: row,
             model: Object.assign({}, row),
-            title: 'Edit',
+            title: 'Редактирование товара',
             closed: false
         });
     };
@@ -320,6 +330,8 @@ export default class ItemList extends Component {
             />);
         };
 
+        //console.log("props=>", this.props.nodeView, "state=>",this.state.nodeView);
+
         return (
             <ErrorBoundry>
                 <DataGrid
@@ -331,12 +343,12 @@ export default class ItemList extends Component {
                     data = { data }
                     editMode = "row"
                     columnMoving
-                    onCellDblClick = { this.handleRowDblClick }
+                    onRowDblClick = { this.handleRowDblClick }
                     columnResizing
                     selectionMode ='multiple'
                     selection={ this.state.selection }
                     onSelectionChange = { this.handleSelectionChange }
-                    onCellContextMenu = { this.handleCellContextMenu }
+                    onRowContextMenu = { this.handleCellContextMenu }
                 >
                     <GridColumn
                         //render = { this.renderColumn }
