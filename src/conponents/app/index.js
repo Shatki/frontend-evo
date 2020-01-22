@@ -1,3 +1,4 @@
-import App from './app';
+import { App } from './app';
+import { withAlert } from 'react-alert'
 
-export default App;
+export default withAlert()(App);

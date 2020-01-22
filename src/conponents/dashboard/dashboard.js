@@ -8,8 +8,8 @@ import EvotorService from "../../services/evotor-service";
 import LoadingView from "../loading-view";
 import { addRootNode, moveNode, getNodeByRow,
     processingTreeData, processingListData, processingItemData } from "../../algorithms/node-services";
-import './dashboard.css'
 
+import './dashboard.css'
 
 export default class Dashboard extends React.Component {
     evotorService = new EvotorService();
@@ -21,6 +21,8 @@ export default class Dashboard extends React.Component {
             store: {
                 "name": "Магазин 'XXI BEK'",
                 "uuid":  "20180507-447F-40C1-8081-52D4B03CD7AB"},
+
+            root: "Корневой каталог",
             constants: {
                 productTypes: [
                     {value: "NORMAL", text: "обычный"},
@@ -156,6 +158,7 @@ export default class Dashboard extends React.Component {
 
         this.keyboardEventListener = null;             
         this.menu = null;
+        this.notificator = this.props.notificator;
 
         this.contextMenu ={
             treeMenu: [
@@ -211,8 +214,6 @@ export default class Dashboard extends React.Component {
             this.updateTreeData();
         if(prevState.itemListData !== this.state.itemListData || prevState.itemTreeData !== this.state.itemTreeData)
             this.updateListData();
-
-
     }
 
     componentWillUnmount() {
@@ -245,11 +246,11 @@ export default class Dashboard extends React.Component {
 
     updateTreeData = () => {
         // Обновление данных в ListItem
-        const { itemTreeData, store } = this.state;
+        const { itemTreeData, store, root } = this.state;
         // parentUuid === null так как Tree видно полное дерево
         const children = processingTreeData(itemTreeData, null);
         console.log("Обновление itemTreeData/children=>", itemTreeData, children);
-        const processedTreeData = addRootNode(children, store.name);
+        const processedTreeData = addRootNode(children, root);
 
         this.setState({
             processedTreeData,
@@ -288,10 +289,11 @@ export default class Dashboard extends React.Component {
     handleTreeNodeSelectView = (node) =>{
         // Просмотр выбранной ноды в ListItem
         const { itemTreeData, itemListData, nodeView } = this.state;
+        const nodeUuid = nodeView ? nodeView.uuid : null;
         //console.log("Выбрали ноду=>", node);
-        if(nodeView.uuid !== node.uuid) {
-            const processedListData = processingListData(itemTreeData, itemListData, node.uuid);
 
+        if(nodeUuid !== node.uuid) {
+            const processedListData = processingListData(itemTreeData, itemListData, node.uuid);
             this.setState({
                 nodeView: node,
                 processedListData,
@@ -333,13 +335,15 @@ export default class Dashboard extends React.Component {
         const dragTreeData = dragItems.filter(item=>item.group===true);
         const dragTreeUuid = dragTreeData.map((item)=>item.uuid);
         const target = itemTreeData.find((item)=>{ return item.uuid === node.uuid });
+        let counter = 0;
 
-        console.log("Перемещение в цель=>", target, node);
+        //console.log("Перемещение в цель=>", target, node);
         if(dragListUuid.length>0){
             const newListData = itemListData.map((item)=>{
                 if(dragListUuid.indexOf(item.uuid) !== -1) {
-                    console.log("=>>>>>>>>>>>>>>>>>>>Перемещение List=>", item);
+                    //console.log("=>>>>>>>>>>>>>>>>>>>Перемещение List=>", item);
                     item.parentUuid = node.uuid;
+                    counter +=1;
                 }
                 return item
             });
@@ -355,14 +359,16 @@ export default class Dashboard extends React.Component {
                 console.log("itemTreeData item, dragTreeUuid:", item, dragTreeUuid);
                 if(dragTreeUuid.indexOf(item.uuid) !== -1) {
                     const movingItem = moveNode(itemTreeData, target, item);
-                    console.log("=>>>>>>>>>>>>>>>>>>>Перемещение Tree item/movingItem(было/стало)=>", item.parentUuid, movingItem.parentUuid);
+                    if(!movingItem) this.notificator.show("Невозможно перенести " + item.name, { type:"error" });
+                    else counter +=1;
                     // Если пришло null то ноду перемещать нельзя
                     return movingItem || item;
                 }
                 return item
             });
 
-            console.log("setState newTreeData(processedTreeData):", newTreeData, processedTreeData);
+            this.notificator.show("Переместили " + counter + " элементов в каталог " + target.name, { type:"success" });
+            //console.log("setState newTreeData(processedTreeData):", newTreeData, processedTreeData);
             this.setState({
                 itemTreeData: newTreeData,
             })

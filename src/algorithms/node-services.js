@@ -178,7 +178,7 @@ export const moveNode = (treeData, node, movingNode) =>{
     //console.log("movingNode=>", movingNode);
 
     if(node === undefined){
-        console.log("Перемещаю в корень", Object.assign({}, movingNode, { parentUuid: null }));
+        //console.log("Перемещаю в корень");
         return Object.assign({}, movingNode, { parentUuid: null });
     }else if ( node.uuid !== movingNode.uuid ) {
         // найдем родительскую ноду у целевой node
@@ -190,7 +190,6 @@ export const moveNode = (treeData, node, movingNode) =>{
             return Object.assign({}, movingNode, { parentUuid: node.uuid });
         }
     }
-    console.log("Отмена перемещения");
     return null;
 };
 

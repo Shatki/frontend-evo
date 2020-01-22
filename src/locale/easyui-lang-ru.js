@@ -25,5 +25,8 @@ export default {
     Messager: {
         ok: 'Ок',
         cancel: 'Закрыть'
+    },
+    DataGrid: {
+        nofilter: "Нет фильтра",
     }
 }
