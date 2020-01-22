@@ -378,7 +378,7 @@ export default class ItemDetail extends Component {
                 <DataGrid
                     ref = { detail=>this.detail=detail }
                     data = { data }
-                    idField = "nameField"
+                    //idField = "nameField"
                     columnResizing
                     dblclickToEdit
                     expanderWidth = { 20 }

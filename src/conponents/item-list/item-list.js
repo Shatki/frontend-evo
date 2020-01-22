@@ -91,13 +91,10 @@ export default class ItemList extends Component {
         if(row.group){
             this.onListNodeSelection(row);
         }else{
-            if(collapsed) {
+            this.onListItemSelection(row);
+            if(collapsed)
                 // Редактирование в модальном режиме
                 this.editRow(row);
-            }else{
-                // Редактирование в окне свойств
-                this.onListItemSelection(row);
-            }
         }
     };
 
@@ -336,20 +333,19 @@ export default class ItemList extends Component {
             <ErrorBoundry>
                 <DataGrid
                     ref = { list=>this.list=list }
+                    data = { data }
                     //renderItem = { this.renderRow }
                     style = {{ height: 'calc(100vh - 60px)' }}
                     filterable
-                    rowCss = { this.renderRowStyle }
-                    data = { data }
-                    editMode = "row"
                     columnMoving
-                    onRowDblClick = { this.handleRowDblClick }
                     columnResizing
+                    editMode = "row"
                     selectionMode ='multiple'
                     selection={ this.state.selection }
+                    rowCss = { this.renderRowStyle }
+                    onRowDblClick = { this.handleRowDblClick }
                     onSelectionChange = { this.handleSelectionChange }
-                    onRowContextMenu = { this.handleCellContextMenu }
-                >
+                    onRowContextMenu = { this.handleCellContextMenu }>
                     <GridColumn
                         //render = { this.renderColumn }
                         field="code" title="Код" width="10%"/>

@@ -201,8 +201,8 @@ export default class ItemTree extends Component {
                     render = { this.renderNode }
                     animate
                     onNodeDblClick = { this.handleNodeDblClick }
-                    //onNodeExpand = { this.handleNodeExpand }
-                    //onNodeCollapse = { this.handleNodeCollapse }
+                    onNodeExpand = { this.handleNodeExpand }
+                    onNodeCollapse = { this.handleNodeCollapse }
                     onSelectionChange = { this.handleSelectionChange }
                     data = { data }
                     onNodeContextMenu = { this.handleNodeContextMenu }

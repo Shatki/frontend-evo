@@ -54,8 +54,8 @@ export default class Dashboard extends React.Component {
                 ],
             },
 
-            itemTreeData: null,                     // Сырые данные для  ItemTree
-            itemListData: null,                     // Сырые данные для  ItemList
+            itemTreeData: null,                         // Сырые данные для  ItemTree
+            itemListData: null,                         // Сырые данные для  ItemList
             itemDetailData: {
                 "uuid": "01ba18b6-8707-5f47-3d9c-4db058054cb2",
                 "code": "6",
@@ -85,7 +85,7 @@ export default class Dashboard extends React.Component {
                 "alcoholByVolume": 5.45,
                 "alcoholProductKindCode": 123,
                 "tareVolume": 0.57
-            },      // Сырые данные для  ItemDetail
+            },        // Сырые данные для  ItemDetail
 
             itemMatrix: [
                 //{"nameField": "uuid", "valueField": null, "titleField": "UUID", "groupField": "Основные", "editorField": "text"},
@@ -131,17 +131,17 @@ export default class Dashboard extends React.Component {
                     "editorField": "switch", "rules": ["required",] },
                 {"nameField": "parentUuid", "valueField": null, "titleField": "Группа товаров", "groupField": "Основные",
                     "editorField": "tree", "dataField": null, "rules": ["nullable",] },
-            ],                  // шаблон данных с настройками для преобразователя
+            ],                          // шаблон данных с настройками для преобразователя
 
-            processedTreeData: [],            // Обработанные данные для отображения в ItemTree
-            processedListData: [],            // Обработанные данные для отображения в ItemList
-            processedItemData: [],            // Обработанные данные для отображения в ItemDetail
+            processedTreeData: [],                      // Обработанные данные для отображения в ItemTree
+            processedListData: [],                      // Обработанные данные для отображения в ItemList
+            processedDetailData: [],                      // Обработанные данные для отображения в ItemDetail
 
-            treeSelection: null,                //  Выделение в ItemTree
-            //listSelection: [],                //  Выделение в ItemList
-            itemSelection: null,                // ????Данные для отображения в ItemDetail
+            treeSelection: null,                        //  Выделение в ItemTree
+            //listSelection: [],                        //  Выделение в ItemList
+            itemSelection: null,                        // ????Данные для отображения в ItemDetail
 
-            nodeView: null,                     //  Отображаемая Нода в ItemList выбранная в ItemTree
+            nodeView: null,                             //  Отображаемая Нода в ItemList выбранная в ItemTree
             parentDetailItem: null,
 
             collapsedWest: false,
@@ -154,7 +154,7 @@ export default class Dashboard extends React.Component {
         // Массив штришкодов
         this.barCodes = null;
 
-        this.keyboardEventListener = null;  // Пробное V2
+        this.keyboardEventListener = null;             
         this.menu = null;
 
         this.contextMenu ={
@@ -195,52 +195,6 @@ export default class Dashboard extends React.Component {
                 { key: "close", text: "Закрыть", disabled: false },
             ],
         };
-        this.testNode = {
-            alcoCodes: null,
-            alcoholByVolume: null,
-            alcoholProductKindCode: null,
-            allowToSell: null,
-            articleNumber: null,
-            barCodes: null,
-            code: "700",
-            costPrice: null,
-            description: null,
-            group: true,
-            hasVariants: false,
-            measureName: "шт",
-            name: "Кабели",
-            parentUuid: "0d4aaf2a-fb90-404e-b84b-64c48ac116db",
-            price: null,
-            quantity: null,
-            tareVolume: null,
-            tax: null,
-            type: null,
-            uuid: "2818bd03-bc5f-445c-9964-cf42db512c5e",
-        };
-
-        this.targetNode = {
-            alcoCodes: null,
-            alcoholByVolume: null,
-            alcoholProductKindCode: null,
-            allowToSell: null,
-            articleNumber: null,
-            barCodes: null,
-            code: "606",
-            costPrice: null,
-            description: null,
-            group: true,
-            hasVariants: false,
-            measureName: "шт",
-            name: "Программное обеспечение",
-            parentUuid: null,
-            price: null,
-            quantity: null,
-            tareVolume: null,
-            tax: null,
-            type: null,
-            uuid: "bc2c289d-d71b-4021-9df1-bdf11b0b0ca5",
-        };
-
     };
     /* ----------------- Lifecycle methods -------------------------------------------- */
     componentDidMount() {
@@ -249,13 +203,16 @@ export default class Dashboard extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log("ComponentDidUpdate Dashboard =>", this.state.itemTreeData);
-        if(prevState.itemListData !== this.state.itemListData || prevState.itemTreeData !== this.state.itemTreeData)
-            this.updateListData();
+        //console.log("ComponentDidUpdate Dashboard (itemTreeData/processedTreeData)=>", this.state.itemTreeData, this.state.processedTreeData);
+        console.log("ComponentDidUpdate Dashboard (itemDetailData/processedDetailData)=>", this.state.itemDetailData, this.state.processedDetailData);
         if(prevState.itemDetailData !== this.state.itemDetailData || prevState.itemListData !== this.state.itemListData)
             this.updateDetailData();
         if(prevState.itemTreeData !== this.state.itemTreeData)
             this.updateTreeData();
+        if(prevState.itemListData !== this.state.itemListData || prevState.itemTreeData !== this.state.itemTreeData)
+            this.updateListData();
+
+
     }
 
     componentWillUnmount() {
@@ -288,10 +245,12 @@ export default class Dashboard extends React.Component {
 
     updateTreeData = () => {
         // Обновление данных в ListItem
-        const { itemTreeData, nodeView, store } = this.state;
-        const children = processingTreeData(itemTreeData, nodeView);
+        const { itemTreeData, store } = this.state;
+        // parentUuid === null так как Tree видно полное дерево
+        const children = processingTreeData(itemTreeData, null);
+        console.log("Обновление itemTreeData/children=>", itemTreeData, children);
         const processedTreeData = addRootNode(children, store.name);
-        console.log("Обновление itemTreeData/processedTreeData=>", itemTreeData, processedTreeData);
+
         this.setState({
             processedTreeData,
             treeSelection: null,
@@ -300,7 +259,8 @@ export default class Dashboard extends React.Component {
 
     updateListData = () => {
         const { itemTreeData, itemListData, nodeView } = this.state;
-        const processedListData = processingListData(itemTreeData, itemListData, nodeView === null ? null : nodeView.uuid);
+        const processedListData = processingListData(itemTreeData, itemListData,
+            nodeView === null ? null : nodeView.uuid);
         // Обновление данных в ListItem
         console.log("Обновление itemListData=>", processedListData);
         this.setState({
@@ -312,12 +272,12 @@ export default class Dashboard extends React.Component {
     updateDetailData = () => {
         const { itemDetailData, itemTreeData, itemMatrix } = this.state;
         // itemData это объект класса row
-        const processedItemData = processingItemData(itemTreeData, itemDetailData, itemMatrix);
+        const processedDetailData = processingItemData(itemTreeData, itemDetailData, itemMatrix);
         // row не может быть null
         const parentDetailItem = getNodeByRow(itemTreeData, itemDetailData);
-        console.log("Обновление ItemDetailData=>", processedItemData);
+        console.log("Обновление ItemDetailData=>", processedDetailData);
         this.setState({
-            processedItemData,
+            processedDetailData,
             parentDetailItem,
         })
 
@@ -327,13 +287,16 @@ export default class Dashboard extends React.Component {
     // ItemTree => Open Node
     handleTreeNodeSelectView = (node) =>{
         // Просмотр выбранной ноды в ListItem
-        const { itemTreeData, itemListData } = this.state;
-        const processedListData = processingListData(itemTreeData, itemListData, node.uuid);
-        //console.log("Выбрали ноду=>", node, processedListData);
-        this.setState({
-            nodeView: node,
-            processedListData,
-        });
+        const { itemTreeData, itemListData, nodeView } = this.state;
+        //console.log("Выбрали ноду=>", node);
+        if(nodeView.uuid !== node.uuid) {
+            const processedListData = processingListData(itemTreeData, itemListData, node.uuid);
+
+            this.setState({
+                nodeView: node,
+                processedListData,
+            });
+        }
     };
 
     handleDataOperations = (data, operations) =>{
@@ -364,7 +327,7 @@ export default class Dashboard extends React.Component {
     handleDropListItem = (node) => {
         // Todo Каждое действие отправляется на сервер для Redo/Undo
         // Тут делаем операции с даннымы
-        const { itemListData, itemTreeData, dragItems } = this.state;
+        const { itemListData, itemTreeData, dragItems, processedTreeData } = this.state;
         const dragListData = dragItems.filter(item=>item.group===false);
         const dragListUuid = dragListData.map((item)=>item.uuid);
         const dragTreeData = dragItems.filter(item=>item.group===true);
@@ -387,19 +350,19 @@ export default class Dashboard extends React.Component {
         }
 
         if(dragTreeUuid.length>0){
-            console.log("setState itemTreeData:", itemTreeData);
+            console.log("setState itemTreeData/proceccedTreeData:", itemTreeData, processedTreeData);
             const newTreeData = itemTreeData.map((item)=>{
-                console.log("itemTreeData:", item, dragTreeUuid);
+                console.log("itemTreeData item, dragTreeUuid:", item, dragTreeUuid);
                 if(dragTreeUuid.indexOf(item.uuid) !== -1) {
                     const movingItem = moveNode(itemTreeData, target, item);
-                    console.log("=>>>>>>>>>>>>>>>>>>>Перемещение Tree=>", movingItem, movingItem || item);
+                    console.log("=>>>>>>>>>>>>>>>>>>>Перемещение Tree item/movingItem(было/стало)=>", item.parentUuid, movingItem.parentUuid);
                     // Если пришло null то ноду перемещать нельзя
                     return movingItem || item;
                 }
                 return item
             });
 
-            console.log("setState newTreeData:", itemTreeData, newTreeData);
+            console.log("setState newTreeData(processedTreeData):", newTreeData, processedTreeData);
             this.setState({
                 itemTreeData: newTreeData,
             })
@@ -414,13 +377,13 @@ export default class Dashboard extends React.Component {
 
     handleChangeNodeState = (node, nodeState) => {
         // Todo Сильно тормозит, нужно что-то сделать
-        //moveNode(this.state.itemTreeData, node, this.testNode);
+        //console.log("changeNodeState moveNode=>", moveNode(this.state.itemTreeData, node, this.testNode));
         /*
         const { itemTreeData: treeData } = this.state;
 
         //treeNode.nodeState = nodeState;
         const itemTreeData = treeData.map((row)=>{
-            if(row.uuid === node.uuid) return Object.assign(row, { nodeState });
+            if(row.uuid === node.uuid) return Object.assign({}, row, { nodeState });
             else return row
         });
 
@@ -429,6 +392,7 @@ export default class Dashboard extends React.Component {
             itemTreeData,
         })
         */
+        console.log("changeNodeState itemTreeData/processedTreeData=>", this.state.itemTreeData, this.state.processedTreeData);
     };
 
     // ItemList => DblClick open
@@ -441,13 +405,13 @@ export default class Dashboard extends React.Component {
 
     handleListItemSelection = (row) =>{
         const { itemTreeData, itemMatrix } = this.state;
-        const parentItem = getNodeByRow(itemTreeData, row);
-        const processedItemData = processingItemData(itemTreeData, row, itemMatrix);
+        const parentNode = getNodeByRow(itemTreeData, row);
+        const processedDetailData = processingItemData(itemTreeData, row, itemMatrix);
         console.log("Редактируем item=>", row);
         this.setState({
             itemDetailData: row,
-            processedItemData,
-            parentItem,
+            processedDetailData,
+            parentNode,
         })
     };
 
@@ -496,7 +460,7 @@ export default class Dashboard extends React.Component {
     render() {
         const { constants,
             collapsedWest, collapsedEast, nodeView, parentDetailItem,
-            processedTreeData, processedListData, processedItemData } = this.state;
+            processedTreeData, processedListData, processedDetailData } = this.state;
 
 
         if(this.state.loading)
@@ -561,7 +525,7 @@ export default class Dashboard extends React.Component {
                     style = {{ minWidth: 200, maxWidth: 400 }}>
                     <ItemDetail
                         { ...constants }
-                        data = { processedItemData }
+                        data = { processedDetailData }
                         parent = { parentDetailItem }
                         processedTreeData = { processedTreeData }
                         contextMenu = { this.contextMenu.itemMenu }

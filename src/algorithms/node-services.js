@@ -81,11 +81,11 @@ export const processingTreeData = (treeData, parentUuid=null) => {
     // Возвращает коренной список, parentUuid = null
     // Алгоритм преобразования данных в объект для treeItem
     const dataFilter = treeData.filter(item => parentUuid === item.parentUuid);
-    // alert(children.toSource());
+    //console.log("<------- processingTreeData=> (Выбираем все элемены выбранной ноды)parentUuid/dataFilter:", parentUuid, dataFilter);
     if (dataFilter.length > 0){
         // Выбираем элементы имеющие children
         return  dataFilter.map((child)=>{
-            let children = processingTreeData(treeData, child.uuid);
+            const children = processingTreeData(treeData, child.uuid);
             return transformTreeData(child, children)
         });
     } else {
@@ -178,19 +178,19 @@ export const moveNode = (treeData, node, movingNode) =>{
     //console.log("movingNode=>", movingNode);
 
     if(node === undefined){
-        //console.log("Перемещаю в корень", Object.assign(movingNode, { parentUuid: null }));
-        return Object.assign(movingNode, { parentUuid: null });
+        console.log("Перемещаю в корень", Object.assign({}, movingNode, { parentUuid: null }));
+        return Object.assign({}, movingNode, { parentUuid: null });
     }else if ( node.uuid !== movingNode.uuid ) {
         // найдем родительскую ноду у целевой node
         const parentNode = treeData.find( (item)=>{ return item.uuid === node.parentUuid } );
         // если возможно перемещение в родительскую целевой, то можно и в целевую
         if( moveNode(treeData, parentNode, movingNode) !== null ){
             // Если возможно такое перемещение то
-            //console.log("Перемещаю в ", node.name);
-            return Object.assign(movingNode, { parentUuid: node.uuid });
+            console.log("Перемещаю в ", node.name);
+            return Object.assign({}, movingNode, { parentUuid: node.uuid });
         }
     }
-    //console.log("Отмена перемещения");
+    console.log("Отмена перемещения");
     return null;
 };
 
