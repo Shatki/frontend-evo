@@ -210,10 +210,10 @@ export default class Dashboard extends React.Component {
         console.log("ComponentDidUpdate Dashboard (itemDetailData/processedDetailData)=>", this.state.itemDetailData, this.state.processedDetailData);
         if(prevState.itemDetailData !== this.state.itemDetailData || prevState.itemListData !== this.state.itemListData)
             this.updateDetailData();
-        if(prevState.itemTreeData !== this.state.itemTreeData)
-            this.updateTreeData();
         if(prevState.itemListData !== this.state.itemListData || prevState.itemTreeData !== this.state.itemTreeData)
             this.updateListData();
+        if(prevState.itemTreeData !== this.state.itemTreeData)
+            this.updateTreeData();
     }
 
     componentWillUnmount() {
@@ -398,27 +398,34 @@ export default class Dashboard extends React.Component {
             itemTreeData,
         })
         */
-        console.log("changeNodeState itemTreeData/processedTreeData=>", this.state.itemTreeData, this.state.processedTreeData);
+        console.log("changeNodeState itemDetailData/processedDetailData=>", this.state.itemDetailData, this.state.processedDetailData);
     };
 
     // ItemList => DblClick open
     handleListNodeSelection = (row) => {
-        const { processedTreeData } = this.state;
-        const node = getNodeByRow(processedTreeData, row);
-        console.log("listNodeSelection=>", row, node);
-        this.handleTreeNodeSelectView(node)
+        const { processedTreeData, nodeView } = this.state;
+        const isChangedUuid = nodeView ? row.uuid !== nodeView.uuid : nodeView === null;
+        if(isChangedUuid){
+            const node = getNodeByRow(processedTreeData, row);
+            console.log("listNodeSelection=>", row, node);
+            this.handleTreeNodeSelectView(node)
+        }
     };
 
     handleListItemSelection = (row) =>{
-        const { itemTreeData, itemMatrix } = this.state;
-        const parentNode = getNodeByRow(itemTreeData, row);
-        const processedDetailData = processingItemData(itemTreeData, row, itemMatrix);
-        console.log("Редактируем item=>", row);
-        this.setState({
-            itemDetailData: row,
-            processedDetailData,
-            parentNode,
-        })
+        const { itemTreeData, itemDetailData, itemMatrix } = this.state;
+        const isChangedUuid = itemDetailData ? row.uuid !== itemDetailData.uuid : itemDetailData === null;
+        // console.log('ChangeNode row/nodeView/test=>', row, itemDetailData, isChangedUuid);
+        if(isChangedUuid){
+            const parentNode = getNodeByRow(itemTreeData, row);
+            const processedDetailData = processingItemData(itemTreeData, row , itemMatrix);
+            console.log("Редактируем item=>", row);
+            this.setState({
+                itemDetailData: row,
+                processedDetailData,
+                parentNode,
+            })
+        }
     };
 
     /* ----------------- Методы управления панелями ------------------------------- */

@@ -326,7 +326,7 @@ export default class ItemDetail extends Component {
     };
 
     renderView = ({ value, row }) => {
-        //console.log("render view Node=>", row.nameField, value);
+        console.log("render view Node=>", row.nameField, value);
         if (row.editorField === "text")
             return(<div>{ row.valueField }</div>);
         else if(row.editorField === "number")
@@ -340,7 +340,7 @@ export default class ItemDetail extends Component {
             if(node) return(<div>{ node.text }</div>);}
         else if(row.editorField === "combo"){
             const dataField = Array.isArray(row.dataField) ? row.dataField : this.props[row.dataField] || null;
-            console.log("renderView=>combo=>dataField=>", dataField, row.valueField);
+            //console.log("renderView=>combo=>dataField=>", dataField, row.valueField);
             if(row.valueField===null && Array.isArray(dataField))
                 return(<div>{ dataField[0].text }</div>);
             if(row.valueField !== null && Array.isArray(dataField)){
@@ -348,7 +348,6 @@ export default class ItemDetail extends Component {
                 if (value !== undefined) return(<div>{ value.text }</div>);
             }
         }
-
         // Ошибка
         return(<div className="error">{ this.cellErrorMessage }</div>);
     };

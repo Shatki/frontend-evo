@@ -8,7 +8,7 @@ import App from './conponents/app';
 const options = {
     timeout: 5000,
     position: positions.BOTTOM_RIGHT,
-    offset: '15px',                                     // the margin of each alert
+    offset: '10px',                                     // the margin of each alert
     transition: transitions.SCALE,                      // the transition animation
 };
 
