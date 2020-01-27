@@ -7,7 +7,7 @@ import ItemDetail from "../item-detail";
 import EvotorService from "../../services/evotor-service";
 import LoadingView from "../loading-view";
 import { addRootNode, moveNode, getNodeByRow,
-    processingTreeData, processingListData, processingItemData } from "../../algorithms/node-services";
+    processingTreeData, processingListData, processingItemData } from "../../services/nodes-service";
 
 import './dashboard.css'
 
@@ -205,7 +205,7 @@ export default class Dashboard extends React.Component {
         this.loadData();
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate( prevProps, prevState, snapshot) {
         //console.log("ComponentDidUpdate Dashboard (itemTreeData/processedTreeData)=>", this.state.itemTreeData, this.state.processedTreeData);
         console.log("ComponentDidUpdate Dashboard (itemDetailData/processedDetailData)=>", this.state.itemDetailData, this.state.processedDetailData);
         if(prevState.itemDetailData !== this.state.itemDetailData || prevState.itemListData !== this.state.itemListData)
@@ -246,7 +246,7 @@ export default class Dashboard extends React.Component {
 
     updateTreeData = () => {
         // Обновление данных в ListItem
-        const { itemTreeData, store, root } = this.state;
+        const { itemTreeData, root } = this.state;
         // parentUuid === null так как Tree видно полное дерево
         const children = processingTreeData(itemTreeData, null);
         console.log("Обновление itemTreeData/children=>", itemTreeData, children);
@@ -276,7 +276,7 @@ export default class Dashboard extends React.Component {
         const processedDetailData = processingItemData(itemTreeData, itemDetailData, itemMatrix);
         // row не может быть null
         const parentDetailItem = getNodeByRow(itemTreeData, itemDetailData);
-        console.log("Обновление ItemDetailData=>", processedDetailData);
+        console.log("<---->Обновление ItemDetailData=>", processedDetailData);
         this.setState({
             processedDetailData,
             parentDetailItem,
@@ -284,6 +284,26 @@ export default class Dashboard extends React.Component {
 
     };
 
+    getRules = (rules) => {
+        /* Получение правила валидации
+        * Коды:
+        * /[0-9]/ - [один] символ входящий в диапазон 0-9 в [любом] месте строки
+        * /^[0-9]$/ - строка состоящая из [одного] символа входящего в диапазон 0-9
+        * /^\d+$/ - строка состоящая из [одного или более] символа входящего в диапазон 0-9(\d)
+        *
+        *  rules на входе это массив из itemProps
+        */
+        const allRules = this.validateRules;
+        console.log("validateRules=>", this.validateRules);
+        if (rules === undefined) return {};
+        let objectRules = {};
+        rules.forEach(function (item) {
+            if (item in allRules) objectRules[item] = allRules[item];
+            else objectRules[item] = item
+        });
+        console.log("get rules=>", objectRules);
+        return objectRules;
+    };
 
     // ItemTree => Open Node
     handleTreeNodeSelectView = (node) =>{
@@ -522,6 +542,7 @@ export default class Dashboard extends React.Component {
                         //node = { this.state.treeSelection }
                         //handleListSelectionChange = { this.handleListSelectionChange }
                         setKeyboardEventsListener = { this.setKeyboardEventsListener }
+                        getRules = { this.getRules }
                     />
 
                 </LayoutPanel>
@@ -543,6 +564,7 @@ export default class Dashboard extends React.Component {
                         processedTreeData = { processedTreeData }
                         contextMenu = { this.contextMenu.itemMenu }
                         setKeyboardEventsListener = { this.setKeyboardEventsListener }
+                        getRules = { this.getRules }
                     />
                 </LayoutPanel>
             </Layout>

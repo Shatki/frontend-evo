@@ -3,7 +3,7 @@ import { ComboBox, DataGrid, GridColumn, SwitchButton, TextBox, Tooltip, ComboTr
 import ContextMenu from '../context-menu'
 import ErrorBoundry from '../error-boundry'
 import CodeEditor from "./item-code-editor";
-import { getNodeByUuid } from "../../algorithms/node-services";
+import { getNodeByUuid } from "../../services/nodes-service";
 import './item-detail.css'
 
 export default class ItemDetail extends Component {
@@ -97,6 +97,7 @@ export default class ItemDetail extends Component {
 
         // Сохраним сеттер keyboard events listener для передачи другим компонентам
         this.setKeyboardEventsListener = props.setKeyboardEventsListener;
+        this.getRules = props.getRules;
     }
 
     /* ----------------- Lifecycle methods -------------------------------------------- */
@@ -125,27 +126,6 @@ export default class ItemDetail extends Component {
                 processedTreeData,
             })
         }
-    };
-
-    getRules = (rules) => {
-        /* Получение правила валидации
-        * Коды:
-        * /[0-9]/ - [один] символ входящий в диапазон 0-9 в [любом] месте строки
-        * /^[0-9]$/ - строка состоящая из [одного] символа входящего в диапазон 0-9
-        * /^\d+$/ - строка состоящая из [одного или более] символа входящего в диапазон 0-9(\d)
-        *
-        *  rules на входе это массив из itemProps
-        */
-        const allRules = this.validateRules;
-        console.log("validateRules=>", this.validateRules);
-        if (rules === undefined) return [];
-        let objectRules = {};
-        rules.forEach(function (item) {
-            if (item in allRules) objectRules[item] = allRules[item];
-            else objectRules[item] = item
-        });
-        console.log("get rules=>", objectRules);
-        return objectRules;
     };
 
     getCodes = arr => arr.map((code)=>{ return{ value:code.value, text:code.value }});
@@ -336,7 +316,7 @@ export default class ItemDetail extends Component {
         else if(row.editorField === "tree"){
             const { processedTreeData } = this.state;
             const node = getNodeByUuid(processedTreeData, row.valueField);
-            console.log("Render View getNode=>", node, 'row.valuefield=>',row.valueField);
+            //console.log("Render View getNode=>", node, 'row.valuefield=>',row.valueField);
             if(node) return(<div>{ node.text }</div>);}
         else if(row.editorField === "combo"){
             const dataField = Array.isArray(row.dataField) ? row.dataField : this.props[row.dataField] || null;
@@ -379,6 +359,7 @@ export default class ItemDetail extends Component {
                     data = { data }
                     //idField = "nameField"
                     columnResizing
+                    idField = "valueField"
                     dblclickToEdit
                     expanderWidth = { 20 }
                     selectionMode = "row"

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Tree, Droppable } from 'rc-easyui';
 import ContextMenu from "../context-menu";
 import ErrorView from "../error-view";
-import { deleteNode, createNode } from "../../algorithms/node-services";
+import { deleteNode, createNode } from "../../services/nodes-service";
 import ErrorBoundry from "../error-boundry";
 import './item-tree.css'
 
@@ -24,7 +24,7 @@ export default class ItemTree extends Component {
             { key: "Открыть", function: this.handleNodeDblClick },
             { key: "Удалить", function: this.handleTreeNodeDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
-        ]
+        ];
         this.onTreeNodeSelectView = props.onTreeNodeSelectView;
         this.onTreeSelectionChange = props.onTreeSelectionChange;
         this.onChangeNodeState = props.onChangeNodeState;
@@ -38,18 +38,16 @@ export default class ItemTree extends Component {
         this.updateData();
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        if(prevProps.data !== this.props.data)
+    componentDidUpdate(prevProps, prevState, snapshot) {
+    if(prevProps.data !== this.props.data)
             this.updateData();
     }
 
     /* ----------------- Data operations ---------------------------------------------- */
     updateData = () => {
         const { data } = this.props;
-        console.log("item-tree data:", data);
-        this.setState({
-            data,
-        })
+        // console.log("item-tree data:", data);
+        this.setState({ data })
     };
 
     /* ----------------- Keyboard event functions ------------------------------------- */

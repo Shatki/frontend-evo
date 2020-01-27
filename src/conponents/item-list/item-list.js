@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { DataGrid, GridColumn, NumberBox, ComboBox } from 'rc-easyui';
 import { Draggable } from 'rc-easyui';
-import { Form, Dialog, TextBox, Label, LinkButton } from 'rc-easyui';
 import ContextMenu from "../context-menu";
 import './item-list.css';
 import ErrorBoundry from "../error-boundry";
+import ItemEditor from "./item-editor";
 
 
 
@@ -22,16 +22,32 @@ export default class ItemList extends Component {
             drag: [],
 
             editingRow: null,
-            model: {},
-            rules: {
-                'code': 'required',
-                'name': ['required', 'length[1,100]'],
-                'measureName': ['required']
-            },
+
+
             errors: {},
             title: '',
             closed: true,
             collapsed: props.collapsed,
+        };
+        this.list = null;
+        this.measureTypes = props.measureTypes;
+        this.getRules = props.getRules;
+        this.clearRow = {
+            "barCodes": [],
+            "alcoCodes": [],
+            "name": null,
+            "price": 0.00,
+            "quantity": 0,
+            "costPrice": 0.00,
+            "measureName": "шт",
+            "tax": null,
+            "allowToSell": true,
+            "description": null,
+            "group": false,
+            "type": null,
+            "alcoholByVolume": null,
+            "alcoholProductKindCode": null,
+            "tareVolume": null
         };
         this.listContextMenuFunction = [
             { key: "Создать", function: this.handleListRowCreate },
@@ -42,7 +58,7 @@ export default class ItemList extends Component {
             { key: "Дублировать", function: this.handleListRowDublicate },
             { key: "Удалить", function: this.handleListRowDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
-        ]
+        ];
         this.onListNodeSelection = props.onListNodeSelection;
         this.onListItemSelection = props.onListItemSelection;
 
@@ -70,15 +86,6 @@ export default class ItemList extends Component {
         })
     };
 
-    getError = (name) => {
-        const { errors } = this.state;
-        if (!errors){
-            return null;
-        }
-        return errors[name] && errors[name].length
-            ? errors[name][0]
-            : null;
-    };
     /* ----------------- Keyboard event functions ------------------------------------- */
 
 
@@ -94,7 +101,7 @@ export default class ItemList extends Component {
             this.onListItemSelection(row);
             if(collapsed)
                 // Редактирование в модальном режиме
-                this.editRow(row);
+                this.handleEditRow(row);
         }
     };
 
@@ -132,13 +139,32 @@ export default class ItemList extends Component {
             .function(this.state.selection[0]);
     };
 
+    /* ----------------- Context Menu functions --------------------------------------- */
     handleContextMenuClose = (row) =>{
         this.list.cancelEdit();
+    };
+
+    handleEditRow = (row) => {
+        this.setState({
+            editingRow: row,
+            model: Object.assign({}, row),
+            title: 'Редактирование товара',
+            closed: false
+        });
     };
 
     // ItemList => Close menu
     handleListRowCreate = (row) =>{
         console.log("Создаем новый row ", row);
+        const itemUuid = require('uuid/v4');
+        const code = "";
+        const parentUuid = row.parentUuid;
+        this.setState({
+            editingRow: row,
+            model: Object.assign({}, this.clearRow, { uuid: itemUuid(), code, parentUuid }),
+            title: 'Создаем новый товар',
+            closed: false
+        });
     };
 
     handleListRowDelete = (row) =>{
@@ -160,35 +186,8 @@ export default class ItemList extends Component {
     handleListRowDublicate = (row) =>{
         console.log("Дублируем row", row);
     };
-
     /* ----------------- Обработка формы редактирования ------------------------------- */
-    editRow = (row) => {
-        this.setState({
-            editingRow: row,
-            model: Object.assign({}, row),
-            title: 'Редактирование товара',
-            closed: false
-        });
-    };
 
-    saveRow = () => {
-        this.form.validate(() => {
-            if (this.form.valid()) {
-                let row = Object.assign({}, this.state.editingRow, this.state.model);
-                let data = this.state.data.slice();
-                let index = data.indexOf(this.state.editingRow);
-                data.splice(index, 1, row);
-                this.setState({
-                    data: data,
-                    closed: true
-                })
-            }
-        })
-    };
-
-    dialogBtnClose = () => {
-       this.setState({ closed: true });
-    };
 
     /* ----------------- Render методы отображения компонента ------------------------- */
     renderColumn = ({ value, row }) => {
@@ -226,72 +225,6 @@ export default class ItemList extends Component {
         )
     };
 
-    renderDialog = () => {
-        const row = this.state.model;
-        const { title, closed, rules } = this.state;
-        return (
-            <Dialog
-                modal
-                draggable
-                title={ title }
-                closed={ closed }
-                onClose={() => this.setState({ closed: true })}>
-                <div className="f-full" style={{ padding: '20px 50px' }}>
-                    <Form className="f-full"
-                          ref={ ref => this.form = ref }
-                          model={ row }
-                          rules={ rules }
-                          onValidate={ (errors) => this.setState({ errors: errors }) }
-                    >
-                        <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="name">Наименование:</Label>
-                            <TextBox
-                                inputId="name"
-                                name="name"
-                                value={ row.name }
-                                style={{ width: 450 }}/>
-                            <div className="error">{ this.getError('name') }</div>
-                        </div>
-                        <div style={{ marginBottom: 10 }}>
-                            <Label
-                                htmlFor="measure">Единица:</Label>
-                            <ComboBox
-                                inputId="measureName"
-                                name="measureName"
-                                data={ this.props.measureTypes.filter(e=>e.value!==null) }
-                                value={ row.measureName }
-                                style={{ width: 450 }}/>
-                            <div className="error">{ this.getError('measureName') }</div>
-                        </div>
-                        <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="price">Цена продажи:</Label>
-                            <NumberBox
-                                inputId="price"
-                                name="price"
-                                value={ row.price }
-                                precision={2}
-                                style={{ width: 450 }}/>
-                        </div>
-                        <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="costPrice">Цена закупки:</Label>
-                            <NumberBox
-                                inputId="costPrice"
-                                name="costPrice"
-                                value={ row.costPrice }
-                                precision={2}
-                                style={{ width: 450 }}
-                            />
-                        </div>
-                    </Form>
-                </div>
-                <div className="dialog-button">
-                    <LinkButton style={{ width: 80 }} onClick={ () => this.saveRow() }>Сохранить</LinkButton>
-                    <LinkButton style={{ width: 80 }} onClick={ () => this.dialogBtnClose() }>Закрыть</LinkButton>
-                </div>
-            </Dialog>
-        )
-    };
-
     renderRowStyle = (row) => {
         // Придаем стиль nodes строкам
         if (row.group) {
@@ -313,7 +246,7 @@ export default class ItemList extends Component {
     };
 
     render() {
-        const { data } = this.state;
+        const { data, selection, operators, title, model, closed } = this.state;
 
         const numberBoxFilter = () => {
             return (<NumberBox/>)
@@ -321,12 +254,11 @@ export default class ItemList extends Component {
 
         const comboBoxFilter = () =>{
             return(<ComboBox
-                data={ this.props.measureTypes }
+                data={ this.measureTypes }
                 editable={ false }
                 inputStyle={{ textAlign: 'center' }}
             />);
         };
-
         //console.log("props=>", this.props.nodeView, "state=>",this.state.nodeView);
 
         return (
@@ -341,7 +273,7 @@ export default class ItemList extends Component {
                     columnResizing
                     editMode = "row"
                     selectionMode ='multiple'
-                    selection={ this.state.selection }
+                    selection={ selection }
                     rowCss = { this.renderRowStyle }
                     onRowDblClick = { this.handleRowDblClick }
                     onSelectionChange = { this.handleSelectionChange }
@@ -355,11 +287,11 @@ export default class ItemList extends Component {
                         title="Наименование"
                         width="50%"/>
                     <GridColumn field="price" title="Цена продаж" width="10%" align="right"
-                                filterOperators={ this.state.operators }
+                                filterOperators={ operators }
                                 filter={ numberBoxFilter }
                     />
                     <GridColumn field="quantity" title="Остаток" align="right" width="10%"
-                                filterOperators={ this.state.operators }
+                                filterOperators={ operators }
                                 filter={ numberBoxFilter }
                     />
                     <GridColumn field="description" title="Описание" width="10%"/>
@@ -367,8 +299,15 @@ export default class ItemList extends Component {
                                 filter={ comboBoxFilter }
                     />
                 </DataGrid>
+                <ItemEditor
+                    title = { title }
+                    model = { model }
+                    closed = { closed }
+                    measureTypes = { this.measureTypes }
+                    getRules = { this.getRules }
+
+                />
                 { this.renderContextMenu() }
-                { this.renderDialog() }
             </ErrorBoundry>
         )
     }
