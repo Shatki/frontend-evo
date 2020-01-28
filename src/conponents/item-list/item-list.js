@@ -14,15 +14,15 @@ export default class ItemList extends Component {
 
         this.state = {
             data: [],
-            nodeView: props.nodeView,
-            operators: ["nofilter", "equal", "notequal", "less", "greater"],
+            nodeView: props.nodeView,       // открытый каталог для редактирования
+            operators: [ "nofilter", "equal", "notequal", "less", "greater" ],
             allChecked: false,
             rowClicked: false,
             selection: [],
             drag: [],
 
             editingRow: null,
-
+            processedRow: null,
 
             errors: {},
             title: '',
@@ -31,6 +31,7 @@ export default class ItemList extends Component {
         };
         this.list = null;
         this.measureTypes = props.measureTypes;
+        this.itemMatrix = props.itemMatrix;
         this.getRules = props.getRules;
         this.clearRow = {
             "barCodes": [],
@@ -71,7 +72,7 @@ export default class ItemList extends Component {
         this.updateData();
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps, prevState, snapshot) {
         if(prevProps.data !== this.props.data)
             this.updateData();
     }
@@ -111,12 +112,10 @@ export default class ItemList extends Component {
         this.props.onDrag(items);
     };
 
-    changeSelections = (selection=[]) => {
+    changeSelections = (selection) => {
         // Основная функция изменения выделений строк в ItemList
         // Сохраним в стейт
-        this.setState({
-            selection: selection,
-        });
+        this.setState({ selection });
     };
 
     handleCellContextMenu = ({ row, column, originalEvent }) =>{
@@ -303,6 +302,7 @@ export default class ItemList extends Component {
                     title = { title }
                     model = { model }
                     closed = { closed }
+                    itemMatrix = { this.itemMatrix }
                     measureTypes = { this.measureTypes }
                     getRules = { this.getRules }
 

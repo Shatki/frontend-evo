@@ -22,15 +22,20 @@ export default class Dashboard extends React.Component {
                 "name": "Магазин 'XXI BEK'",
                 "uuid":  "20180507-447F-40C1-8081-52D4B03CD7AB"},
 
+            // Language titles
+            propertyPanelTitle: "Карточка товара",
+            treePanelTitle: "Группы товаров",
             root: "Корневой каталог",
+
             constants: {
                 productTypes: [
                     {value: "NORMAL", text: "обычный"},
                     {value: "ALCOHOL_MARKED", text: "маркированный алкоголь"},
                     {value: "ALCOHOL_NOT_MARKED", text: "немаркированный алкоголь"},
                     {value: "TOBACCO_MARKED", text: "маркированный табак"},
+                    {value: "SHOES_MARKED", text: "маркированная обувь"},
+                    {value: "MEDICINE_MARKED", text: "маркированные лекарства"},
                     {value: "SERVICE", text: "услуга"},
-
                 ],
                 measureTypes: [
                     {value: null, text: "Без единиц"},
@@ -491,10 +496,10 @@ export default class Dashboard extends React.Component {
 
     /* ----------------- Render методы отображения компонента ------------------------- */
     render() {
-        const { constants,
-            collapsedWest, collapsedEast, nodeView, parentDetailItem,
-            processedTreeData, processedListData, processedDetailData } = this.state;
-
+        const {
+            constants, collapsedWest, collapsedEast, nodeView, parentDetailItem,
+            processedTreeData, processedListData, processedDetailData, itemMatrix,
+            propertyPanelTitle, treePanelTitle } = this.state;
 
         if(this.state.loading)
             return(<LoadingView/>);
@@ -509,7 +514,7 @@ export default class Dashboard extends React.Component {
 
                 <LayoutPanel
                     region="west"
-                    title="Группы товаров"
+                    title={ treePanelTitle }
                     collapsible
                     collapsed = { collapsedWest }
                     onCollapse = { this.handleCollapseWest }
@@ -532,8 +537,9 @@ export default class Dashboard extends React.Component {
                     region="center">
                     <ItemList
                         { ...constants }
-                        nodeView = { nodeView }
                         data = { processedListData }
+                        itemMatrix = { itemMatrix }
+                        nodeView = { nodeView }
                         collapsed = { collapsedEast }
                         onDrag = { this.handleDragListItem }
                         contextMenu = { this.contextMenu.listMenu }
@@ -549,7 +555,7 @@ export default class Dashboard extends React.Component {
 
                 <LayoutPanel
                     region = "east"
-                    title = "Свойства"
+                    title = { propertyPanelTitle }
                     collapsible
                     collapsed ={ collapsedEast }
                     onCollapse = { this.handleCollapseEast }
