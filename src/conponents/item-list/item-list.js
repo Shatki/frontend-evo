@@ -29,8 +29,8 @@ export default class ItemList extends Component {
             closed: true,
             collapsed: props.collapsed,
         };
+        this.constants = props.constants;
         this.list = null;
-        this.measureTypes = props.measureTypes;
         this.itemMatrix = props.itemMatrix;
         this.getRules = props.getRules;
         this.clearRow = {
@@ -246,6 +246,7 @@ export default class ItemList extends Component {
 
     render() {
         const { data, selection, operators, title, model, closed } = this.state;
+        const { measureTypes } = this.constants;
 
         const numberBoxFilter = () => {
             return (<NumberBox/>)
@@ -253,7 +254,7 @@ export default class ItemList extends Component {
 
         const comboBoxFilter = () =>{
             return(<ComboBox
-                data={ this.measureTypes }
+                data={ measureTypes }
                 editable={ false }
                 inputStyle={{ textAlign: 'center' }}
             />);
@@ -265,8 +266,8 @@ export default class ItemList extends Component {
                 <DataGrid
                     ref = { list=>this.list=list }
                     data = { data }
-                    //renderItem = { this.renderRow }
                     style = {{ height: 'calc(100vh - 60px)' }}
+                    //renderItem = { this.renderRow }
                     filterable
                     columnMoving
                     columnResizing
@@ -303,7 +304,7 @@ export default class ItemList extends Component {
                     model = { model }
                     closed = { closed }
                     itemMatrix = { this.itemMatrix }
-                    measureTypes = { this.measureTypes }
+                    constants = { this.constants }
                     getRules = { this.getRules }
 
                 />

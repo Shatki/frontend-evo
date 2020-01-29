@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { NumberBox, ComboBox, Form, Dialog, TextBox, Label, LinkButton } from 'rc-easyui';
+import { ComboBox, Form, Dialog, TextBox, Label, LinkButton } from 'rc-easyui';
 
 
 export default class ItemEditor extends Component {
@@ -7,7 +7,7 @@ export default class ItemEditor extends Component {
         super(props);
 
         this.state = {
-            editorFields: [ "name", "measureName", "price", "costPrice" ],      // default
+            editorFields: [ "name", "measureName", "price", "costPrice", "tax" ],      // default
             data: null,
             closed: true,
             title: null,
@@ -16,9 +16,10 @@ export default class ItemEditor extends Component {
             errors: null,
         };
         this.form = null;
+        this.constants = props.constants;
         this.getRules = props.getRules;
         this.itemMatrix = props.itemMatrix;
-        this.measureTypes = props.measureTypes;
+        //this.measureTypes = props.measureTypes;
     }
 
     componentDidMount() {
@@ -83,17 +84,26 @@ export default class ItemEditor extends Component {
             return editorFields.map((field)=>{
                 // Найдем настройки поля из itemMatrix
                 const fieldSet = this.itemMatrix.find(item=>item.nameField === field);
+                console.log("fieldSet field/fieldSet=>",field, fieldSet);
+                const dataSet = typeof fieldSet.dataField === "string" ?
+                    this.constants[fieldSet.dataField].filter(e=>e.value !== null) : null;
+                console.log("fieldSet editorField/dataSet=>", fieldSet.editorField, dataSet);
+                const propsSet = {
+                        inputId: field,
+                        name: field,
+                        rules: fieldSet.rules,
+                        value: model[field],
+                        style: { width: 450 },
+                        data: dataSet
+
+                    };
+
                 return (
                     <div key = { field } style={{ marginBottom: 10 }}>
-                        <Label htmlFor={ field }>{ field }</Label>
-                        <TextBox
-                            inputId={ field }
-                            name={ field }
-                            rules = { fieldSet.rules }
-                            value={ model[field] }
-                            style={{ width: 450 }}
-                        />
-
+                        <Label htmlFor={ field }>{ fieldSet.titleField }</Label>
+                        { fieldSet.editorField === "combo" ?
+                            (<ComboBox { ...propsSet}/>) :
+                            (<TextBox { ...propsSet}/>) }
                         <div className="error">{ this.getError(field) }</div>
                     </div>
                 );
@@ -103,7 +113,7 @@ export default class ItemEditor extends Component {
 
     render() {
         const { closed, title, rules, model } = this.state;
-        if(model === undefined ) return null;
+        if(model === undefined || closed ) return null;
 
         return(
             <Dialog
@@ -129,71 +139,5 @@ export default class ItemEditor extends Component {
                 </div>
             </Dialog>
         );
-
-
-        return (
-            <Dialog
-                modal
-                draggable
-                title={ title }
-                closed={ closed }
-                onClose={ this.onDlgBtnClose }
-            >
-                <div className="f-full" style={{ padding: '20px 50px' }}>
-                    <Form className="f-full"
-                          ref={ ref => this.form = ref }
-                          model={ model }
-                          rules={ rules }
-                          tooltipPosition = "down"
-                          onValidate={ this.onValidate }
-                    >
-                        <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="name">Наименование:</Label>
-                            <TextBox
-                                inputId="name"
-                                name="name"
-                                value={ model.name }
-                                style={{ width: 450 }}/>
-
-                            <div className="error">{ this.getError('name') }</div>
-                        </div>
-
-                        <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="measure">Единица:</Label>
-                            <ComboBox
-                                inputId="measureName"
-                                name="measureName"
-                                data={ this.measureTypes.filter(e=>e.value !== null) }
-                                value={ model.measureName }
-                                style={{ width: 450 }}/>
-                            <div className="error">{ this.getError('measureName') }</div>
-                        </div>
-                        <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="price">Цена продажи:</Label>
-                            <NumberBox
-                                inputId="price"
-                                name="price"
-                                value={ model.price }
-                                precision={2}
-                                style={{ width: 450 }}/>
-                        </div>
-                        <div style={{ marginBottom: 10 }}>
-                            <Label htmlFor="costPrice">Цена закупки:</Label>
-                            <NumberBox
-                                inputId="costPrice"
-                                name="costPrice"
-                                value={ model.costPrice }
-                                precision={2}
-                                style={{ width: 450 }}
-                            />
-                        </div>
-                    </Form>
-                </div>
-                <div className="dialog-button">
-                    <LinkButton style={{ width: 80 }} onClick={ this.onDlgBtnSave }>Сохранить</LinkButton>
-                    <LinkButton style={{ width: 80 }} onClick={ this.onDlgBtnClose }>Закрыть</LinkButton>
-                </div>
-            </Dialog>
-        )
     }
 };

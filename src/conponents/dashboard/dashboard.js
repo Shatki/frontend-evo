@@ -150,9 +150,8 @@ export default class Dashboard extends React.Component {
 
             nodeView: null,                             //  Отображаемая Нода в ItemList выбранная в ItemTree
             parentDetailItem: null,
-
-            collapsedWest: false,
-            collapsedEast: true,
+            
+            collapsedDetail: true,
 
             // Drag'n'Drop
             isover: false,
@@ -160,6 +159,76 @@ export default class Dashboard extends React.Component {
         };
         // Массив штришкодов
         this.barCodes = null;
+        this.validateRules= {
+            //const n = value ? String(value).trim().length : 0;
+            //return value.length === parseInt(param[0], 10);
+            "required": {
+                "validator": (value) => {
+                    console.log("required validation", value);
+                    //if(Array.isArray(value)) return true; // Todo доделать!!!
+                    return null != value && ("boolean" == typeof value ? value : String(value).trim().length > 0);
+                },
+                message: 'Поле является обязательным'
+            },
+            "nullable": {
+                "validator": (value) => {
+                    console.log("nullable validation", value);
+                    //if(Array.isArray(value)) return true; // Todo доделать!!!
+                    return null === value || ("boolean" == typeof value ? value : String(value).trim().length > 0);
+                },
+                message: 'Созданное поле не может быть пустым'
+            },
+            "digital": {
+                "validator": (value) => {
+                    console.log("digital validation", value);
+                    return /^\d+$/.test(value);
+                },
+                message: 'Код может состоять только из цифр'
+            },
+            "float": {
+                "validator": (value) => {
+                    console.log("float validation", value);
+                    return /^\d*\.?\d+$/.test(value);
+                },
+                message: 'Значение должно быть десятичным числом'
+            },
+            "positive": {
+                "validator": (value) => {
+                    console.log("positive validation", value);
+                    //if(Array.isArray(value)) return true; // Todo доделать!!!
+                    return parseInt(value, 10) > 0;
+                },
+                message: 'Значение не может быть отрицательным',
+            },
+            "precision2": {
+                "validator": (value) => {
+                    const parts = String(value).split('.');
+                    console.log("precision validation", value);
+                    //if(Array.isArray(value)) return true; // Todo доделать!!!
+                    if (parts.length === 2) return parts[1].length === 2;
+                    else return false
+                },
+                message: 'Точность числа только до двух знаков',
+            },
+            "precision3": {
+                "validator": (value) => {
+                    const parts = String(value).split('.');
+                    console.log("precision validation", value);
+                    //if(Array.isArray(value)) return true; // Todo доделать!!!
+                    if (parts.length === 2) return parts[1].length === 3;
+                    else return false
+                },
+                message: 'Точность числа только до трех знаков',
+            },
+            "length19": {
+                "validator": (value) => {
+                    console.log("lenght19 validation", value);
+                    return value.length === 19;
+                },
+                message: 'Длина алкокода должна быть 19',
+            },
+
+        };
 
         this.keyboardEventListener = null;             
         this.menu = null;
@@ -456,40 +525,36 @@ export default class Dashboard extends React.Component {
     /* ----------------- Методы управления панелями ------------------------------- */
     handleCollapseEast = () =>{
         this.setState((state)=>{
-            // console.log("CollapseEast", this.state.collapsedEast);
-            if(!state.collapsedEast) return {
-                collapsedEast: !this.state.collapsedEast,
-                collapsedWest: !this.state.collapsedWest,
+            // console.log("CollapseEast", this.state.collapsedDetail);
+            if(!state.collapsedDetail) return {
+                collapsedDetail: !this.state.collapsedDetail,
             }
         })
     };
 
     handleExpandEast = () => {
         this.setState((state)=>{
-            // console.log("ExpandEast", this.state.collapsedEast);
-            if(state.collapsedEast) return {
-                collapsedEast: !this.state.collapsedEast,
-                collapsedWest: !this.state.collapsedWest,
+            // console.log("ExpandEast", this.state.collapsedDetail);
+            if(state.collapsedDetail) return {
+                collapsedDetail: !this.state.collapsedDetail,
             }
         })
     };
 
     handleCollapseWest = () => {
         this.setState((state)=>{
-            // console.log("CollapseWest", this.state.collapsedWest);
-            if(!state.collapsedWest) return {
-                collapsedWest: !this.state.collapsedWest,
-                collapsedEast: !this.state.collapsedEast,
+            // console.log("CollapseWest", !this.state.collapsedDetail);
+            if(state.collapsedDetail) return {
+                collapsedDetail: !this.state.collapsedDetail,
             }
         })
     };
 
     handleExpandWest =() => {
         this.setState((state)=>{
-            // console.log("ExpandWest", this.state.collapsedWest);
-            if(state.collapsedWest) return {
-                collapsedWest: !this.state.collapsedWest,
-                collapsedEast: !this.state.collapsedEast,
+            // console.log("ExpandWest", !this.state.collapsedDetail);
+            if(!state.collapsedDetail) return {
+                collapsedDetail: !this.state.collapsedDetail,
             }
         })
     };
@@ -497,7 +562,7 @@ export default class Dashboard extends React.Component {
     /* ----------------- Render методы отображения компонента ------------------------- */
     render() {
         const {
-            constants, collapsedWest, collapsedEast, nodeView, parentDetailItem,
+            constants, collapsedDetail, nodeView, parentDetailItem,
             processedTreeData, processedListData, processedDetailData, itemMatrix,
             propertyPanelTitle, treePanelTitle } = this.state;
 
@@ -516,7 +581,7 @@ export default class Dashboard extends React.Component {
                     region="west"
                     title={ treePanelTitle }
                     collapsible
-                    collapsed = { collapsedWest }
+                    collapsed = { !collapsedDetail }
                     onCollapse = { this.handleCollapseWest }
                     onExpand = { this.handleExpandWest }
                     expander
@@ -536,11 +601,11 @@ export default class Dashboard extends React.Component {
                 <LayoutPanel
                     region="center">
                     <ItemList
-                        { ...constants }
+                        constants = { constants }
                         data = { processedListData }
                         itemMatrix = { itemMatrix }
                         nodeView = { nodeView }
-                        collapsed = { collapsedEast }
+                        collapsed = { collapsedDetail }
                         onDrag = { this.handleDragListItem }
                         contextMenu = { this.contextMenu.listMenu }
                         onListNodeSelection = { this.handleListNodeSelection }
@@ -557,17 +622,18 @@ export default class Dashboard extends React.Component {
                     region = "east"
                     title = { propertyPanelTitle }
                     collapsible
-                    collapsed ={ collapsedEast }
+                    collapsed ={ collapsedDetail }
                     onCollapse = { this.handleCollapseEast }
                     onExpand = { this.handleExpandEast }
                     expander
                     split
                     style = {{ minWidth: 200, maxWidth: 400 }}>
                     <ItemDetail
-                        { ...constants }
+                        constants = { constants }
                         data = { processedDetailData }
                         parent = { parentDetailItem }
                         processedTreeData = { processedTreeData }
+                        collapsed = { collapsedDetail }
                         contextMenu = { this.contextMenu.itemMenu }
                         setKeyboardEventsListener = { this.setKeyboardEventsListener }
                         getRules = { this.getRules }

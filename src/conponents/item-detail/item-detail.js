@@ -18,81 +18,14 @@ export default class ItemDetail extends Component {
             rules: null,
             errors: null,
             editing: false,                     // Маркер редактирования ItemDetail props
+            collapsed: props.collapsed,         // Состояние "свёрнутости" панели
             selection: null,                    // Выделенная ячейка с значением
             comboData: null,                    // Данные для редактирования кодов
             comboDlgClosed: true,
             comboDlgEditRow: null               // редактируемая строка свойств через редактор кодов
         };
-        this.validateRules= {
-            //const n = value ? String(value).trim().length : 0;
-            //return value.length === parseInt(param[0], 10);
-            "required": {
-                "validator": (value) => {
-                    console.log("required validation", value);
-                    //if(Array.isArray(value)) return true; // Todo доделать!!!
-                    return null != value && ("boolean" == typeof value ? value : String(value).trim().length > 0);
-                },
-                message: 'Поле является обязательным'
-            },
-            "nullable": {
-                "validator": (value) => {
-                    console.log("nullable validation", value);
-                    //if(Array.isArray(value)) return true; // Todo доделать!!!
-                    return null === value || ("boolean" == typeof value ? value : String(value).trim().length > 0);
-                },
-                message: 'Созданное поле не может быть пустым'
-            },
-            "digital": {
-                "validator": (value) => {
-                    console.log("digital validation", value);
-                    return /^\d+$/.test(value);
-                },
-                message: 'Код может состоять только из цифр'
-            },
-            "float": {
-                "validator": (value) => {
-                    console.log("float validation", value);
-                    return /^\d*\.?\d+$/.test(value);
-                },
-                message: 'Значение должно быть десятичным числом'
-            },
-            "positive": {
-                "validator": (value) => {
-                    console.log("positive validation", value);
-                    //if(Array.isArray(value)) return true; // Todo доделать!!!
-                    return parseInt(value, 10) > 0;
-                },
-                message: 'Значение не может быть отрицательным',
-            },
-            "precision2": {
-                "validator": (value) => {
-                    const parts = String(value).split('.');
-                    console.log("precision validation", value);
-                    //if(Array.isArray(value)) return true; // Todo доделать!!!
-                    if (parts.length === 2) return parts[1].length === 2;
-                    else return false
-                },
-                message: 'Точность числа только до двух знаков',
-            },
-            "precision3": {
-                "validator": (value) => {
-                    const parts = String(value).split('.');
-                    console.log("precision validation", value);
-                    //if(Array.isArray(value)) return true; // Todo доделать!!!
-                    if (parts.length === 2) return parts[1].length === 3;
-                    else return false
-                },
-                message: 'Точность числа только до трех знаков',
-            },
-            "length19": {
-                "validator": (value) => {
-                    console.log("lenght19 validation", value);
-                    return value.length === 19;
-                },
-                message: 'Длина алкокода должна быть 19',
-            },
+        this.constants = props.constants;
 
-        };
         this.cellErrorMessage = "Ошибка данных";
 
         // Сохраним сеттер keyboard events listener для передачи другим компонентам
@@ -105,16 +38,19 @@ export default class ItemDetail extends Component {
         this.updateData();
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        if(prevProps.data !== this.props.data) {
-            console.log("componentDidUpdate ItemDetail", this.state.data);
-            this.updateData();}
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        console.log("componentDidUpdate ItemDetail", this.state.data);
+        if(prevProps.data !== this.props.data ||
+            prevProps.collapsed !== this.props.collapsed) {
+            console.log("componentDidUpdate update successful");
+            this.updateData();
+        }
     }
 
     /* ----------------- Data operations ---------------------------------------------- */
 
     updateData = () => {
-        const { data, parent, processedTreeData } = this.props;
+        const { data, parent, processedTreeData, collapsed } = this.props;
         //console.log("updateData ItemDetail", data, parent);
         // Установим Keyboard Events Listener
         // Todo Где лучше их ставить ????????????????
@@ -124,6 +60,7 @@ export default class ItemDetail extends Component {
                 data,                       // рабочие данные
                 parent,
                 processedTreeData,
+                collapsed,
             })
         }
     };
@@ -283,7 +220,7 @@ export default class ItemDetail extends Component {
         }
         else if (row.editorField === "combo"){
             // const dataRow =
-            const data = Array.isArray(row.dataField) ? row.dataField : this.props[row.dataField] || null;
+            const data = Array.isArray(row.dataField) ? row.dataField : this.constants[row.dataField] || null;
             if(data && row.dataField){
                 const value = row.valueField === null ?
                     data[0] : data.find(item => (item.value === row.valueField));
@@ -319,7 +256,7 @@ export default class ItemDetail extends Component {
             //console.log("Render View getNode=>", node, 'row.valuefield=>',row.valueField);
             if(node) return(<div>{ node.text }</div>);}
         else if(row.editorField === "combo"){
-            const dataField = Array.isArray(row.dataField) ? row.dataField : this.props[row.dataField] || null;
+            const dataField = Array.isArray(row.dataField) ? row.dataField : this.constants[row.dataField] || null;
             //console.log("renderView=>combo=>dataField=>", dataField, row.valueField);
             if(row.valueField===null && Array.isArray(dataField))
                 return(<div>{ dataField[0].text }</div>);
@@ -350,8 +287,10 @@ export default class ItemDetail extends Component {
     };
 
     render() {
-        const { data, rules, comboData, comboDlgClosed } = this.state;
-        //console.log("render ItemDetail", data);
+        const { data, rules, comboData, comboDlgClosed, collapsed } = this.state;
+        //console.log("itemDetail render collapsed=>", collapsed);
+        if( collapsed ) return null;
+
         return(
             <ErrorBoundry>
                 <DataGrid
