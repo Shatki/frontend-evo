@@ -120,13 +120,13 @@ export const processingItemData = (treeData, itemData, matrix) => {
     else
         return matrix.map((property) => {
             // Если в свойстве пришел массив, то отправляем его в dataField
-            if(Array.isArray(itemData[property.nameField]))
-                property.dataField = itemData[property.nameField]
-                    .map((code)=>{ return { value: code, text: code } });
-            else property.valueField = itemData[property.nameField];
+            const data = itemData[property.nameField];
+            const valueField = !Array.isArray(data) ? { "valueField": data }: {};
+            const dataField = Array.isArray(data) ?
+                property.dataField = data.map((code)=>{ return { value: code, text: code } }) : {};
             //console.log(property);
             //if(property.nameField === "parentUuid") property.dataField = treeData;
-            return property;
+            return Object.assign({}, property, valueField, dataField);
         });
 };
 

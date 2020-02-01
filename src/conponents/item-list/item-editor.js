@@ -9,6 +9,7 @@ export default class ItemEditor extends Component {
         this.state = {
             editorFields: [ "name", "measureName", "price", "costPrice", "tax" ],      // default
             data: null,
+            itemListData: null,
             closed: true,
             title: null,
             model: {},                                                          // Объект для редактирования диалогом
@@ -16,12 +17,13 @@ export default class ItemEditor extends Component {
             errors: null,
         };
         this.form = null;
+        this.updateItemListData = props.updateItemListData;
         this.constants = props.constants;
         this.getRules = props.getRules;
         this.itemMatrix = props.itemMatrix;
         //this.measureTypes = props.measureTypes;
     }
-
+    /* ----------------- Lifecycle methods -------------------------------------------- */
     componentDidMount() {
         this.updateData();
     }
@@ -31,41 +33,22 @@ export default class ItemEditor extends Component {
             this.updateData();
     }
 
+    /* ----------------- Data operations ---------------------------------------------- */
     updateData = () => {
+        const { editorFields } = this.state;
         const { closed, title, model } = this.props;
-        const rules = model === undefined ? {} : this.getRules(model.rules);
+        const rules = model === undefined ? {} :
+            editorFields.reduce((rulesObject, field) => {
+                const row = this.itemMatrix.find(el=>el.nameField===field);
+                rulesObject[field] = this.getRules(row.rules);
+                return rulesObject;
+            }, {});
         this.setState({
             closed,
             model,
             title,
             rules,
         })
-    };
-
-    onDlgBtnClose = () =>{
-        console.log("dialog close");
-        this.setState({ closed: true });
-    };
-
-    onDlgBtnSave = () => {
-        console.log("onDlgBtnSave");
-        this.form.validate(() => {
-            if (this.form.valid()) {
-                console.log("onDlgBtnSave.validate");
-                //let row = Object.assign({}, this.state.editingRow, this.state.model);
-                //let data = this.state.data.slice();
-                //let index = data.indexOf(this.state.editingRow);
-                //data.splice(index, 1, row);
-                this.setState({
-                    //data: data,
-                    closed: true
-                })
-            }
-        })
-    };
-
-    onValidate = (errors) =>{
-        this.setState({ errors })
     };
 
     getError = (name) => {
@@ -78,20 +61,45 @@ export default class ItemEditor extends Component {
             : null;
     };
 
+    /* ----------------- Обработка событий ItemEditor --------------------------------- */
+    onDlgBtnClose = () =>{
+        console.log("dialog close");
+        this.setState({ closed: true });
+    };
+
+    onDlgBtnSave = () => {
+        console.log("onDlgBtnSave");
+        this.form.validate(() => {
+            if (this.form.valid()) {
+                const { model } = this.state;
+                // Todo Вызвать функцию сохранения
+                this.updateItemListData(model);
+                // Todo: переделать, так не работает data это не полная информация
+                this.setState({
+                    closed: true
+                })
+            }
+        })
+    };
+
+    onValidate = (errors) =>{
+        this.setState({ errors })
+    };
+    /* ----------------- Render методы отображения компонента ------------------------- */
     renderForm = () =>{
         const { model, editorFields } = this.state;
         if(model){
             return editorFields.map((field)=>{
                 // Найдем настройки поля из itemMatrix
                 const fieldSet = this.itemMatrix.find(item=>item.nameField === field);
-                console.log("fieldSet field/fieldSet=>",field, fieldSet);
+                //console.log("fieldSet field/fieldSet=>",field, fieldSet);
                 const dataSet = typeof fieldSet.dataField === "string" ?
                     this.constants[fieldSet.dataField].filter(e=>e.value !== null) : null;
-                console.log("fieldSet editorField/dataSet=>", fieldSet.editorField, dataSet);
+                //console.log("fieldSet editorField/dataSet=>", fieldSet.editorField, dataSet);
                 const propsSet = {
                         inputId: field,
                         name: field,
-                        rules: fieldSet.rules,
+                        rules: fieldSet.rules, // В формах валидация работает по-другому
                         value: model[field],
                         style: { width: 450 },
                         data: dataSet

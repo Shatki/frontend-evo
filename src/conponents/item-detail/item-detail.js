@@ -187,8 +187,8 @@ export default class ItemDetail extends Component {
             value => Значение поля <ComboTree/> valueField = "uuid"
          */
         const { processedTreeData } = this.state;
+        console.log("Меняем ноду =>", value);
         const parent = getNodeByUuid(processedTreeData, value);
-        console.log("Меняем ноду =>", value, parent);
         this.setState({
             parent
         })
@@ -205,16 +205,20 @@ export default class ItemDetail extends Component {
             return(<SwitchButton value={ row.valueField }/>);
         else if(row.editorField === "tree"){
             const { processedTreeData } = this.state;
-            const parent = getNodeByUuid(processedTreeData, row.valueField);
-            console.log("renderTree=>", parent);
+            //const parent = getNodeByUuid(processedTreeData, row.valueField);
+            //const value = parent ? parent.uuid : "";
+            const data = [].concat(processedTreeData);
+            data[0].uuid = "root";
+            console.log("renderTree processedTreeData/row.valueField", processedTreeData, row.valueField);
+            console.log("renderTree=>", row.valueField);
             return(
                 <ComboTree
                     animate
                     placeholder="Выберите группу"
                     valueField = "uuid"
                     textField = "text"
-                    data={ processedTreeData }
-                    value={ parent }
+                    data={ data }
+                    value={ row.valueField }
                     onChange={ this.handleComboTreeChange }/>
                     );
         }
@@ -237,13 +241,12 @@ export default class ItemDetail extends Component {
                     //onChange={(value) => { this.editComboValues(row, value) }}
                     addonRight={ addEditor }
                 />);
-
             }
         }
     };
 
     renderView = ({ value, row }) => {
-        console.log("render view Node=>", row.nameField, value);
+        // console.log("render view Node=>", row.nameField, value);
         if (row.editorField === "text")
             return(<div>{ row.valueField }</div>);
         else if(row.editorField === "number")

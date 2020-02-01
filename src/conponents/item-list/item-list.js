@@ -24,6 +24,9 @@ export default class ItemList extends Component {
             editingRow: null,
             processedRow: null,
 
+            titleEditItem: 'Редактирование товара',
+            titleCreateItem: 'Создаем новый товар',
+
             errors: {},
             title: '',
             closed: true,
@@ -40,8 +43,8 @@ export default class ItemList extends Component {
             "price": 0.00,
             "quantity": 0,
             "costPrice": 0.00,
-            "measureName": "шт",
-            "tax": null,
+            "measureName": props.constants.measureTypes[1],
+            "tax": props.constants.taxTypes[0],
             "allowToSell": true,
             "description": null,
             "group": false,
@@ -60,6 +63,7 @@ export default class ItemList extends Component {
             { key: "Удалить", function: this.handleListRowDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ];
+        this.updateItemListData = props.updateItemListData;
         this.onListNodeSelection = props.onListNodeSelection;
         this.onListItemSelection = props.onListItemSelection;
 
@@ -137,41 +141,40 @@ export default class ItemList extends Component {
             // выбираем [0] т.к e ItemList selections это массив
             .function(this.state.selection[0]);
     };
-
     /* ----------------- Context Menu functions --------------------------------------- */
     handleContextMenuClose = (row) =>{
         this.list.cancelEdit();
     };
 
     handleEditRow = (row) => {
+        const { titleEditItem } = this.state;
         this.setState({
             editingRow: row,
             model: Object.assign({}, row),
-            title: 'Редактирование товара',
+            title: titleEditItem,
             closed: false
         });
     };
 
     // ItemList => Close menu
     handleListRowCreate = (row) =>{
+        const { titleCreateItem } = this.state;
         console.log("Создаем новый row ", row);
         const itemUuid = require('uuid/v4');
-        const code = "";
+        const code = null;
         const parentUuid = row.parentUuid;
         this.setState({
             editingRow: row,
             model: Object.assign({}, this.clearRow, { uuid: itemUuid(), code, parentUuid }),
-            title: 'Создаем новый товар',
+            title: titleCreateItem,
             closed: false
         });
     };
 
     handleListRowDelete = (row) =>{
-        ///////
-        this.setState({
-            data: this.state.data.filter(item => item.uuid !== row.uuid)
-        });
-        //console.log("Удляем row ", row);
+        // Удаляем row указывая только его uuid
+        this.updateItemListData({ name: row.name, uuid: row.uuid});
+
     };
 
     handleListRowCopy = (row) =>{
@@ -303,10 +306,11 @@ export default class ItemList extends Component {
                     title = { title }
                     model = { model }
                     closed = { closed }
+                    saveRow = { this.saveRow }
+                    updateItemListData = { this.updateItemListData }
                     itemMatrix = { this.itemMatrix }
                     constants = { this.constants }
                     getRules = { this.getRules }
-
                 />
                 { this.renderContextMenu() }
             </ErrorBoundry>
