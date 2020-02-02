@@ -43,7 +43,7 @@ export const addRootNode = (children, text) => {
     return([
         {
             uuid: null,
-            text,
+            text: text || 'Корневой каталог',
             state: 'open',
             iconCls: "icon-evotor-folder-user",
             children

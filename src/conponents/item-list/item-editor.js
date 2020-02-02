@@ -36,10 +36,10 @@ export default class ItemEditor extends Component {
     /* ----------------- Data operations ---------------------------------------------- */
     updateData = () => {
         const { editorFields } = this.state;
-        const { closed, title, model } = this.props;
+        const { closed, title, model, itemMatrix } = this.props;
         const rules = model === undefined ? {} :
             editorFields.reduce((rulesObject, field) => {
-                const row = this.itemMatrix.find(el=>el.nameField===field);
+                const row = itemMatrix.find(el=>el.nameField===field);
                 rulesObject[field] = this.getRules(row.rules);
                 return rulesObject;
             }, {});
@@ -72,7 +72,6 @@ export default class ItemEditor extends Component {
         this.form.validate(() => {
             if (this.form.valid()) {
                 const { model } = this.state;
-                // Todo Вызвать функцию сохранения
                 this.updateItemListData(model);
                 // Todo: переделать, так не работает data это не полная информация
                 this.setState({

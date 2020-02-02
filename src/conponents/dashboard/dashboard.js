@@ -6,8 +6,7 @@ import ItemList from "../item-list";
 import ItemDetail from "../item-detail";
 import EvotorService from "../../services/evotor-service";
 import LoadingView from "../loading-view";
-import { addRootNode, moveNode, getNodeByRow,
-    processingTreeData, processingListData, processingItemData } from "../../services/nodes-service";
+import { moveNode } from "../../services/nodes-service";
 
 import './dashboard.css'
 
@@ -21,11 +20,55 @@ export default class Dashboard extends React.Component {
             store: {
                 "name": "Магазин 'XXI BEK'",
                 "uuid":  "20180507-447F-40C1-8081-52D4B03CD7AB"},
+            itemMatrix: [
+                //{"nameField": "uuid", "valueField": null, "titleField": "UUID", "groupField": "Основные", "editorField": "text"},
+                {"nameField": "name", "valueField": null, "titleField": "Наименование", "groupField": "Основные",
+                    "editorField": "text", "rules": ["required",]},
+                {"nameField": "code", "valueField": null, "titleField": "Код", "groupField": "Основные",
+                    "editorField": "text", "rules": ["required", "digital", "positive"] },
+                {"nameField": "articleNumber", "valueField": null, "titleField": "Артикул", "groupField": "Основные",
+                    "editorField": "text", "rules": ["nullable",] },
+                {"nameField": "barCodes", "valueField": null, "titleField": "Штрихкоды", "groupField": "Коды",
+                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable"] },
+
+                {"nameField": "price", "valueField": null, "titleField": "Цена продажи", "groupField": "Цены",
+                    "editorField": "text", "rules": ["required", "float", "precision2",] },
+                {"nameField": "costPrice", "valueField": null, "titleField": "Цена закупки", "groupField": "Цены",
+                    "editorField": "text", "rules": ["required", "float", "precision2"] },
+
+                {"nameField": "quantity", "valueField": null, "titleField": "Остаток", "groupField": "Склад",
+                    "editorField": "text", "rules": ["required", "float", "precision3"] },
+
+                {"nameField": "measureName", "valueField": null, "titleField": "Единицы", "groupField": "Цены",
+                    "editorField": "combo", "dataField": "measureTypes", "rules": ["required",]},
+                {"nameField": "tax", "valueField": null, "titleField": "Ставка НДС", "groupField": "Цены",
+                    "editorField": "combo", "dataField": "taxTypes", "rules": ["required",] },
+                {"nameField": "allowToSell", "valueField": null, "titleField": "Запрет продажи", "groupField": "Склад",
+                    "editorField": "switch", "rules": ["required",] },
+                {"nameField": "description", "valueField": null, "titleField": "Описание", "groupField": "Основные",
+                    "editorField": "text", "rules": ["nullable",] },
+
+                {"nameField": "type", "valueField": null, "titleField": "Вид номенклатуры", "groupField": "Основные",
+                    "editorField": "combo", "dataField": "productTypes", "rules": ["required",] },
+
+                {"nameField": "alcoCodes", "valueField": null, "titleField": "Алкокод", "groupField": "Коды",
+                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable", "digital", "length19"] },
+                {"nameField": "alcoholProductKindCode", "valueField": null, "titleField": "Код вида продукции", "groupField": "ЕГАИС",
+                    "editorField": "text", "rules": ["positive", "digital"] },
+                {"nameField": "alcoholByVolume", "valueField": null, "titleField": "Крепкость", "groupField": "ЕГАИС",
+                    "editorField": "text", "rules": ["positive", "float", "precision2"] },
+                {"nameField": "tareVolume", "valueField": null, "titleField": "Объем тары", "groupField": "ЕГАИС",
+                    "editorField": "text","rules": ["positive", "float", "precision2"] },
+
+                //{"nameField": "group", "valueField": null, "titleField": "Группа", "groupField": "Основные",
+                //    "editorField": "switch", "rules": ["required",] },
+                {"nameField": "parentUuid", "valueField": null, "titleField": "Группа товаров", "groupField": "Основные",
+                    "editorField": "tree", "dataField": null, "rules": ["nullable",] },
+            ],                          // шаблон данных с настройками для преобразователя
 
             // Language titles
             propertyPanelTitle: "Карточка товара",
             treePanelTitle: "Группы товаров",
-            root: "Корневой каталог",
 
             constants: {
                 productTypes: [
@@ -94,63 +137,10 @@ export default class Dashboard extends React.Component {
                 "tareVolume": 0.57
             },        // Сырые данные для  ItemDetail
 
-            itemMatrix: [
-                //{"nameField": "uuid", "valueField": null, "titleField": "UUID", "groupField": "Основные", "editorField": "text"},
-                {"nameField": "name", "valueField": null, "titleField": "Наименование", "groupField": "Основные",
-                    "editorField": "text", "rules": ["required",]},
-                {"nameField": "code", "valueField": null, "titleField": "Код", "groupField": "Основные",
-                    "editorField": "text", "rules": ["required", "digital", "positive"] },
-                {"nameField": "articleNumber", "valueField": null, "titleField": "Артикул", "groupField": "Основные",
-                    "editorField": "text", "rules": ["nullable",] },
-                {"nameField": "barCodes", "valueField": null, "titleField": "Штрихкоды", "groupField": "Коды",
-                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable"] },
-
-                {"nameField": "price", "valueField": null, "titleField": "Цена продажи", "groupField": "Цены",
-                    "editorField": "text", "rules": ["required", "float", "precision2",] },
-                {"nameField": "costPrice", "valueField": null, "titleField": "Цена закупки", "groupField": "Цены",
-                    "editorField": "text", "rules": ["required", "float", "precision2"] },
-
-                {"nameField": "quantity", "valueField": null, "titleField": "Остаток", "groupField": "Склад",
-                    "editorField": "text", "rules": ["required", "float", "precision3"] },
-
-                {"nameField": "measureName", "valueField": null, "titleField": "Единицы", "groupField": "Цены",
-                    "editorField": "combo", "dataField": "measureTypes", "rules": ["required",]},
-                {"nameField": "tax", "valueField": null, "titleField": "Ставка НДС", "groupField": "Цены",
-                    "editorField": "combo", "dataField": "taxTypes", "rules": ["required",] },
-                {"nameField": "allowToSell", "valueField": null, "titleField": "Запрет продажи", "groupField": "Склад",
-                    "editorField": "switch", "rules": ["required",] },
-                {"nameField": "description", "valueField": null, "titleField": "Описание", "groupField": "Основные",
-                    "editorField": "text", "rules": ["nullable",] },
-
-                {"nameField": "type", "valueField": null, "titleField": "Вид номенклатуры", "groupField": "Основные",
-                    "editorField": "combo", "dataField": "productTypes", "rules": ["required",] },
-
-                {"nameField": "alcoCodes", "valueField": null, "titleField": "Алкокод", "groupField": "Коды",
-                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable", "digital", "length19"] },
-                {"nameField": "alcoholProductKindCode", "valueField": null, "titleField": "Код вида продукции", "groupField": "ЕГАИС",
-                    "editorField": "text", "rules": ["positive", "digital"] },
-                {"nameField": "alcoholByVolume", "valueField": null, "titleField": "Крепкость", "groupField": "ЕГАИС",
-                    "editorField": "text", "rules": ["positive", "float", "precision2"] },
-                {"nameField": "tareVolume", "valueField": null, "titleField": "Объем тары", "groupField": "ЕГАИС",
-                    "editorField": "text","rules": ["positive", "float", "precision2"] },
-
-                //{"nameField": "group", "valueField": null, "titleField": "Группа", "groupField": "Основные",
-                //    "editorField": "switch", "rules": ["required",] },
-                {"nameField": "parentUuid", "valueField": null, "titleField": "Группа товаров", "groupField": "Основные",
-                    "editorField": "tree", "dataField": null, "rules": ["nullable",] },
-            ],                          // шаблон данных с настройками для преобразователя
-
-            processedTreeData: [],                      // Обработанные данные для отображения в ItemTree
-            processedListData: [],                      // Обработанные данные для отображения в ItemList
-            processedDetailData: [],                      // Обработанные данные для отображения в ItemDetail
-
             treeSelection: null,                        //  Выделение в ItemTree
             //listSelection: [],                        //  Выделение в ItemList
-            itemSelection: null,                        // ????Данные для отображения в ItemDetail
-
+            //itemSelection: null,                        // ????Данные для отображения в ItemDetail
             nodeView: null,                             //  Отображаемая Нода в ItemList выбранная в ItemTree
-            parentDetailItem: null,
-            
             collapsedDetail: true,
 
             // Drag'n'Drop
@@ -212,7 +202,7 @@ export default class Dashboard extends React.Component {
                     const parts = String(value).split('.');
                     console.log("precision validation", value);
                     //if(Array.isArray(value)) return true; // Todo доделать!!!
-                    if (parts.length === 2) return parts[1].length === 2;
+                    if (parts.length === 2) return parts[1].length === 1 || parts[1].length === 2;
                     else return true
                 },
                 message: 'Точность числа только до двух знаков',
@@ -241,9 +231,9 @@ export default class Dashboard extends React.Component {
 
         this.keyboardEventListener = null;             
         this.menu = null;
-        this.notificator = this.props.notificator;
+        this.notificator = props.notificator;
 
-        this.contextMenu ={
+        this.contextMenu = {
             treeMenu: [
                 { key: "create", text: "Создать", disabled: false, iconCls: "icon-evotor-folder-add" },
                 { key: "rename", text: "Переименовать", disabled: false, iconCls: "icon-evotor-folder-edit" },
@@ -266,7 +256,7 @@ export default class Dashboard extends React.Component {
                 { key: "main_sep", separator: true },
                 { key: "copy", text: "Копировать", disabled: false },
                 { key: "paste", text: "Вставить", disabled: false },
-                { key: "duplicate", text: "Дублировать", disabled: false },
+                //{ key: "duplicate", text: "Дублировать", disabled: false },  // disabled
                 { key: "delete", text: "Удалить", disabled: false, iconCls: "icon-evotor-folder-delete" },
                 { key: "close_sep", separator: true },
                 { key: "close", text: "Закрыть", disabled: false },
@@ -290,13 +280,6 @@ export default class Dashboard extends React.Component {
 
     componentDidUpdate( prevProps, prevState, snapshot) {
         //console.log("ComponentDidUpdate Dashboard (itemTreeData/processedTreeData)=>", this.state.itemTreeData, this.state.processedTreeData);
-        console.log("ComponentDidUpdate Dashboard (itemDetailData/processedDetailData)=>", this.state.itemDetailData, this.state.processedDetailData);
-        if(prevState.itemDetailData !== this.state.itemDetailData || prevState.itemListData !== this.state.itemListData)
-            this.updateDetailData();
-        if(prevState.itemListData !== this.state.itemListData || prevState.itemTreeData !== this.state.itemTreeData)
-            this.updateListData();
-        if(prevState.itemTreeData !== this.state.itemTreeData)
-            this.updateTreeData();
     }
 
     componentWillUnmount() {
@@ -321,62 +304,41 @@ export default class Dashboard extends React.Component {
             itemListData,
             itemDetailData,
             loading: false,
-        });
-        //this.updateTreeData(itemTreeData);
-        //this.updateListData(itemTreeData, itemListData, nodeView);
-        //this.updateItemData(itemTreeData, itemDetailData);
-    };
-
-    updateTreeData = () => {
-        // Обновление данных в ListItem
-        const { itemTreeData, root } = this.state;
-        // parentUuid === null так как Tree видно полное дерево
-        const children = processingTreeData(itemTreeData, null);
-        console.log(">>>>Обновление itemTreeData/children=>", itemTreeData, children);
-        const processedTreeData = addRootNode(children, root);
-
-        this.setState({
-            processedTreeData,
             treeSelection: null,
-        });
-    };
-
-    updateListData = () => {
-        const { itemTreeData, itemListData, nodeView } = this.state;
-        const processedListData = processingListData(itemTreeData, itemListData,
-            nodeView === null ? null : nodeView.uuid);
-        // Обновление данных в ListItem
-        console.log(">>>>Обновление itemListData=>", processedListData);
-        this.setState({
-            processedListData,
             listSelection: null,
         });
     };
 
-    updateDetailData = () => {
-        const { itemDetailData, itemTreeData, itemMatrix } = this.state;
-        // itemData это объект класса row
-        const processedDetailData = processingItemData(itemTreeData, itemDetailData, itemMatrix);
-        // row не может быть null
-        const parentDetailItem = getNodeByRow(itemTreeData, itemDetailData);
-        console.log(">>>>Обновление ItemDetailData=>", processedDetailData);
-        this.setState({
-            processedDetailData,
-            parentDetailItem,
-        })
-
+    updateItemTreeData = (node) =>{
+        /* Обновление основного хранилища иерархии групп товаров
+        *
+        * Выполняются действия(удалить/добавить/изменить) в зависимости
+        * в зависимости от полученной node:
+        *   1. Если node.uuid существует, тогда
+        *   1.1  Если node.state === "deleted" тогда удалаем каталог
+        *   1.2  Если поменялось свойство(text, state, iconCls...), то меняем его
+        *   2. Если node.uuid не найдет, то создаем его
+        *       При добалении новой node, вычисляем новый code.
+        * */
+        //const { itemTreeData, root } = this.state;
+        console.log("DashBoard updateItemTreeData=>node", node);
+        //if(node.state)
     };
 
     updateItemListData = (row) =>{
-        /*
-            Обновление основного хранилища информации об товарах
-            Выполняются действия(удалить/добавить/изменить) в зависимости
-            от полученного row. Если у row нет code, то его удаляем
-         */
+        /* Обновление основного хранилища информации товаров
+        *
+        *  Выполняются действия(удалить/добавить/изменить)
+        *  в зависимости от полученного row:
+        *       1 Если row.code === undefined тогда удаляем товар
+        *       2 Иначе если row.uuid существует, тогда заменяем товар, на отредактированный
+        *       3 Но Если же row.uuid не найден в данных, значит создаем новый товар
+        *           При добалении нового товара code вычисляем новый.
+        */
         console.log("DashBoard updateItemListData=>row", row);
         const { itemListData } = this.state;
         if(row.code === undefined){
-            // Пришло удаление
+            // Удаляем товар
             const newListData = itemListData.filter(el=>el.uuid!==row.uuid);
             // console.log("DashBoard delete row=>", row, newListData.length, itemListData.length);
             if(newListData.length === itemListData.length - 1){
@@ -388,7 +350,7 @@ export default class Dashboard extends React.Component {
         }else {
             const idx = itemListData.findIndex(el=>el.uuid===row.uuid);
             if(idx !== -1){
-                //  Заменяем элемент
+                //  Заменяем товар
                 this.setState({
                     itemListData: itemListData.map((item)=>{
                         if(item.uuid === row.uuid) return Object.assign({}, item, row);
@@ -396,8 +358,7 @@ export default class Dashboard extends React.Component {
                     })
                 })
             } else {
-                // Создаем новый элемент
-
+                // Создаем новый товар
                 const newListData = [].concat(itemListData,
                     Object.assign({},row, { code: this.getNewCode() }));
                 console.log("DashBoard create row=>", row, newListData);
@@ -470,24 +431,21 @@ export default class Dashboard extends React.Component {
     // ItemTree => Open Node
     handleTreeNodeSelectView = (node) =>{
         // Просмотр выбранной ноды в ListItem
-        const { itemTreeData, itemListData, nodeView } = this.state;
+        const { nodeView } = this.state;
         const nodeUuid = nodeView ? nodeView.uuid : null;
-        //console.log("Выбрали ноду=>", node);
+        console.log("Выбрали ноду=>", node);
 
         if(nodeUuid !== node.uuid) {
-            const processedListData = processingListData(itemTreeData, itemListData, node.uuid);
             this.setState({
                 nodeView: node,
-                processedListData,
             });
         }
     };
 
-
     handleDropListItem = (node) => {
         // Todo Каждое действие отправляется на сервер для Redo/Undo
         // Тут делаем операции с даннымы
-        const { itemListData, itemTreeData, dragItems, processedTreeData } = this.state;
+        const { itemListData, itemTreeData, dragItems } = this.state;
         const dragListData = dragItems.filter(item=>item.group===false);
         const dragListUuid = dragListData.map((item)=>item.uuid);
         const dragTreeData = dragItems.filter(item=>item.group===true);
@@ -512,7 +470,7 @@ export default class Dashboard extends React.Component {
         }
 
         if(dragTreeUuid.length>0){
-            console.log("setState itemTreeData/proceccedTreeData:", itemTreeData, processedTreeData);
+            console.log("setState itemTreeData:", itemTreeData );
             const newTreeData = itemTreeData.map((item)=>{
                 console.log("itemTreeData item, dragTreeUuid:", item, dragTreeUuid);
                 if(dragTreeUuid.indexOf(item.uuid) !== -1) {
@@ -561,27 +519,26 @@ export default class Dashboard extends React.Component {
 
     // ItemList => DblClick open
     handleListNodeSelection = (row) => {
-        const { processedTreeData, nodeView } = this.state;
+        const { nodeView } = this.state;
         const isChangedUuid = nodeView ? row.uuid !== nodeView.uuid : nodeView === null;
         if(isChangedUuid){
-            const node = getNodeByRow(processedTreeData, row);
-            console.log("listNodeSelection=>", row, node);
-            this.handleTreeNodeSelectView(node)
+            console.log("listNodeSelection=>", row);
+            this.handleTreeNodeSelectView({ uuid: row.uuid })
         }
     };
 
     handleListItemSelection = (row) =>{
-        const { itemTreeData, itemDetailData, itemMatrix } = this.state;
+        const { itemDetailData } = this.state;
         const isChangedUuid = itemDetailData ? row.uuid !== itemDetailData.uuid : itemDetailData === null;
-        // console.log('ChangeNode row/nodeView/test=>', row, itemDetailData, isChangedUuid);
+        console.log('ChangeNode row/nodeView/test=>', row, itemDetailData, isChangedUuid);
         if(isChangedUuid){
-            const parentNode = getNodeByRow(itemTreeData, row);
-            const processedDetailData = processingItemData(itemTreeData, row , itemMatrix);
+            //const parentNode = getNodeByRow(itemTreeData, row);
+            //const processedDetailData = processingItemData(itemTreeData, row , itemMatrix);
             console.log("Редактируем item=>", row);
             this.setState({
                 itemDetailData: row,
-                processedDetailData,
-                parentNode,
+                //processedDetailData,
+                //parentNode,
             })
         }
     };
@@ -626,8 +583,8 @@ export default class Dashboard extends React.Component {
     /* ----------------- Render методы отображения компонента ------------------------- */
     render() {
         const {
-            constants, collapsedDetail, nodeView, parentDetailItem,
-            processedTreeData, processedListData, processedDetailData, itemMatrix,
+            constants, collapsedDetail, nodeView, itemMatrix,
+            itemTreeData, itemListData, itemDetailData,
             propertyPanelTitle, treePanelTitle } = this.state;
 
         if(this.state.loading)
@@ -652,7 +609,8 @@ export default class Dashboard extends React.Component {
                     split
                     style={{ minWidth: 150, maxWidth: 400 }}>
                     <ItemTree
-                        data = { processedTreeData }
+                        itemTreeData = { itemTreeData }
+                        updateItemTreeData = { this.updateItemTreeData }
                         onDrop = { this.handleDropListItem }
                         onTreeSelectionChange = { this.handleTreeSelectionChange }
                         onTreeNodeSelectView = { this.handleTreeNodeSelectView }
@@ -665,17 +623,18 @@ export default class Dashboard extends React.Component {
                 <LayoutPanel
                     region="center">
                     <ItemList
-                        constants = { constants }
-                        data = { processedListData }
+                        itemListData = { itemListData }
+                        itemTreeData = { itemTreeData }
                         itemMatrix = { itemMatrix }
                         nodeView = { nodeView }
+                        constants = { constants }
                         collapsed = { collapsedDetail }
                         onDrag = { this.handleDragListItem }
                         updateItemListData = { this.updateItemListData }         //???
                         contextMenu = { this.contextMenu.listMenu }
                         onListNodeSelection = { this.handleListNodeSelection }
                         onListItemSelection = { this.handleListItemSelection }
-                        //node = { this.state.treeSelection }
+                        notificator = { this.notificator }
                         //handleListSelectionChange = { this.handleListSelectionChange }
                         setKeyboardEventsListener = { this.setKeyboardEventsListener }
                         getRules = { this.getRules }
@@ -692,13 +651,16 @@ export default class Dashboard extends React.Component {
                     onExpand = { this.handleExpandEast }
                     expander
                     split
-                    style = {{ minWidth: 200, maxWidth: 400 }}>
+                    style = {{ minWidth: 200, maxWidth: 400 }}
+                    >
                     <ItemDetail
-                        constants = { constants }
-                        data = { processedDetailData }
-                        parent = { parentDetailItem }
-                        processedTreeData = { processedTreeData }
+                        itemDetailData = { itemDetailData }
+                        //itemListData = { itemListData }
+                        itemTreeData = { itemTreeData }
+                        itemMatrix = { itemMatrix }
+                        //parent = { parentDetailItem }
                         collapsed = { collapsedDetail }
+                        constants = { constants }
                         contextMenu = { this.contextMenu.itemMenu }
                         setKeyboardEventsListener = { this.setKeyboardEventsListener }
                         getRules = { this.getRules }

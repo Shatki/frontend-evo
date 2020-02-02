@@ -2,10 +2,9 @@ import React, { Component } from 'react';
 import { Tree, Droppable } from 'rc-easyui';
 import ContextMenu from "../context-menu";
 import ErrorView from "../error-view";
-import { deleteNode, createNode } from "../../services/nodes-service";
+import { deleteNode, createNode, processingTreeData, addRootNode } from "../../services/nodes-service";
 import ErrorBoundry from "../error-boundry";
 import './item-tree.css'
-
 
 
 export default class ItemTree extends Component {
@@ -17,6 +16,7 @@ export default class ItemTree extends Component {
             hasError: false,
             selection: null,
             editingNode: null,
+
         };
         this.treeContextMenuFunction = [
             { key: "Создать", function: this.handleTreeNodeCreate },
@@ -25,6 +25,7 @@ export default class ItemTree extends Component {
             { key: "Удалить", function: this.handleTreeNodeDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ];
+        this.updateItemTreeData = props.updateItemTreeData;
         this.onTreeNodeSelectView = props.onTreeNodeSelectView;
         this.onTreeSelectionChange = props.onTreeSelectionChange;
         this.onChangeNodeState = props.onChangeNodeState;
@@ -39,15 +40,19 @@ export default class ItemTree extends Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-    if(prevProps.data !== this.props.data)
+    if(prevProps.itemTreeData !== this.props.itemTreeData)
             this.updateData();
     }
 
     /* ----------------- Data operations ---------------------------------------------- */
     updateData = () => {
-        const { data } = this.props;
-        // console.log("item-tree data:", data);
-        this.setState({ data })
+        const { itemTreeData } = this.props;
+        const { root } = this.state;
+        // parentUuid === null так как Tree видно полное дерево
+        const children = processingTreeData(itemTreeData, null);
+        console.log("ItemTree Обновление itemTreeData/children=>", itemTreeData, children);
+        const data = addRootNode(children, root);
+        this.setState({ data });
     };
 
     /* ----------------- Keyboard event functions ------------------------------------- */
@@ -94,9 +99,10 @@ export default class ItemTree extends Component {
         this.tree.beginEdit(node);
     };
 
-    // ItemTree => Create new node
+    // ItemTree => Create new node ---------------------------------
     handleTreeNodeDelete = (node) =>{
         // Todo Каждое действие отправляется на сервер для Redo/Undo
+
         this.setState({
             data: deleteNode(this.state.data, node)
         })
@@ -195,6 +201,7 @@ export default class ItemTree extends Component {
         return (
             <ErrorBoundry>
                 <Tree
+                    style = {{ height: "100%" }}
                     ref = { tree=>this.tree=tree }
                     render = { this.renderNode }
                     animate

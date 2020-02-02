@@ -5,6 +5,7 @@ import ContextMenu from "../context-menu";
 import './item-list.css';
 import ErrorBoundry from "../error-boundry";
 import ItemEditor from "./item-editor";
+import { processingListData } from "../../services/nodes-service";
 
 
 
@@ -14,17 +15,19 @@ export default class ItemList extends Component {
 
         this.state = {
             data: [],
-            nodeView: props.nodeView,       // открытый каталог для редактирования
+            nodeView: null,       // открытый каталог для редактирования
             operators: [ "nofilter", "equal", "notequal", "less", "greater" ],
             allChecked: false,
             rowClicked: false,
             selection: [],
             drag: [],
+            copied: null,
 
             editingRow: null,
             processedRow: null,
 
             titleEditItem: 'Редактирование товара',
+            titleAddItem: 'Добавление товара',
             titleCreateItem: 'Создаем новый товар',
 
             errors: {},
@@ -59,13 +62,14 @@ export default class ItemList extends Component {
             { key: "Открыть", function: this.handleRowDblClick },   // для row.group === true
             { key: "Копировать", function: this.handleListRowCopy },
             { key: "Вставить", function: this.handleListRowPaste },
-            { key: "Дублировать", function: this.handleListRowDublicate },
+            //{ key: "Дублировать", function: this.handleListRowDublicate },
             { key: "Удалить", function: this.handleListRowDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ];
         this.updateItemListData = props.updateItemListData;
         this.onListNodeSelection = props.onListNodeSelection;
         this.onListItemSelection = props.onListItemSelection;
+        this.notificator = props.notificator;
 
         // Сохраним сеттер keyboard events listener для передачи другим компонентам
         this.setKeyboardEventsListener = props.setKeyboardEventsListener;
@@ -77,18 +81,23 @@ export default class ItemList extends Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        if(prevProps.data !== this.props.data)
+        if(prevProps.itemListData !== this.props.itemListData || prevProps.nodeView !== this.props.nodeView)
             this.updateData();
     }
 
     /* ----------------- Data operations ---------------------------------------------- */
     updateData = () => {
-        const { data, nodeView } = this.props;
+        const { itemTreeData, itemListData, nodeView } = this.props;
+        const data = processingListData(itemTreeData, itemListData,
+            nodeView === null ? null : nodeView.uuid);
+        // Обновление данных в ListItem
+        console.log("ItemList Обновление itemListData=>", data);
         this.setState({
             data,
             nodeView,
+            selection: [],
             loading: false
-        })
+        });
     };
 
     /* ----------------- Keyboard event functions ------------------------------------- */
@@ -135,12 +144,13 @@ export default class ItemList extends Component {
         this.changeSelections(selection)
     };
 
-    handleContextMenuClick = (value) =>{
-        this.listContextMenuFunction
-            .find(m => m.key === value)
-            // выбираем [0] т.к e ItemList selections это массив
-            .function(this.state.selection[0]);
+    handleContextMenuClick = (value) => {
+        const action = this.listContextMenuFunction.find(m => m.key === value);
+        // выбираем [0] т.к e ItemList selections это массив
+        if (action !== undefined) action.function(this.state.selection[0]);
+        else this.notificator.show("Данное действие не возможно выполнить", { type: "error" });
     };
+
     /* ----------------- Context Menu functions --------------------------------------- */
     handleContextMenuClose = (row) =>{
         this.list.cancelEdit();
@@ -174,19 +184,32 @@ export default class ItemList extends Component {
     handleListRowDelete = (row) =>{
         // Удаляем row указывая только его uuid
         this.updateItemListData({ name: row.name, uuid: row.uuid});
-
     };
 
     handleListRowCopy = (row) =>{
-        console.log("Копируем row", row);
+        this.notificator.show("Товар " + row.name + " скопирован в буфер", { type: "info" });
+        this.setState({
+            copied: row
+        })
     };
 
     handleListRowPaste = (row) =>{
-        console.log("Вставляем скопированный row", row);
+        const { copied, titleAddItem } = this.state;
+        if(copied){
+            const itemUuid = require('uuid/v4');
+            const code = null;
+            const parentUuid = row.parentUuid;
+            this.setState({
+                editingRow: row,
+                model: Object.assign({}, copied, { uuid: itemUuid(), code, parentUuid }),
+                title: titleAddItem,
+                closed: false
+            });
+        } else this.notificator.show("Чтобы выполнить эту операцию, сначала скопируйте товар", { type: "info" });
     };
 
     handleListRowDublicate = (row) =>{
-        console.log("Дублируем row", row);
+        console.log("Дублируем row(Наверно не нужна)", row);
     };
     /* ----------------- Обработка формы редактирования ------------------------------- */
 

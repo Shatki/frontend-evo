@@ -3,7 +3,8 @@ import { ComboBox, DataGrid, GridColumn, SwitchButton, TextBox, Tooltip, ComboTr
 import ContextMenu from '../context-menu'
 import ErrorBoundry from '../error-boundry'
 import CodeEditor from "./item-code-editor";
-import { getNodeByUuid } from "../../services/nodes-service";
+import { addRootNode, getNodeByRow, getNodeByUuid,
+    processingItemData, processingTreeData } from "../../services/nodes-service";
 import './item-detail.css'
 
 export default class ItemDetail extends Component {
@@ -31,6 +32,7 @@ export default class ItemDetail extends Component {
         // Сохраним сеттер keyboard events listener для передачи другим компонентам
         this.setKeyboardEventsListener = props.setKeyboardEventsListener;
         this.getRules = props.getRules;
+        this.itemMatrix = props.itemMatrix;
     }
 
     /* ----------------- Lifecycle methods -------------------------------------------- */
@@ -40,7 +42,8 @@ export default class ItemDetail extends Component {
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         console.log("componentDidUpdate ItemDetail", this.state.data);
-        if(prevProps.data !== this.props.data ||
+        if(prevProps.itemDetailData !== this.props.itemDetailData ||
+            prevProps.itemTreeData !== this.props.itemTreeData ||
             prevProps.collapsed !== this.props.collapsed) {
             console.log("componentDidUpdate update successful");
             this.updateData();
@@ -50,12 +53,21 @@ export default class ItemDetail extends Component {
     /* ----------------- Data operations ---------------------------------------------- */
 
     updateData = () => {
-        const { data, parent, processedTreeData, collapsed } = this.props;
+        const { itemDetailData, itemTreeData, collapsed, itemMatrix } = this.props;
         //console.log("updateData ItemDetail", data, parent);
         // Установим Keyboard Events Listener
         // Todo Где лучше их ставить ????????????????
         this.setKeyboardEventsListener(this.componentKeyboardEvents);
-        if(data){
+
+        // itemData это объект класса row
+        const data = processingItemData(itemTreeData, itemDetailData, itemMatrix);
+        const children = processingTreeData(itemTreeData, null);
+        const processedTreeData = addRootNode(children);
+        // row не может быть null
+        const parent = getNodeByRow(itemTreeData, itemDetailData);
+        console.log("ItemDetail        Обновление ItemDetailData data/parent=>", data, parent);
+
+        if(itemDetailData){
             this.setState({
                 data,                       // рабочие данные
                 parent,
@@ -106,6 +118,7 @@ export default class ItemDetail extends Component {
     comboDlgManager = (arr) => {
         this.setState((state)=>{
             // Todo: Почему-то так и не меняет отображение кода после редактирования
+            // Вроде исправили
             if(!state.comboDlgClosed){
                 // Восстановим реактор клавиатуры
                 this.setKeyboardEventsListener(this.componentKeyboardEvents);
@@ -165,19 +178,19 @@ export default class ItemDetail extends Component {
     };
 
     handleItemClick = (value) => {
-        console.log(value, this.state.data);
+        console.log("handleItemClick value/data=>",value, this.state.data);
     };
 
     handleItemDetailRowClick =(row)=>{
-        //console.log("Click->", row, this);
+        console.log("Click->", row, this);
     };
 
     handleItemDetailRowDblClick =(row)=>{
         // Установка правил валидации
+        console.log("handleItemDetailRowDblClick row=>", row);
         this.setState({
             rules: this.getRules(row.rules)
         });
-        //console.log("DblClick->", row);
     };
 
     handleComboTreeChange = (value) => {
@@ -187,7 +200,7 @@ export default class ItemDetail extends Component {
             value => Значение поля <ComboTree/> valueField = "uuid"
          */
         const { processedTreeData } = this.state;
-        console.log("Меняем ноду =>", value);
+        console.log("handleComboTreeChange Меняем ноду =>", value);
         const parent = getNodeByUuid(processedTreeData, value);
         this.setState({
             parent
@@ -196,6 +209,7 @@ export default class ItemDetail extends Component {
 
     /* ----------------- Render методы отображения компонента ------------------------- */
     renderEditor = ({ row, error }) =>{
+        console.log("renderEditor row/error=>", row, error);
         // Todo: Доделать
         if (row.editorField === "text")
             return( <Tooltip content={ error } tracking>
@@ -204,23 +218,21 @@ export default class ItemDetail extends Component {
         else if (row.editorField === "switch")
             return(<SwitchButton value={ row.valueField }/>);
         else if(row.editorField === "tree"){
+            console.log("renderTree=>");
             const { processedTreeData } = this.state;
             //const parent = getNodeByUuid(processedTreeData, row.valueField);
             //const value = parent ? parent.uuid : "";
-            const data = [].concat(processedTreeData);
-            data[0].uuid = "root";
-            console.log("renderTree processedTreeData/row.valueField", processedTreeData, row.valueField);
-            console.log("renderTree=>", row.valueField);
+            //const data = [].concat(processedTreeData);
             return(
                 <ComboTree
-                    animate
+                    //animate
                     placeholder="Выберите группу"
                     valueField = "uuid"
                     textField = "text"
-                    data={ data }
+                    data={ processedTreeData }
                     value={ row.valueField }
-                    onChange={ this.handleComboTreeChange }/>
-                    );
+                    onChange={ this.handleComboTreeChange }
+                />);
         }
         else if (row.editorField === "combo"){
             // const dataRow =
@@ -246,7 +258,7 @@ export default class ItemDetail extends Component {
     };
 
     renderView = ({ value, row }) => {
-        // console.log("render view Node=>", row.nameField, value);
+        console.log("render view row/value=>", row, value);
         if (row.editorField === "text")
             return(<div>{ row.valueField }</div>);
         else if(row.editorField === "number")
@@ -291,17 +303,17 @@ export default class ItemDetail extends Component {
 
     render() {
         const { data, rules, comboData, comboDlgClosed, collapsed } = this.state;
-        //console.log("itemDetail render collapsed=>", collapsed);
+        console.log("itemDetail render collapsed=>", collapsed);
         if( collapsed ) return null;
 
         return(
             <ErrorBoundry>
                 <DataGrid
+                    style = {{ height: "100%" }}
                     ref = { detail=>this.detail=detail }
                     data = { data }
-                    //idField = "nameField"
+                    idField = "nameField"
                     columnResizing
-                    idField = "valueField"
                     dblclickToEdit
                     expanderWidth = { 20 }
                     selectionMode = "row"
@@ -328,6 +340,7 @@ export default class ItemDetail extends Component {
                     rules = { rules }
                     comboDlgClosed = { comboDlgClosed }
                     comboDlgManager = { this.comboDlgManager }
+                    itemMatrix = { this.itemMatrix }
                     setKeyboardEventsListener = { this.setKeyboardEventsListener }
                 />
                 { this.renderContextMenu() }
