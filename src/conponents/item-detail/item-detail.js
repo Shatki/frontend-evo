@@ -96,7 +96,7 @@ export default class ItemDetail extends Component {
         *  a true if the Meta key is pressed. The Meta key is the Windows key on Windows
         *  keyboards and the Command key on Apple keyboards.
         * */
-        console.log("Item Detail Keyboard Listener");
+        console.log("ItemDetail Keyboard Listener");
         if(e.key === 'Enter' && e.code === 'Enter' && e.ctrlKey === false)
             this.handleItemDetailKeyEnter();
         if(e.key === 'Escape' && e.code === 'Escape' && e.ctrlKey === false)
@@ -105,12 +105,12 @@ export default class ItemDetail extends Component {
 
     handleItemDetailKeyEnter = () =>{
         this.detail.endEdit();
-        console.log("Item Detail Enter Key");
+        console.log("ItemDetail Enter Key");
     };
 
     handleItemDetailKeyEscape = () =>{
         this.detail.cancelEdit();
-        console.log("Item Detail Escape Key");
+        console.log("ItemDetail Escape Key");
     };
 
     /* ----------------- Combo Code Editor Dialog ------------------------------------- */
@@ -220,12 +220,9 @@ export default class ItemDetail extends Component {
         else if(row.editorField === "tree"){
             console.log("renderTree=>");
             const { processedTreeData } = this.state;
-            //const parent = getNodeByUuid(processedTreeData, row.valueField);
-            //const value = parent ? parent.uuid : "";
-            //const data = [].concat(processedTreeData);
             return(
                 <ComboTree
-                    //animate
+                    animate
                     placeholder="Выберите группу"
                     valueField = "uuid"
                     textField = "text"

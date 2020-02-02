@@ -137,9 +137,6 @@ export default class Dashboard extends React.Component {
                 "tareVolume": 0.57
             },        // Сырые данные для  ItemDetail
 
-            treeSelection: null,                        //  Выделение в ItemTree
-            //listSelection: [],                        //  Выделение в ItemList
-            //itemSelection: null,                        // ????Данные для отображения в ItemDetail
             nodeView: null,                             //  Отображаемая Нода в ItemList выбранная в ItemTree
             collapsedDetail: true,
 
@@ -304,8 +301,6 @@ export default class Dashboard extends React.Component {
             itemListData,
             itemDetailData,
             loading: false,
-            treeSelection: null,
-            listSelection: null,
         });
     };
 
@@ -422,10 +417,8 @@ export default class Dashboard extends React.Component {
 
     /* ----------------- Обработка событий Dashboard ---------------------------------- */
     handleTreeSelectionChange = (node) =>{
-        //console.log(node);
-        this.setState({
-            treeSelection: node,
-        });
+        // Todo устаревший рудимент
+        console.log("Dashboard.handleTreeSelectionChange node=>", node);
     };
 
     // ItemTree => Open Node
@@ -612,7 +605,7 @@ export default class Dashboard extends React.Component {
                         itemTreeData = { itemTreeData }
                         updateItemTreeData = { this.updateItemTreeData }
                         onDrop = { this.handleDropListItem }
-                        onTreeSelectionChange = { this.handleTreeSelectionChange }
+                        //onTreeSelectionChange = { this.handleTreeSelectionChange }
                         onTreeNodeSelectView = { this.handleTreeNodeSelectView }
                         onChangeNodeState = { this.handleChangeNodeState }
                         contextMenu = { this.contextMenu.treeMenu }

@@ -56,18 +56,39 @@ export default class ItemTree extends Component {
     };
 
     /* ----------------- Keyboard event functions ------------------------------------- */
-
-
-
-
-    /* ----------------- Обработка событий ItemList ----------------------------------- */
-    changeSelections = (selection=null) => {
-        // Основная функция изменения выделений строк в ItemTree
-        this.setState({
-            selection,
-        });
+    componentKeyboardEvents = (e) =>{
+        /*
+        *  This argument contains a handful of properties:
+        *  "keyCode"
+        *  Every key we press on your keyboard has a number associated with it.
+        *  This read-only property returns that number.
+        *  "charCode"
+        *  This property only exists on event arguments returned by the keypress event, and it contains the ASCII
+        *  code for whatever character key you pressed.
+        *  "ctrlKey", "altKey", "shiftKey"
+        *  These three properties return a true if the Ctrl key, Alt key, or Shift key are pressed.
+        *  "metaKey"
+        *  The metaKey property is similar to the ctrlKey, altKey, and shiftKey properties in that it returns
+        *  a true if the Meta key is pressed. The Meta key is the Windows key on Windows
+        *  keyboards and the Command key on Apple keyboards.
+        * */
+        console.log("ItemTree Keyboard Listener");
+        if(e.key === 'Enter' && e.code === 'Enter' && e.ctrlKey === false)
+            this.handleItemTreeKeyEnter();
+        if(e.key === 'Escape' && e.code === 'Escape' && e.ctrlKey === false)
+            this.handleItemTreeKeyEscape();
     };
 
+    handleItemTreeKeyEnter = () =>{
+        this.tree.endEdit();
+        console.log("ItemTree Enter Key selection=>", this.state.selection);
+    };
+
+    handleItemTreeKeyEscape = () =>{
+        this.tree.cancelEdit();
+        console.log("ItemTree Escape Key");
+    };
+    /* ----------------- Обработка событий ItemList ----------------------------------- */
     handleNodeDragOver = (node) => {
         this.tree.selectNode(node);
         console.log("Drag over =>", node.text);
@@ -115,8 +136,6 @@ export default class ItemTree extends Component {
 
     handleNodeContextMenu = ({ node, originalEvent }) => {
         originalEvent.preventDefault();
-        // Выделим ноду
-        this.changeSelections(node);
         // Выберем ноду
         this.tree.selectNode(node);
         //console.log(node.text);
@@ -134,11 +153,12 @@ export default class ItemTree extends Component {
         this.onTreeNodeSelectView(node)
     };
 
-    handleSelectionChange = (node) => {
+    handleSelectionChange = (selection) => {
+        // При изменении выделений, меняем фокус клавиатуры
+        this.setKeyboardEventsListener(this.componentKeyboardEvents);
         // Вызываем для сохранения стейта в Дашбоард
         if (this.state.editingNode !== null) this.tree.cancelEdit();
-
-        this.onTreeSelectionChange(node);
+        this.setState({ selection })
     };
 
     handleEditBegin = ({ node, originalValue }) =>{
@@ -195,7 +215,7 @@ export default class ItemTree extends Component {
     };
 
     render() {
-        const { data, hasError } = this.state;
+        const { data, selection, hasError } = this.state;
         if(hasError)
             return (<ErrorView/>);
         return (
@@ -205,11 +225,12 @@ export default class ItemTree extends Component {
                     ref = { tree=>this.tree=tree }
                     render = { this.renderNode }
                     animate
+                    data = { data }
+                    selection = { selection }
                     onNodeDblClick = { this.handleNodeDblClick }
                     onNodeExpand = { this.handleNodeExpand }
                     onNodeCollapse = { this.handleNodeCollapse }
                     onSelectionChange = { this.handleSelectionChange }
-                    data = { data }
                     onNodeContextMenu = { this.handleNodeContextMenu }
                     onEditBegin = { this.handleEditBegin }
                     onEditEnd = { this.handleEditEnd }

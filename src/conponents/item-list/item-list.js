@@ -101,7 +101,38 @@ export default class ItemList extends Component {
     };
 
     /* ----------------- Keyboard event functions ------------------------------------- */
+    componentKeyboardEvents = (e) =>{
+        /*
+        *  This argument contains a handful of properties:
+        *  "keyCode"
+        *  Every key we press on your keyboard has a number associated with it.
+        *  This read-only property returns that number.
+        *  "charCode"
+        *  This property only exists on event arguments returned by the keypress event, and it contains the ASCII
+        *  code for whatever character key you pressed.
+        *  "ctrlKey", "altKey", "shiftKey"
+        *  These three properties return a true if the Ctrl key, Alt key, or Shift key are pressed.
+        *  "metaKey"
+        *  The metaKey property is similar to the ctrlKey, altKey, and shiftKey properties in that it returns
+        *  a true if the Meta key is pressed. The Meta key is the Windows key on Windows
+        *  keyboards and the Command key on Apple keyboards.
+        * */
+        console.log("ItemList Keyboard Listener");
+        if(e.key === 'Enter' && e.code === 'Enter' && e.ctrlKey === false)
+            this.handleItemListKeyEnter();
+        if(e.key === 'Escape' && e.code === 'Escape' && e.ctrlKey === false)
+            this.handleItemListKeyEscape();
+    };
 
+    handleItemListKeyEnter = () =>{
+        this.list.endEdit();
+        console.log("ItemList Enter Key selection=>", this.state.selection);
+    };
+
+    handleItemListKeyEscape = () =>{
+        this.list.cancelEdit();
+        console.log("ItemList Escape Key");
+    };
 
 
     /* ----------------- Обработка событий ItemList ----------------------------------- */
@@ -125,23 +156,23 @@ export default class ItemList extends Component {
         this.props.onDrag(items);
     };
 
-    changeSelections = (selection) => {
-        // Основная функция изменения выделений строк в ItemList
-        // Сохраним в стейт
-        this.setState({ selection });
-    };
-
     handleCellContextMenu = ({ row, column, originalEvent }) =>{
         originalEvent.preventDefault();
         // При контекстном меню отменим выделения
         this.changeSelections([row]);
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY);
     };
+    
+    clearSelection = () => {
+      this.setState({ selection: [] });
+    };
 
     handleSelectionChange = (selection) => {
+        // При изменении выделений, меняем фокус клавиатуры
+        this.setKeyboardEventsListener(this.componentKeyboardEvents);
         // Вызываем для сохранения стейта в Дашбоард
         if (this.state.editingNode !== null) this.list.cancelEdit();
-        this.changeSelections(selection)
+        this.setState({ selection })
     };
 
     handleContextMenuClick = (value) => {
@@ -213,7 +244,6 @@ export default class ItemList extends Component {
     };
     /* ----------------- Обработка формы редактирования ------------------------------- */
 
-
     /* ----------------- Render методы отображения компонента ------------------------- */
     renderColumn = ({ value, row }) => {
         const proxy = () => {
@@ -242,7 +272,7 @@ export default class ItemList extends Component {
                 proxy={ proxy }
                 onDragStart={(event) => this.handleRowDragStart(event, row)}
                 // Отмена выделений после перетаскивания
-                onDragEnd = { this.changeSelections([]) }>
+                onDragEnd = { this.clearSelection }>
                 <div>
                     { row.name }
                 </div>
@@ -292,6 +322,7 @@ export default class ItemList extends Component {
                 <DataGrid
                     ref = { list=>this.list=list }
                     data = { data }
+                    selection={ selection }
                     style = {{ height: 'calc(100vh - 60px)' }}
                     //renderItem = { this.renderRow }
                     filterable
@@ -299,7 +330,6 @@ export default class ItemList extends Component {
                     columnResizing
                     editMode = "row"
                     selectionMode ='multiple'
-                    selection={ selection }
                     rowCss = { this.renderRowStyle }
                     onRowDblClick = { this.handleRowDblClick }
                     onSelectionChange = { this.handleSelectionChange }
