@@ -2,7 +2,13 @@ import React, { Component } from 'react';
 import { Tree, Droppable } from 'rc-easyui';
 import ContextMenu from "../context-menu";
 import ErrorView from "../error-view";
-import { deleteNode, createNode, processingTreeData, addRootNode } from "../../services/nodes-service";
+import {
+    deleteNode,
+    createNode,
+    processingTreeData,
+    addRootNode,
+    transformNodeToRow
+} from "../../services/nodes-service";
 import ErrorBoundry from "../error-boundry";
 import './item-tree.css'
 
@@ -25,7 +31,7 @@ export default class ItemTree extends Component {
             { key: "Удалить", function: this.handleTreeNodeDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ];
-        this.updateItemTreeData = props.updateItemTreeData;
+        this.updateItemData = props.updateItemData;
         this.onTreeNodeSelectView = props.onTreeNodeSelectView;
         this.onTreeSelectionChange = props.onTreeSelectionChange;
         this.onChangeNodeState = props.onChangeNodeState;
@@ -106,7 +112,9 @@ export default class ItemTree extends Component {
     // ItemTree => Create new node
     handleTreeNodeCreate = (node) =>{
         // Todo Каждое действие отправляется на сервер для Redo/Undo
-        const newNode = createNode(this.state.data, node);
+        console.log("Create node| node=> ", node);
+        const { data } = this.state;
+        const newNode = createNode(data, node);
         // Включаем редактор Ноды
         this.tree.selectNode(newNode);
         this.tree.beginEdit(newNode);
@@ -168,6 +176,11 @@ export default class ItemTree extends Component {
     };
 
     handleEditEnd = ({ node, originalValue }) =>{
+        //
+        const row = transformNodeToRow(node);
+        this.updateItemData(row);
+        console.log("itemTree handleEditEnd node=>", row);
+
         this.setState({
             editingNode: null
         })
@@ -215,6 +228,7 @@ export default class ItemTree extends Component {
     };
 
     render() {
+        console.log("ItemTree render--->>>");
         const { data, selection, hasError } = this.state;
         if(hasError)
             return (<ErrorView/>);

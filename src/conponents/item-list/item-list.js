@@ -58,7 +58,7 @@ export default class ItemList extends Component {
         };
         this.listContextMenuFunction = [
             { key: "Создать", function: this.handleListRowCreate },
-            { key: "Изменить", function: this.handleRowDblClick },
+            // Todo доработать для групп и товаров
             { key: "Открыть", function: this.handleRowDblClick },   // для row.group === true
             { key: "Копировать", function: this.handleListRowCopy },
             { key: "Вставить", function: this.handleListRowPaste },
@@ -66,7 +66,7 @@ export default class ItemList extends Component {
             { key: "Удалить", function: this.handleListRowDelete },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ];
-        this.updateItemListData = props.updateItemListData;
+        this.updateItemData = props.updateItemData;
         this.onListNodeSelection = props.onListNodeSelection;
         this.onListItemSelection = props.onListItemSelection;
         this.notificator = props.notificator;
@@ -81,7 +81,9 @@ export default class ItemList extends Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        if(prevProps.itemListData !== this.props.itemListData || prevProps.nodeView !== this.props.nodeView)
+        if(prevProps.itemListData !== this.props.itemListData ||
+            prevProps.itemTreeData !== this.props.itemTreeData ||
+            prevProps.nodeView !== this.props.nodeView)
             this.updateData();
     }
 
@@ -98,6 +100,15 @@ export default class ItemList extends Component {
             selection: [],
             loading: false
         });
+    };
+
+    setSelection = (selection) => {
+      this.setState({ selection });
+    };
+
+    //  Нужен отдельный обнулитель
+    clearSelection = () => {
+      this.setState({ selection: [] });
     };
 
     /* ----------------- Keyboard event functions ------------------------------------- */
@@ -138,7 +149,7 @@ export default class ItemList extends Component {
     /* ----------------- Обработка событий ItemList ----------------------------------- */
     handleRowDblClick = (row) =>{
         const { collapsed } = this.props;
-        this.changeSelections([row]);  // ???? Нужно ли??
+        this.setSelection([row]);  // ???? Нужно ли??
         // реакция на двойной клик
         if(row.group){
             this.onListNodeSelection(row);
@@ -158,13 +169,10 @@ export default class ItemList extends Component {
 
     handleCellContextMenu = ({ row, column, originalEvent }) =>{
         originalEvent.preventDefault();
-        // При контекстном меню отменим выделения
-        this.changeSelections([row]);
+        // При контекстном меню отменим выделения - нет
+        //this.changeSelection([row]);
+        this.setState({ editingRow: row });
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY);
-    };
-    
-    clearSelection = () => {
-      this.setState({ selection: [] });
     };
 
     handleSelectionChange = (selection) => {
@@ -172,13 +180,14 @@ export default class ItemList extends Component {
         this.setKeyboardEventsListener(this.componentKeyboardEvents);
         // Вызываем для сохранения стейта в Дашбоард
         if (this.state.editingNode !== null) this.list.cancelEdit();
-        this.setState({ selection })
+        this.setSelection(selection)
     };
 
     handleContextMenuClick = (value) => {
+        const { editingRow } = this.state;
         const action = this.listContextMenuFunction.find(m => m.key === value);
         // выбираем [0] т.к e ItemList selections это массив
-        if (action !== undefined) action.function(this.state.selection[0]);
+        if (action !== undefined) action.function(editingRow);
         else this.notificator.show("Данное действие не возможно выполнить", { type: "error" });
     };
 
@@ -214,7 +223,7 @@ export default class ItemList extends Component {
 
     handleListRowDelete = (row) =>{
         // Удаляем row указывая только его uuid
-        this.updateItemListData({ name: row.name, uuid: row.uuid});
+        this.updateItemData({ name: row.name, uuid: row.uuid});
     };
 
     handleListRowCopy = (row) =>{
@@ -360,7 +369,7 @@ export default class ItemList extends Component {
                     model = { model }
                     closed = { closed }
                     saveRow = { this.saveRow }
-                    updateItemListData = { this.updateItemListData }
+                    updateItemData = { this.updateItemData }
                     itemMatrix = { this.itemMatrix }
                     constants = { this.constants }
                     getRules = { this.getRules }

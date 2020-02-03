@@ -17,7 +17,7 @@ export default class ItemEditor extends Component {
             errors: null,
         };
         this.form = null;
-        this.updateItemListData = props.updateItemListData;
+        this.updateItemData = props.updateItemData;
         this.constants = props.constants;
         this.getRules = props.getRules;
         this.itemMatrix = props.itemMatrix;
@@ -72,8 +72,7 @@ export default class ItemEditor extends Component {
         this.form.validate(() => {
             if (this.form.valid()) {
                 const { model } = this.state;
-                this.updateItemListData(model);
-                // Todo: переделать, так не работает data это не полная информация
+                this.updateItemData(model);
                 this.setState({
                     closed: true
                 })

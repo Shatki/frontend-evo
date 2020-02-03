@@ -56,8 +56,6 @@ export default class ItemDetail extends Component {
         const { itemDetailData, itemTreeData, collapsed, itemMatrix } = this.props;
         //console.log("updateData ItemDetail", data, parent);
         // Установим Keyboard Events Listener
-        // Todo Где лучше их ставить ????????????????
-        this.setKeyboardEventsListener(this.componentKeyboardEvents);
 
         // itemData это объект класса row
         const data = processingItemData(itemTreeData, itemDetailData, itemMatrix);
@@ -178,6 +176,8 @@ export default class ItemDetail extends Component {
     };
 
     handleItemClick = (value) => {
+        // Todo доработать расположение listener'a
+        this.setKeyboardEventsListener(this.componentKeyboardEvents);
         console.log("handleItemClick value/data=>",value, this.state.data);
     };
 

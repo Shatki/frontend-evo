@@ -51,7 +51,7 @@ export const addRootNode = (children, text) => {
     ]);
 };
 
-export const transformTreeData = (row, children=[]) =>{
+export const transformRowToNode = (row, children=[]) =>{
     /*
     *   Конвертирование row в node
     *
@@ -63,7 +63,7 @@ export const transformTreeData = (row, children=[]) =>{
             uuid: row.uuid,
             text: row.name,
             iconCls: "icon-evotor-folder-sub",
-            state: row.nodeState || 'closed',
+            state: row.state || 'closed',
             children
         };
     }
@@ -77,6 +77,31 @@ export const transformTreeData = (row, children=[]) =>{
     }
 };
 
+export const transformNodeToRow = (node) => {
+    /*
+    *   Конвертирование node в row
+    *
+    * */
+    return {
+        uuid: node.uuid,
+        code: null,
+        barCodes: [],
+        alcoCodes: [],
+        name: node.text,
+        price: 0.00,
+        quantity: 0.00,
+        costPrice: 0.00,
+        measureName: "шт",
+        tax: "NO_VAT",
+        allowToSell: true,
+        description: null,
+        articleNumber: null,
+        parentUuid: node.parent !== undefined ? node.parent.uuid: null,
+        group: true,
+        type: "NORMAL",
+    }
+};
+
 export const processingTreeData = (treeData, parentUuid=null) => {
     // Возвращает коренной список, parentUuid = null
     // Алгоритм преобразования данных в объект для treeItem
@@ -86,7 +111,7 @@ export const processingTreeData = (treeData, parentUuid=null) => {
         // Выбираем элементы имеющие children
         return  dataFilter.map((child)=>{
             const children = processingTreeData(treeData, child.uuid);
-            return transformTreeData(child, children)
+            return transformRowToNode(child, children)
         });
     } else {
         return [];
@@ -138,7 +163,7 @@ export const createNode = (treeData, node) =>{
     const itemUuid = require('uuid/v4');
     const newNode = {
         uuid: itemUuid(),
-        text: 'Новая папка',
+        text: 'Новая группа',
         iconCls: "icon-evotor-folder",
     };
     //console.log(newItemTree);

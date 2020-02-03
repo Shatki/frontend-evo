@@ -6,7 +6,7 @@ import ItemList from "../item-list";
 import ItemDetail from "../item-detail";
 import EvotorService from "../../services/evotor-service";
 import LoadingView from "../loading-view";
-import { moveNode } from "../../services/nodes-service";
+import { moveNode, transformNodeToRow } from "../../services/nodes-service";
 
 import './dashboard.css'
 
@@ -16,6 +16,7 @@ export default class Dashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            data: null,
             loading: true,
             store: {
                 "name": "Магазин 'XXI BEK'",
@@ -292,11 +293,16 @@ export default class Dashboard extends React.Component {
 
     updateData = (data) =>{
         // первоначальное заполнение данных
-        const itemTreeData = data.filter(item => item.group === true);
-        const itemListData = data.filter(item => item.group === false);
+        const itemTreeData = data
+            .filter(item => item.group === true)
+            .map(itemTree=>Object.assign({}, itemTree, { state: 'closed' }));
+        const itemListData = data
+            .filter(item => item.group === false)
+            .map((itemList)=>Object.assign({}, itemList));
         // Todo: Вообще в будующем сделать чтоб подхватывался последний редактируемый объект
         const itemDetailData = null;  // Проверим такой вариант
         this.setState({
+            data,
             itemTreeData,
             itemListData,
             itemDetailData,
@@ -304,65 +310,76 @@ export default class Dashboard extends React.Component {
         });
     };
 
-    updateItemTreeData = (node) =>{
-        /* Обновление основного хранилища иерархии групп товаров
+    updateItemData = (row) =>{
+        /* Обновление основного хранилища информации товаров и групп
         *
-        * Выполняются действия(удалить/добавить/изменить) в зависимости
-        * в зависимости от полученной node:
-        *   1. Если node.uuid существует, тогда
-        *   1.1  Если node.state === "deleted" тогда удалаем каталог
-        *   1.2  Если поменялось свойство(text, state, iconCls...), то меняем его
-        *   2. Если node.uuid не найдет, то создаем его
-        *       При добалении новой node, вычисляем новый code.
-        * */
-        //const { itemTreeData, root } = this.state;
-        console.log("DashBoard updateItemTreeData=>node", node);
-        //if(node.state)
-    };
-
-    updateItemListData = (row) =>{
-        /* Обновление основного хранилища информации товаров
-        *
+        *  Обязательно!!! наличие в row признака group
         *  Выполняются действия(удалить/добавить/изменить)
         *  в зависимости от полученного row:
-        *       1 Если row.code === undefined тогда удаляем товар
-        *       2 Иначе если row.uuid существует, тогда заменяем товар, на отредактированный
-        *       3 Но Если же row.uuid не найден в данных, значит создаем новый товар
-        *           При добалении нового товара code вычисляем новый.
+        *       1 Если row.code === undefined тогда удаляем item
+        *       2 Иначе если row.uuid существует, тогда заменяем item, на отредактированный
+        *       3 Но Если же row.uuid не найден в данных, значит создаем новый item
+        *           При добалении нового item, code вычисляем новый.
         */
-        console.log("DashBoard updateItemListData=>row", row);
-        const { itemListData } = this.state;
+        console.log("DashBoard updateItemData=>row", row);
+        const group = row.group;
+        const itemData = group ? this.state.itemTreeData : this.state.itemListData;
+
         if(row.code === undefined){
-            // Удаляем товар
-            const newListData = itemListData.filter(el=>el.uuid!==row.uuid);
+            // Удаляем item
+            const newData = itemData.filter(el=>el.uuid!==row.uuid);
             // console.log("DashBoard delete row=>", row, newListData.length, itemListData.length);
-            if(newListData.length === itemListData.length - 1){
-                this.notificator.show("Товар " + row.name + " успешно удален", { type:"success" });
-                this.setState({
-                    itemListData: newListData
-                })
-            }else this.notificator.show("Ошибка удаление товара " + row.name, { type:"error" });
+            if(newData.length === itemData.length - 1){
+                if(group){
+                    this.notificator.show("Группа товаров " + row.name + " успешно удалена", { type:"success" });
+                    this.setState({
+                        itemTreeData: newData
+                    })
+                }else{
+                    this.notificator.show("Товар " + row.name + " успешно удален", { type:"success" });
+                    this.setState({
+                        itemListData: newData
+                    })
+                }
+            }else this.notificator.show("Ошибка удаления" + row.name, { type:"error" });
         }else {
-            const idx = itemListData.findIndex(el=>el.uuid===row.uuid);
+            const idx = itemData.findIndex(el=>el.uuid===row.uuid);
             if(idx !== -1){
                 //  Заменяем товар
-                this.setState({
-                    itemListData: itemListData.map((item)=>{
-                        if(item.uuid === row.uuid) return Object.assign({}, item, row);
-                        return item; // Вернем тот же, чтоб избежать его повторного рендера
+                console.log("Dashboard замена row=>", row);
+                if (group){
+                    this.setState({
+                        itemTreeData: itemData.map((item)=>{
+                            if(item.uuid === row.uuid) return Object.assign({}, item, row);
+                            return item; // Вернем тот же, чтоб избежать его повторного рендера
+                        })
                     })
-                })
+                }else{
+                    this.setState({
+                        itemListData: itemData.map((item)=>{
+                            if(item.uuid === row.uuid) return Object.assign({}, item, row);
+                            return item; // Вернем тот же, чтоб избежать его повторного рендера
+                        })
+                    })
+                }
             } else {
                 // Создаем новый товар
-                const newListData = [].concat(itemListData,
-                    Object.assign({},row, { code: this.getNewCode() }));
-                console.log("DashBoard create row=>", row, newListData);
-                if(newListData.length === itemListData.length + 1){
-                    this.notificator.show("Товар " + row.name + " успешно создан", { type:"success" });
-                    this.setState({
-                        itemListData: newListData
-                    })
-                } else this.notificator.show("Ошибка создания нового товара: " + row.name, { type:"error" });
+                console.log("Dashboard создание нового row=>", row);
+                const newData = [].concat(itemData, Object.assign({},row, { code: this.getNewCode() }));
+                //console.log("DashBoard create row=>", row, newListData);
+                if(newData.length === itemData.length + 1){
+                    if(group){
+                        this.notificator.show("Группа товаров " + row.name + " успешно создана", { type:"success" });
+                        this.setState({
+                            itemTreeData: newData
+                        })
+                    }else{
+                        this.notificator.show("Товар " + row.name + " успешно создан", { type:"success" });
+                        this.setState({
+                            itemListData: newData
+                        })
+                    }
+                } else this.notificator.show("Ошибка создания " + row.name, { type:"error" });
             }
         }
     };
@@ -490,24 +507,11 @@ export default class Dashboard extends React.Component {
         })
     };
 
-    handleChangeNodeState = (node, nodeState) => {
+    handleChangeNodeState = (node, state) => {
         // Todo Сильно тормозит, нужно что-то сделать
-        //console.log("changeNodeState moveNode=>", moveNode(this.state.itemTreeData, node, this.testNode));
-        /*
-        const { itemTreeData: treeData } = this.state;
-
-        //treeNode.nodeState = nodeState;
-        const itemTreeData = treeData.map((row)=>{
-            if(row.uuid === node.uuid) return Object.assign({}, row, { nodeState });
-            else return row
-        });
-
-        //console.log("changeNodeState=>", treeData);
-        this.setState({
-            itemTreeData,
-        })
-        */
-        console.log("changeNodeState itemDetailData/processedDetailData=>", this.state.itemDetailData, this.state.processedDetailData);
+        const row = transformNodeToRow(node);
+        this.updateItemData(Object.assign(row, { state }));
+        console.log("changeNodeState node/state=>", node, state);
     };
 
     // ItemList => DblClick open
@@ -603,7 +607,7 @@ export default class Dashboard extends React.Component {
                     style={{ minWidth: 150, maxWidth: 400 }}>
                     <ItemTree
                         itemTreeData = { itemTreeData }
-                        updateItemTreeData = { this.updateItemTreeData }
+                        updateItemData = { this.updateItemData }
                         onDrop = { this.handleDropListItem }
                         //onTreeSelectionChange = { this.handleTreeSelectionChange }
                         onTreeNodeSelectView = { this.handleTreeNodeSelectView }
@@ -623,7 +627,7 @@ export default class Dashboard extends React.Component {
                         constants = { constants }
                         collapsed = { collapsedDetail }
                         onDrag = { this.handleDragListItem }
-                        updateItemListData = { this.updateItemListData }         //???
+                        updateItemData = { this.updateItemData }         //???
                         contextMenu = { this.contextMenu.listMenu }
                         onListNodeSelection = { this.handleListNodeSelection }
                         onListItemSelection = { this.handleListItemSelection }
