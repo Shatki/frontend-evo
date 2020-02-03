@@ -3,7 +3,6 @@ import { Tree, Droppable } from 'rc-easyui';
 import ContextMenu from "../context-menu";
 import ErrorView from "../error-view";
 import {
-    deleteNode,
     createNode,
     processingTreeData,
     addRootNode,
@@ -131,10 +130,7 @@ export default class ItemTree extends Component {
     // ItemTree => Create new node ---------------------------------
     handleTreeNodeDelete = (node) =>{
         // Todo Каждое действие отправляется на сервер для Redo/Undo
-
-        this.setState({
-            data: deleteNode(this.state.data, node)
-        })
+        this.updateItemData({ name: node.text, uuid: node.uuid, group: true });
     };
 
     // ItemTree => Close menu

@@ -341,7 +341,7 @@ export default class Dashboard extends React.Component {
                         itemListData: newData
                     })
                 }
-            }else this.notificator.show("Ошибка удаления" + row.name, { type:"error" });
+            }else this.notificator.show("Ошибка удаления " + row.name, { type:"error" });
         }else {
             const idx = itemData.findIndex(el=>el.uuid===row.uuid);
             if(idx !== -1){
