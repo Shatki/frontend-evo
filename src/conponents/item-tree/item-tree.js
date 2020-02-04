@@ -17,6 +17,7 @@ export default class ItemTree extends Component {
         super(props);
         this.state = {
             data: [],
+            nodeState: [],                              // Массив uuid хранения состояния open/closed нод
 
             hasError: false,
             selection: null,
@@ -33,7 +34,6 @@ export default class ItemTree extends Component {
         this.updateItemData = props.updateItemData;
         this.onTreeNodeSelectView = props.onTreeNodeSelectView;
         this.onTreeSelectionChange = props.onTreeSelectionChange;
-        this.onChangeNodeState = props.onChangeNodeState;
 
         // Сохраним сеттер keyboard events listener для передачи другим компонентам
         this.setKeyboardEventsListener = props.setKeyboardEventsListener;
@@ -52,9 +52,9 @@ export default class ItemTree extends Component {
     /* ----------------- Data operations ---------------------------------------------- */
     updateData = () => {
         const { itemTreeData } = this.props;
-        const { root } = this.state;
+        const { stateNode, root } = this.state;
         // parentUuid === null так как Tree видно полное дерево
-        const children = processingTreeData(itemTreeData, null);
+        const children = processingTreeData(itemTreeData, stateNode, null);
         console.log("ItemTree Обновление itemTreeData/children=>", itemTreeData, children);
         const data = addRootNode(children, root);
         this.setState({ data });
@@ -188,14 +188,30 @@ export default class ItemTree extends Component {
         })
     };
 
+    handleChangeNodeState = (node, state) => {
+        /*  Todo Устарела. Сильно тормозит, нужно что-то сделать
+            open - true
+         */
+        //const row = transformNodeToRow(node);
+        //this.updateItemData(Object.assign(row, { state }));
+        //const idx = nodeState.findIndex(el=>el.uuid===node.uuid);
+        console.log("changeNodeState node/state=>", node, state);
+    };
+
     handleNodeExpand = (node) => {
-        // Сохраним state="opened" у ноды в dataTree
-        if (node.uuid !== null) this.onChangeNodeState(node, "open")
+        const { nodeState } = this.state;
+        console.log('----NodeExpand state=>', nodeState);
+        // Добавим в nodeState uuid ноды, так как она открыта
+        if (node.uuid !== null)
+            this.setState({ nodeState: [node.uuid].concat(nodeState) });
     };
 
     handleNodeCollapse = (node) => {
-        // Сохраним state="closed" у ноды в dataTree
-        if (node.uuid !== null) this.onChangeNodeState(node, "closed")
+        const { nodeState } = this.state;
+        console.log('----NodeCollapse state=>', nodeState);
+        // Удалим из nodeState uuid ноды, так как она закрыта
+        if (node.uuid !== null)
+            this.setState( { nodeState: nodeState.filter(uuid=>uuid!==node.uuid)});
     };
 
     /* ----------------- Render методы отображения компонента ------------------------- */

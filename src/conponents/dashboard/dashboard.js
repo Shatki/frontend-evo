@@ -6,7 +6,7 @@ import ItemList from "../item-list";
 import ItemDetail from "../item-detail";
 import EvotorService from "../../services/evotor-service";
 import LoadingView from "../loading-view";
-import { moveNode, transformNodeToRow } from "../../services/nodes-service";
+import { moveNode } from "../../services/nodes-service";
 
 import './dashboard.css'
 
@@ -507,13 +507,6 @@ export default class Dashboard extends React.Component {
         })
     };
 
-    handleChangeNodeState = (node, state) => {
-        // Todo Сильно тормозит, нужно что-то сделать
-        const row = transformNodeToRow(node);
-        this.updateItemData(Object.assign(row, { state }));
-        console.log("changeNodeState node/state=>", node, state);
-    };
-
     // ItemList => DblClick open
     handleListNodeSelection = (row) => {
         const { nodeView } = this.state;
@@ -611,7 +604,6 @@ export default class Dashboard extends React.Component {
                         onDrop = { this.handleDropListItem }
                         //onTreeSelectionChange = { this.handleTreeSelectionChange }
                         onTreeNodeSelectView = { this.handleTreeNodeSelectView }
-                        onChangeNodeState = { this.handleChangeNodeState }
                         contextMenu = { this.contextMenu.treeMenu }
                         setKeyboardEventsListener = { this.setKeyboardEventsListener }
                     />

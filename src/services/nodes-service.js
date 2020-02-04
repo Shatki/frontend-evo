@@ -51,32 +51,6 @@ export const addRootNode = (children, text) => {
     ]);
 };
 
-export const transformRowToNode = (row, children=[]) =>{
-    /*
-    *   Конвертирование row в node
-    *
-    * */
-    // Конвертирует row в node
-    if (children.length > 0){
-        // Родительский узел
-        return{
-            uuid: row.uuid,
-            text: row.name,
-            iconCls: "icon-evotor-folder-sub",
-            state: row.state || 'closed',
-            children
-        };
-    }
-    else{
-        // Конечный узел
-        return{
-            uuid: row.uuid,
-            text: row.name,
-            iconCls: "icon-evotor-folder",
-        };
-    }
-};
-
 export const transformNodeToRow = (node) => {
     /*
     *   Конвертирование node в row
@@ -102,7 +76,35 @@ export const transformNodeToRow = (node) => {
     }
 };
 
-export const processingTreeData = (treeData, parentUuid=null) => {
+export const transformRowToNode = (row, children=[], stateData) =>{
+    /*
+    *   Конвертирование row в node
+    *
+    * */
+    // Конвертирует row в node
+    if (children.length > 0){
+        const state = stateData ?
+            stateData.findIndex(i=>i===row.uuid) !== -1 ? 'open': 'closed' : 'closed';
+        // Родительский узел
+        return{
+            uuid: row.uuid,
+            text: row.name,
+            iconCls: "icon-evotor-folder-sub",
+            state,
+            children
+        };
+    }
+    else{
+        // Конечный узел
+        return{
+            uuid: row.uuid,
+            text: row.name,
+            iconCls: "icon-evotor-folder",
+        };
+    }
+};
+
+export const processingTreeData = (treeData, stateData, parentUuid=null) => {
     // Возвращает коренной список, parentUuid = null
     // Алгоритм преобразования данных в объект для treeItem
     const dataFilter = treeData.filter(item => parentUuid === item.parentUuid);
@@ -110,8 +112,8 @@ export const processingTreeData = (treeData, parentUuid=null) => {
     if (dataFilter.length > 0){
         // Выбираем элементы имеющие children
         return  dataFilter.map((child)=>{
-            const children = processingTreeData(treeData, child.uuid);
-            return transformRowToNode(child, children)
+            const children = processingTreeData(treeData, stateData, child.uuid);
+            return transformRowToNode(child, children, stateData)
         });
     } else {
         return [];

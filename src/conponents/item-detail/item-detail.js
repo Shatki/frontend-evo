@@ -59,7 +59,7 @@ export default class ItemDetail extends Component {
 
         // itemData это объект класса row
         const data = processingItemData(itemTreeData, itemDetailData, itemMatrix);
-        const children = processingTreeData(itemTreeData, null);
+        const children = processingTreeData(itemTreeData, null, null);
         const processedTreeData = addRootNode(children);
         // row не может быть null
         const parent = getNodeByRow(itemTreeData, itemDetailData);
