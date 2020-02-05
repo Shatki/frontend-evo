@@ -251,12 +251,15 @@ export default class Dashboard extends React.Component {
                 { key: "create", text: "Создать", disabled: false },
                 { key: "open", text: "Открыть", disabled: false },
                 { key: "edit", text: "Изменить", disabled: false },
-                { key: "main_sep", separator: true },
+                { key: "func_sep", separator: true },
+                { key: "сut", text: "Вырезать", disabled: false, iconCls: "icon-evotor-folder-delete" },
                 { key: "copy", text: "Копировать", disabled: false },
+                { key: "select_sep", separator: true },
+                { key: "select", text: "Выделить все", disabled: false },
+                { key: "unselect", text: "Очистить", disabled: false },
+                { key: "paste_sep", separator: true },
                 { key: "paste", text: "Вставить", disabled: false },
-                //{ key: "duplicate", text: "Дублировать", disabled: false },  // disabled
-                { key: "delete", text: "Удалить", disabled: false, iconCls: "icon-evotor-folder-delete" },
-                { key: "close_sep", separator: true },
+                { key: "end_sep", separator: true },
                 { key: "close", text: "Закрыть", disabled: false },
             ],
             itemMenu: [
@@ -364,7 +367,7 @@ export default class Dashboard extends React.Component {
                 }
             } else {
                 // Создаем новый товар
-                console.log("Dashboard создание нового row=>", row);
+                // console.log("Dashboard создание нового row=>", row);
                 const newData = [].concat(itemData, Object.assign({},row, { code: this.getNewCode() }));
                 //console.log("DashBoard create row=>", row, newListData);
                 if(newData.length === itemData.length + 1){
@@ -574,10 +577,10 @@ export default class Dashboard extends React.Component {
     render() {
         const {
             constants, collapsedDetail, nodeView, itemMatrix,
-            itemTreeData, itemListData, itemDetailData,
+            itemTreeData, itemListData, itemDetailData, loading,
             propertyPanelTitle, treePanelTitle } = this.state;
 
-        if(this.state.loading)
+        if(loading)
             return(<LoadingView/>);
         return (
             <Layout
@@ -627,6 +630,7 @@ export default class Dashboard extends React.Component {
                         //handleListSelectionChange = { this.handleListSelectionChange }
                         setKeyboardEventsListener = { this.setKeyboardEventsListener }
                         getRules = { this.getRules }
+                        //loading = { loading }
                     />
 
                 </LayoutPanel>

@@ -85,6 +85,7 @@ export const transformRowToNode = (row, children=[], stateData) =>{
     if (children.length > 0){
         const state = stateData ?
             stateData.findIndex(i=>i===row.uuid) !== -1 ? 'open': 'closed' : 'closed';
+        // console.log('transform node=>', row.name, stateData);
         // Родительский узел
         return{
             uuid: row.uuid,
@@ -104,7 +105,7 @@ export const transformRowToNode = (row, children=[], stateData) =>{
     }
 };
 
-export const processingTreeData = (treeData, stateData, parentUuid=null) => {
+export const processingTreeData = (treeData, nodeState, parentUuid=null) => {
     // Возвращает коренной список, parentUuid = null
     // Алгоритм преобразования данных в объект для treeItem
     const dataFilter = treeData.filter(item => parentUuid === item.parentUuid);
@@ -112,8 +113,8 @@ export const processingTreeData = (treeData, stateData, parentUuid=null) => {
     if (dataFilter.length > 0){
         // Выбираем элементы имеющие children
         return  dataFilter.map((child)=>{
-            const children = processingTreeData(treeData, stateData, child.uuid);
-            return transformRowToNode(child, children, stateData)
+            const children = processingTreeData(treeData, nodeState, child.uuid);
+            return transformRowToNode(child, children, nodeState)
         });
     } else {
         return [];
@@ -141,7 +142,7 @@ export const processingListData = (treeData, listData, nodeUuid) => {
 };
 
 export const processingItemData = (treeData, itemData, matrix) => {
-    console.log("processingItemData=>", itemData);
+    //console.log("processingItemData=>", itemData);
     if(!itemData || !matrix)
         return null;
     else

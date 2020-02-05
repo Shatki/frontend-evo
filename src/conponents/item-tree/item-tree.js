@@ -17,7 +17,7 @@ export default class ItemTree extends Component {
         super(props);
         this.state = {
             data: [],
-            nodeState: [],                              // Массив uuid хранения состояния open/closed нод
+            nodeState: [],                              // Массив uuid хранения состояния открытых нод
 
             hasError: false,
             selection: null,
@@ -52,10 +52,10 @@ export default class ItemTree extends Component {
     /* ----------------- Data operations ---------------------------------------------- */
     updateData = () => {
         const { itemTreeData } = this.props;
-        const { stateNode, root } = this.state;
+        const { nodeState, root } = this.state;
         // parentUuid === null так как Tree видно полное дерево
-        const children = processingTreeData(itemTreeData, stateNode, null);
-        console.log("ItemTree Обновление itemTreeData/children=>", itemTreeData, children);
+        const children = processingTreeData(itemTreeData, nodeState, null);
+        console.log("ItemTree Обновление data--->");
         const data = addRootNode(children, root);
         this.setState({ data });
     };
@@ -200,18 +200,18 @@ export default class ItemTree extends Component {
 
     handleNodeExpand = (node) => {
         const { nodeState } = this.state;
-        console.log('----NodeExpand state=>', nodeState);
         // Добавим в nodeState uuid ноды, так как она открыта
         if (node.uuid !== null)
             this.setState({ nodeState: [node.uuid].concat(nodeState) });
+        console.log('----NodeExpand state=>', nodeState);
     };
 
     handleNodeCollapse = (node) => {
         const { nodeState } = this.state;
-        console.log('----NodeCollapse state=>', nodeState);
         // Удалим из nodeState uuid ноды, так как она закрыта
         if (node.uuid !== null)
             this.setState( { nodeState: nodeState.filter(uuid=>uuid!==node.uuid)});
+        console.log('----NodeCollapse state=>', nodeState);
     };
 
     /* ----------------- Render методы отображения компонента ------------------------- */

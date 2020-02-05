@@ -37,6 +37,8 @@ export default class ItemList extends Component {
         };
         this.constants = props.constants;
         this.list = null;
+        this.viewRows = [];
+        this.viewRowsLength = 0;
         this.itemMatrix = props.itemMatrix;
         this.getRules = props.getRules;
         this.clearRow = {
@@ -62,8 +64,9 @@ export default class ItemList extends Component {
             { key: "Открыть", function: this.handleRowDblClick },   // для row.group === true
             { key: "Копировать", function: this.handleListRowCopy },
             { key: "Вставить", function: this.handleListRowPaste },
-            //{ key: "Дублировать", function: this.handleListRowDublicate },
-            { key: "Удалить", function: this.handleListRowDelete },
+            { key: "Выделить все", function: this.handleListSelectAll },
+            { key: "Очистить", function: this.clearSelection },
+            { key: "Вырезать", function: this.handleListRowCut },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ];
         this.updateItemData = props.updateItemData;
@@ -93,7 +96,7 @@ export default class ItemList extends Component {
         const data = processingListData(itemTreeData, itemListData,
             nodeView === null ? null : nodeView.uuid);
         // Обновление данных в ListItem
-        console.log("ItemList Обновление itemListData=>", data);
+        console.log("ItemList Обновление data--->");
         this.setState({
             data,
             nodeView,
@@ -108,7 +111,7 @@ export default class ItemList extends Component {
 
     //  Нужен отдельный обнулитель
     clearSelection = () => {
-      this.setState({ selection: [] });
+        this.setState( { selection: [] });
     };
 
     /* ----------------- Keyboard event functions ------------------------------------- */
@@ -221,7 +224,8 @@ export default class ItemList extends Component {
         });
     };
 
-    handleListRowDelete = (row) =>{
+    handleListRowCut = (row) =>{
+        console.log('selected: ', this.state.selection);
         // Удаляем row указывая только его uuid
         this.updateItemData({ name: row.name, uuid: row.uuid});
     };
@@ -248,8 +252,11 @@ export default class ItemList extends Component {
         } else this.notificator.show("Чтобы выполнить эту операцию, сначала скопируйте товар", { type: "info" });
     };
 
-    handleListRowDublicate = (row) =>{
-        console.log("Дублируем row(Наверно не нужна)", row);
+    handleListSelectAll = (row) =>{
+        console.log("SelectAll=>", this.viewRows);
+        this.setState({
+            selection: this.viewRows
+        })
     };
     /* ----------------- Обработка формы редактирования ------------------------------- */
 
@@ -309,10 +316,20 @@ export default class ItemList extends Component {
         )
     };
 
+    renderCode = ({ value, row, rowIndex }) =>{
+        // Используем этот метод для выделения отображаемых row после фильтрации
+        if (rowIndex < this.viewRowsLength) this.viewRows = this.viewRows.slice(0, rowIndex + 1);
+        //console.log("itemList renderCode--->>>", this.viewRows);
+        this.viewRows[rowIndex] = row;
+        this.viewRowsLength = rowIndex;
+        return value
+    };
+
     render() {
         const { data, selection, operators, title, model, closed } = this.state;
         const { measureTypes } = this.constants;
 
+        console.log("itemList render--->>>");
         const numberBoxFilter = () => {
             return (<NumberBox/>)
         };
@@ -333,10 +350,11 @@ export default class ItemList extends Component {
                     data = { data }
                     selection={ selection }
                     style = {{ height: 'calc(100vh - 60px)' }}
-                    //renderItem = { this.renderRow }
                     filterable
+                    //loading = { this.props.loading }
                     columnMoving
                     columnResizing
+                    //renderDetail = { this.renderDetail }
                     editMode = "row"
                     selectionMode ='multiple'
                     rowCss = { this.renderRowStyle }
@@ -344,7 +362,7 @@ export default class ItemList extends Component {
                     onSelectionChange = { this.handleSelectionChange }
                     onRowContextMenu = { this.handleCellContextMenu }>
                     <GridColumn
-                        //render = { this.renderColumn }
+                        render = { this.renderCode }
                         field="code" title="Код" width="10%"/>
                     <GridColumn
                         render = { this.renderColumn }

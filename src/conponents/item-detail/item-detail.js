@@ -45,7 +45,6 @@ export default class ItemDetail extends Component {
         if(prevProps.itemDetailData !== this.props.itemDetailData ||
             prevProps.itemTreeData !== this.props.itemTreeData ||
             prevProps.collapsed !== this.props.collapsed) {
-            console.log("componentDidUpdate update successful");
             this.updateData();
         }
     }
@@ -300,7 +299,7 @@ export default class ItemDetail extends Component {
 
     render() {
         const { data, rules, comboData, comboDlgClosed, collapsed } = this.state;
-        console.log("itemDetail render collapsed=>", collapsed);
+        console.log("itemDetail render--->>> statusUpdate:", !collapsed);
         if( collapsed ) return null;
 
         return(
