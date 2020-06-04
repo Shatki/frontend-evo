@@ -6,6 +6,7 @@ import CodeEditor from "./item-code-editor";
 import { addRootNode, getNodeByRow, getNodeByUuid,
     processingItemData, processingTreeData } from "../../services/nodes-service";
 import './item-detail.css'
+import noItem from './hiclipart6.png'
 
 export default class ItemDetail extends Component {
     constructor(props) {
@@ -14,22 +15,26 @@ export default class ItemDetail extends Component {
             data: [],                           // преобразованные, рабочие данные
             processedTreeData: null,            // Данные для tree
 
-            //itemData : null,                  // не обработанные данные, которые прининяли и будем отдавать
             parent: null,                       // Нода родитель, постоянная ссылка
             rules: null,
             errors: null,
             editing: false,                     // Маркер редактирования ItemDetail props
-            collapsed: props.collapsed,         // Состояние "свёрнутости" панели
-            selection: null,                    // Выделенная ячейка с значением
+            focus: null,                    // Выделенная ячейка с значением
             comboData: null,                    // Данные для редактирования кодов
             comboDlgClosed: true,
             comboDlgEditRow: null               // редактируемая строка свойств через редактор кодов
         };
+        this.itemContextMenuFunction = [
+            { key: "Редактировать", function: this.itemDetailPropEdit },
+            //{ key: "Сохранить", function: this.handleItemDetailSave },
+        ];
         this.constants = props.constants;
 
         this.cellErrorMessage = "Ошибка данных";
 
         // Сохраним сеттер keyboard events listener для передачи другим компонентам
+        this.updateItemData = props.updateItemData;
+        this.notificator = props.notificator;
         this.setKeyboardEventsListener = props.setKeyboardEventsListener;
         this.getRules = props.getRules;
         this.itemMatrix = props.itemMatrix;
@@ -38,40 +43,39 @@ export default class ItemDetail extends Component {
     /* ----------------- Lifecycle methods -------------------------------------------- */
     componentDidMount() {
         this.updateData();
+        this.updateTreeData();
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        console.log("componentDidUpdate ItemDetail", this.state.data);
-        if(prevProps.itemDetailData !== this.props.itemDetailData ||
-            prevProps.itemTreeData !== this.props.itemTreeData ||
-            prevProps.collapsed !== this.props.collapsed) {
-            this.updateData();
-        }
+        console.log("ItemDetail componentDidUpdate", prevProps.itemDetailData, this.props.itemDetailData);
+        if(prevProps.itemTreeData !== this.props.itemTreeData) this.updateTreeData();
+        if(prevProps.itemDetailData !== this.props.itemDetailData) this.updateData();
     }
 
     /* ----------------- Data operations ---------------------------------------------- */
 
     updateData = () => {
-        const { itemDetailData, itemTreeData, collapsed, itemMatrix } = this.props;
+        const { itemDetailData, itemMatrix } = this.props;
         //console.log("updateData ItemDetail", data, parent);
-        // Установим Keyboard Events Listener
-
         // itemData это объект класса row
-        const data = processingItemData(itemTreeData, itemDetailData, itemMatrix);
+        const data = itemDetailData ? processingItemData(itemDetailData, itemMatrix) : undefined;
+        console.log("---------------ItemDetail--->updateData ItemDetailData data/parent=>", data);
+        this.setState({
+            data,                       // рабочие данные
+        })
+
+    };
+
+    updateTreeData = () =>{
+        const { itemDetailData, itemTreeData } = this.props;
         const children = processingTreeData(itemTreeData, null, null);
         const processedTreeData = addRootNode(children);
         // row не может быть null
         const parent = getNodeByRow(itemTreeData, itemDetailData);
-        console.log("ItemDetail        Обновление ItemDetailData data/parent=>", data, parent);
-
-        if(itemDetailData){
-            this.setState({
-                data,                       // рабочие данные
-                parent,
-                processedTreeData,
-                collapsed,
-            })
-        }
+        console.log("ItemDetail--->updateTreeData processedTreeDat/parent=>", processedTreeData, parent);
+        this.setState({
+            processedTreeData, parent
+        })
     };
 
     getCodes = arr => arr.map((code)=>{ return{ value:code.value, text:code.value }});
@@ -101,13 +105,16 @@ export default class ItemDetail extends Component {
     };
 
     handleItemDetailKeyEnter = () =>{
-        this.detail.endEdit();
-        console.log("ItemDetail Enter Key");
+        const { editing, focus } = this.state;
+        if (!editing) this.detail.beginEdit(focus, "valueField");
+        else this.detail.endEdit();
+        console.log("ItemDetail Enter Key editing/focus=>", editing, focus);
     };
 
     handleItemDetailKeyEscape = () =>{
+        const { editing, focus } = this.state;
         this.detail.cancelEdit();
-        console.log("ItemDetail Escape Key");
+        console.log("ItemDetail Escape Key editing/focus=>", editing, focus);
     };
 
     /* ----------------- Combo Code Editor Dialog ------------------------------------- */
@@ -167,11 +174,44 @@ export default class ItemDetail extends Component {
     handleItemContextMenu = ({ row, column, originalEvent }) => {
         originalEvent.preventDefault();
         console.log(row.nameField);
-        this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY)
+        this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY);
+        this.setState({
+            focus: row
+        });
     };
 
-    handleEndEdit = ({ row, originalValue, errors } ) =>{
-        console.log("EndEdit=>", row, originalValue, errors );
+    handleEditEnd = ({ row, originalValue, errors }) =>{
+        console.log("itemDetail Обновление row/было=>", row, originalValue);
+        // todo: Добавить проверку на объект row & originalValue
+
+        if(row.valueField !==originalValue.valueField) {
+            const { itemDetailData } = this.props;
+            console.log("EndEdit row/originalValue/errors=>", row, originalValue, errors );
+            const updateData = Object.assign({}, itemDetailData);
+            updateData[row.nameField] = row.valueField;
+            console.log("itemDetail Обновление item=>", updateData);
+            this.updateItemData(updateData);
+
+            this.setState({
+                editing: false,
+                itemDetailData: updateData
+            });
+        }
+    };
+
+    handleEditBegin = ({ row, originalValue, errors })=>{
+        // Запрет на редактирование switch
+        if(row.editorField === "switch") this.detail.cancelEdit();
+        this.setState({
+            editing: true,
+        });
+    };
+
+    handleEditCancel = ({ row, originalValue, errors }) =>{
+        this.setState({
+            editing: false,
+        });
+        //console.log("CancelEdit=>", row, originalValue, errors );
     };
 
     handleItemClick = (value) => {
@@ -181,15 +221,17 @@ export default class ItemDetail extends Component {
     };
 
     handleItemDetailRowClick =(row)=>{
+        this.setKeyboardEventsListener(this.componentKeyboardEvents);
         console.log("Click->", row, this);
+        this.setState({
+            focus: row,
+            rules: this.getRules(row.rules)
+        });
     };
 
     handleItemDetailRowDblClick =(row)=>{
         // Установка правил валидации
         console.log("handleItemDetailRowDblClick row=>", row);
-        this.setState({
-            rules: this.getRules(row.rules)
-        });
     };
 
     handleComboTreeChange = (value) => {
@@ -206,16 +248,33 @@ export default class ItemDetail extends Component {
         })
     };
 
+    handleContextMenuClick = (value) => {
+        const { focus } = this.state;
+        const action = this.itemContextMenuFunction.find(m => m.key === value);
+        // выбираем [0] т.к e ItemList selections это массив
+        if (action !== undefined) action.function(focus);
+        else this.notificator.show("Данное действие не возможно выполнить", { type: "error" });
+    };
+
+    itemDetailPropEdit = (row)=>{
+        console.log("itemDetailPropEdit=>", row);
+        this.detail.beginEdit(row);
+        this.setState({
+            focus: row,
+            rules: this.getRules(row.rules)
+        });
+    };
+
     /* ----------------- Render методы отображения компонента ------------------------- */
     renderEditor = ({ row, error }) =>{
-        console.log("renderEditor row/error=>", row, error);
+        console.log("render editor row/error=>", row, error);
         // Todo: Доделать
         if (row.editorField === "text")
             return( <Tooltip content={ error } tracking>
                 <TextBox value={ row.valueField } placeholder={ row.titleField }/>
             </Tooltip>);
         else if (row.editorField === "switch")
-            return(<SwitchButton value={ row.valueField }/>);
+            return (<SwitchButton value={ row.valueField }/>);
         else if(row.editorField === "tree"){
             console.log("renderTree=>");
             const { processedTreeData } = this.state;
@@ -260,11 +319,11 @@ export default class ItemDetail extends Component {
         else if(row.editorField === "number")
             return(<div>{ row.valueField }</div>);
         else if(row.editorField === "switch")
-            return(<SwitchButton value={row.valueField}/>);
+            return(<SwitchButton value={ row.valueField }/>);
         else if(row.editorField === "tree"){
             const { processedTreeData } = this.state;
             const node = getNodeByUuid(processedTreeData, row.valueField);
-            //console.log("Render View getNode=>", node, 'row.valuefield=>',row.valueField);
+            //console.log("Render View getNode=>", node, 'row.valueField=>',row.valueField);
             if(node) return(<div>{ node.text }</div>);}
         else if(row.editorField === "combo"){
             const dataField = Array.isArray(row.dataField) ? row.dataField : this.constants[row.dataField] || null;
@@ -276,7 +335,7 @@ export default class ItemDetail extends Component {
                 if (value !== undefined) return(<div>{ value.text }</div>);
             }
         }
-        // Ошибка
+        // Ошибка, но их быть не должно если правильно настроема матрица товаров
         return(<div className="error">{ this.cellErrorMessage }</div>);
     };
 
@@ -290,7 +349,7 @@ export default class ItemDetail extends Component {
     renderContextMenu = () => {
         return(
             <ContextMenu
-                menu = { this.props.contextMenu }
+                menu = { this.props.contextMenu.itemMenu }
                 menuRef = { (ref)=>this.menu=ref }
                 handleItemClick = { this.handleContextMenuClick }
             />
@@ -298,12 +357,14 @@ export default class ItemDetail extends Component {
     };
 
     render() {
-        const { data, rules, comboData, comboDlgClosed, collapsed } = this.state;
-        console.log("itemDetail render--->>> statusUpdate:", !collapsed);
+        const { data, rules, comboData, comboDlgClosed } = this.state;
+        const { collapsed } = this.props;
         if( collapsed ) return null;
+        if(!data) return <img width="100%" alt="item" src={ noItem }/>;
 
+        console.log("itemDetail render--->>> data:", data);
         return(
-            <ErrorBoundry>
+            <ErrorBoundry key = "item-detail">
                 <DataGrid
                     style = {{ height: "100%" }}
                     ref = { detail=>this.detail=detail }
@@ -319,7 +380,9 @@ export default class ItemDetail extends Component {
                     onCellContextMenu={ this.handleItemContextMenu }
                     onRowClick = { this.handleItemDetailRowClick }
                     onRowDblClick = { this.handleItemDetailRowDblClick }
-                    onEditEnd = { this.handleEndEdit }
+                    onEditEnd = { this.handleEditEnd }
+                    onEditBegin = { this.handleEditBegin }
+                    onEditCancel = { this.handleEditCancel }
                     //onEditValidate = { this.handleEditValidate }
                 >
                     <GridColumn width={ 25 }/>

@@ -1,13 +1,14 @@
+/* ---------------------------- FOLDER --------------------------------*/
+.icon-evotor-folder{
+	background:url('icon-8/16/folder-16.png') no-repeat center center;
+}
+
 .icon-evotor-folder-open{
-	background:url('icon-8/16/live-folder-16.png') no-repeat center center;
+	background:url('icon-8/16/folder-inside-16.png') no-repeat center center;
 }
 
 .icon-evotor-folder-opened{
-	background:url('icon-8/16/opened-folder-16.png') no-repeat center center;
-}
-
-.icon-evotor-folder{
-	background:url('icon-8/16/folder-16.png') no-repeat center center;
+	background:url('icon-8/16/folder-opened-16.png') no-repeat center center;
 }
 
 .icon-evotor-folder-sub{
@@ -15,29 +16,209 @@
 }
 
 .icon-evotor-folder-private{
-	background:url('icon-8/16/private-folder-16.png') no-repeat center center;
+	background:url('icon-8/16/folder-private-16.png') no-repeat center center;
 }
 
 .icon-evotor-folder-add{
-	background:url('icon-8/16/add-folder-16.png') no-repeat center center;
+	background:url('icon-8/16/folder-add-16.png') no-repeat center center;
+}
+
+.icon-evotor-folder-edit{
+	background:url('icon-8/16/folder-edit-16.png') no-repeat center center;
 }
 
 .icon-evotor-folder-delete{
-	background:url('icon-8/16/delete-folder-16.png') no-repeat center center;
+	background:url('icon-8/16/folder-remove-16.png') no-repeat center center;
 }
 
 .icon-evotor-folder-user{
-	background:url('icon-8/16/user-folder-16.png') no-repeat center center;
+	background:url('icon-8/16/folder-user-16.png') no-repeat center center;
 }
 
 .icon-evotor-folder-downloads{
-	background:url('icon-8/16/downloads-folder-16.png') no-repeat center center;
+	background:url('icon-8/16/folder-downloads-16.png') no-repeat center center;
 }
 
 .icon-evotor-folder-internet{
-	background:url('icon-8/16/internet-folder-16.png') no-repeat center center;
+	background:url('icon-8/16/folder-internet-16.png') no-repeat center center;
 }
 
+/* ---------------------------- DOCUMENT ------------------------------*/
+
+.icon-evotor-document{
+	background:url('icon-8/16/document-16.png') no-repeat center center;
+}
+
+.icon-evotor-document-add{
+	background:url('icon-8/16/document-add-16.png') no-repeat center center;
+}
+
+.icon-evotor-document-copy{
+	background:url('icon-8/16/document-copy-16.png') no-repeat center center;
+}
+
+.icon-evotor-document-edit{
+	background:url('icon-8/16/document-edit-16.png') no-repeat center center;
+}
+
+.icon-evotor-document-insert{
+	background:url('icon-8/16/document-insert-16.png') no-repeat center center;
+}
+
+.icon-evotor-document-remove{
+	background:url('icon-8/16/document-remove-16.png') no-repeat center center;
+}
+
+.icon-evotor-document-view{
+	background:url('icon-8/16/document-view-16.png') no-repeat center center;
+}
+
+.icon-evotor-document-check{
+	background:url('icon-8/16/document-check-16.png') no-repeat center center;
+}
+
+.icon-evotor-document-scan{
+	background:url('icon-8/16/document-scan-16.png') no-repeat center center;
+}
+
+.icon-evotor-document-load{
+	background:url('icon-8/16/document-load-16.png') no-repeat center center;
+}
+
+
+
+/* ---------------------------- FILE ----------------------------------*/
+
+.icon-evotor-file{
+	background:url('icon-8/16/file-16.png') no-repeat center center;
+}
+
+.icon-evotor-file-add{
+	background:url('icon-8/16/file-add-16.png') no-repeat center center;
+}
+
+.icon-evotor-file-new{
+	background:url('icon-8/16/file-new-16.png') no-repeat center center;
+}
+
+.icon-evotor-file-edit{
+	background:url('icon-8/16/file-edit-16.png') no-repeat center center;
+}
+
+.icon-evotor-file-cancel{
+	background:url('icon-8/16/file-cancel-16.png') no-repeat center center;
+}
+
+.icon-evotor-file-remove{
+	background:url('icon-8/16/file-remove-16.png') no-repeat center center;
+}
+
+.icon-evotor-file-view{
+	background:url('icon-8/16/file-edit-16.png') no-repeat center center;
+}
+
+.icon-evotor-file-compare{
+	background:url('icon-8/16/file-compare-16.png') no-repeat center center;
+}
+
+.icon-evotor-file-check{
+	background:url('icon-8/16/file-check-16.png') no-repeat center center;
+}
+
+.icon-evotor-file-versions{
+	background:url('icon-8/16/file-versions-16.png') no-repeat center center;
+}
+
+
+
+/* ---------------------------- PROPERTY ------------------------------*/
+.icon-evotor-property-edit{
+	background:url('icon-8/16/property-edit-16.png') no-repeat center center;
+}
+
+.icon-evotor-property-remove{
+	background:url('icon-8/16/property-remove-16.png') no-repeat center center;
+}
+
+.icon-evotor-property-trash{
+	background:url('icon-8/16/property-trash-16.png') no-repeat center center;
+}
+
+.icon-evotor-property-important{
+	background:url('icon-8/16/property-important-16.png') no-repeat center center;
+}
+
+.icon-evotor-property-waring{
+	background:url('icon-8/16/property-waring-16.png') no-repeat center center;
+}
+
+.icon-evotor-property-add{
+	background:url('icon-8/16/property-add-16.png') no-repeat center center;
+}
+
+.icon-evotor-property-view{
+	background:url('icon-8/16/property-view-16.png') no-repeat center center;
+}
+
+.icon-evotor-property-copy{
+	background:url('icon-8/16/property-copy-16.png') no-repeat center center;
+}
+
+.icon-evotor-property-show{
+	background:url('icon-8/16/property-show-16.png') no-repeat center center;
+}
+
+.icon-evotor-property-time{
+	background:url('icon-8/16/property-time-16.png') no-repeat center center;
+}
+
+.icon-evotor-property-important{
+	background:url('icon-8/16/property-timer-16.png') no-repeat center center;
+}
+
+/* ---------------------------- ROW ----------------------------------*/
+.icon-evotor-row-add{
+	background:url('icon-8/16/row-add-16.png') no-repeat center center;
+}
+
+.icon-evotor-row-edit{
+	background:url('icon-8/16/row-edit-16.png') no-repeat center center;
+}
+
+.icon-evotor-row-remove{
+	background:url('icon-8/16/row-remove-16.png') no-repeat center center;
+}
+
+/* ---------------------------- CLOUD ---------------------------------*/
+.icon-evotor-cloud{
+	background:url('icon-8/16/cloud-16.png') no-repeat center center;
+}
+
+.icon-evotor-cloud-download{
+	background:url('icon-8/16/cloud-download-16.png') no-repeat center center;
+}
+
+.icon-evotor-cloud-upload{
+	background:url('icon-8/16/cloud-upload-16.png') no-repeat center center;
+}
+
+.icon-evotor-cloud-folder{
+	background:url('icon-8/16/cloud-folder-16.png') no-repeat center center;
+}
+
+.icon-evotor-cloud-file{
+	background:url('icon-8/16/cloud-file-16.png') no-repeat center center;
+}
+
+.icon-evotor-cloud-cheched{
+	background:url('icon-8/16/cloud-checked-16.png') no-repeat center center;
+}
+
+.icon-evotor-cloud-security{
+	background:url('icon-8/16/cloud-security-16.png') no-repeat center center;
+}
+
+/* ---------------------------- OTHER ---------------------------------*/
 .icon-evotor-home{
 	background:url('icon-8/16/home-16.png') no-repeat center center;
 }
@@ -46,16 +227,32 @@
 	background:url('icon-8/16/bookmark-16.png') no-repeat center center;
 }
 
+.icon-evotor-list-mark{
+	background:url('icon-8/16/list-mark-16.png') no-repeat center center;
+}
+
+.icon-evotor-list-check{
+	background:url('icon-8/16/list-check-16.png') no-repeat center center;
+}
+
 .icon-evotor-delete{
 	background:url('icon-8/16/delete-16.png') no-repeat center center;
 }
 
-.icon-evotor-document{
-	background:url('icon-8/16/document-16.png') no-repeat center center;
+.icon-evotor-remove{
+	background:url('icon-8/16/remove-16.png') no-repeat center center;
 }
 
 .icon-evotor-edit{
 	background:url('icon-8/16/edit-16.png') no-repeat center center;
+}
+
+.icon-evotor-save{
+	background:url('icon-8/16/save-16.png') no-repeat center center;
+}
+
+.icon-evotor-save-all{
+	background:url('icon-8/16/save-all-16.png') no-repeat center center;
 }
 
 .icon-evotor-info{
@@ -66,24 +263,28 @@
 	background:url('icon-8/16/refresh-16.png') no-repeat center center;
 }
 
+.icon-evotor-plus{
+	background:url('icon-8/16/plus-16.png') no-repeat center center;
+}
+
 .icon-evotor-search{
 	background:url('icon-8/16/search-16.png') no-repeat center center;
 }
 
-.icon-evotor-property-edit{
-	background:url('icon-8/16/edit-property-16.png') no-repeat center center;
+.icon-evotor-select{
+	background:url('icon-8/16/checkbox-select-16.png') no-repeat center center;
 }
 
-.icon-evotor-row-edit{
-	background:url('icon-8/16/edit-row-16.png') no-repeat center center;
+.icon-evotor-unselect{
+	background:url('icon-8/16/checkbox-unselect-16.png') no-repeat center center;
 }
 
-.icon-evotor-folder-edit{
-	background:url('icon-8/16/folder-edit-16.png') no-repeat center center;
+.icon-evotor-paste{
+	background:url('icon-8/16/paste-16.png') no-repeat center center;
 }
 
-.icon-evotor-file-edit{
-	background:url('icon-8/16/edit-file-16.png') no-repeat center center;
+.icon-evotor-add{
+	background:url('icon-8/16/add-16.png') no-repeat center center;
 }
 
 .icon-evotor-services{
@@ -93,6 +294,7 @@
 .icon-evotor-settings{
 	background:url('icon-8/16/settings-16.png') no-repeat center center;
 }
+
 .icon-evotor-support{
 	background:url('icon-8/16/support-16.png') no-repeat center center;
 }
@@ -101,6 +303,22 @@
 	background:url('icon-8/16/synchronize-16.png') no-repeat center center;
 }
 
-.icon-evotor-upload-to-the-cloud{
-	background:url('icon-8/16/upload-to-the-cloud-16.png') no-repeat center center;
+.icon-evotor-system{
+	background:url('icon-8/16/system-16.png') no-repeat center center;
+}
+
+.icon-evotor-goods{
+	background:url('icon-8/16/goods-16.png') no-repeat center center;
+}
+
+.icon-evotor-sales-check{
+	background:url('icon-8/16/sales-check-16.png') no-repeat center center;
+}
+
+.icon-evotor-add-cart{
+	background:url('icon-8/16/cart-add-16.png') no-repeat center center;
+}
+
+.icon-evotor-barcode{
+	background:url('icon-8/16/barcode-16.png') no-repeat center center;
 }

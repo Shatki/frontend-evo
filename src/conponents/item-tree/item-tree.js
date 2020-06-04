@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { Tree, Droppable } from 'rc-easyui';
 import ContextMenu from "../context-menu";
-import ErrorView from "../error-view";
 import {
     createNode,
     processingTreeData,
     addRootNode,
-    transformNodeToRow
+    transformNodeToRow,
+    cutRow,
+    getNodeByUuid,
 } from "../../services/nodes-service";
 import ErrorBoundry from "../error-boundry";
 import './item-tree.css'
@@ -23,17 +24,21 @@ export default class ItemTree extends Component {
             selection: null,
             editingNode: null,
 
+            // Если эти значения не null, во время обновления стейта активируутся
+            // редактирование и выделение этой ноды
+            autoEditingUuid: null,
         };
         this.treeContextMenuFunction = [
             { key: "Создать", function: this.handleTreeNodeCreate },
             { key: "Переименовать", function: this.handleTreeNodeRename },
             { key: "Открыть", function: this.handleNodeDblClick },
-            { key: "Удалить", function: this.handleTreeNodeDelete },
+            { key: "Удалить", function: this.handleTreeNodeCut },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ];
         this.updateItemData = props.updateItemData;
         this.onTreeNodeSelectView = props.onTreeNodeSelectView;
         this.onTreeSelectionChange = props.onTreeSelectionChange;
+        this.notificator = props.notificator;
 
         // Сохраним сеттер keyboard events listener для передачи другим компонентам
         this.setKeyboardEventsListener = props.setKeyboardEventsListener;
@@ -47,17 +52,27 @@ export default class ItemTree extends Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
     if(prevProps.itemTreeData !== this.props.itemTreeData)
             this.updateData();
+    // Эта штука для включения редактирования новой добавленной ноды
+    if(prevState.autoEditingUuid) this.tree.beginEdit(this.state.selection);
     }
 
     /* ----------------- Data operations ---------------------------------------------- */
     updateData = () => {
         const { itemTreeData } = this.props;
-        const { nodeState, root } = this.state;
+        const { nodeState, root, autoEditingUuid } = this.state;
+
         // parentUuid === null так как Tree видно полное дерево
         const children = processingTreeData(itemTreeData, nodeState, null);
         console.log("ItemTree Обновление data--->");
         const data = addRootNode(children, root);
-        this.setState({ data });
+        // Выделяем и редактируем новую ноду
+        const selection = autoEditingUuid ? getNodeByUuid(data, autoEditingUuid): null;
+
+        this.setState({
+            data,
+            selection,
+            autoEditingUuid: null,
+        });
     };
 
     /* ----------------- Keyboard event functions ------------------------------------- */
@@ -110,27 +125,27 @@ export default class ItemTree extends Component {
 
     // ItemTree => Create new node
     handleTreeNodeCreate = (node) =>{
-        // Todo Каждое действие отправляется на сервер для Redo/Undo
-        console.log("Create node| node=> ", node);
-        const { data } = this.state;
-        const newNode = createNode(data, node);
+        console.log("Create node | node=> ", node);
+        const rowNode = createNode(node);
+        this.updateItemData(rowNode);
         // Включаем редактор Ноды
-        this.tree.selectNode(newNode);
-        this.tree.beginEdit(newNode);
+        this.setState({
+           autoEditingUuid: rowNode.uuid,
+        });
+        //this.tree.selectNode(target);
+        //this.tree.beginEdit(target);
     };
 
     // ItemTree => Rename node
     handleTreeNodeRename = (node) =>{
-        // Todo Каждое действие отправляется на сервер для Redo/Undo
         // Включаем редактор Ноды
         this.tree.selectNode(node);
         this.tree.beginEdit(node);
     };
 
     // ItemTree => Create new node ---------------------------------
-    handleTreeNodeDelete = (node) =>{
-        // Todo Каждое действие отправляется на сервер для Redo/Undo
-        this.updateItemData({ name: node.text, uuid: node.uuid, group: true });
+    handleTreeNodeCut = (node) =>{
+        this.updateItemData(cutRow(node));
     };
 
     // ItemTree => Close menu
@@ -147,9 +162,11 @@ export default class ItemTree extends Component {
     };
 
     handleContextMenuClick = (value) => {
-        this.treeContextMenuFunction
-            .find(m => m.key === value)
-            .function(this.state.selection);
+        const { selection } = this.state;
+        const action = this.treeContextMenuFunction.find(m => m.key === value);
+        // выбираем [0] т.к e ItemList selections это массив
+        if (action !== undefined) action.function(selection);
+        else this.notificator.show("Данное действие не возможно выполнить", { type: "error" });
     };
 
     handleNodeDblClick = (node) =>{
@@ -172,17 +189,18 @@ export default class ItemTree extends Component {
     };
 
     handleEditEnd = ({ node, originalValue }) =>{
-        //
-        const row = transformNodeToRow(node);
-        this.updateItemData(row);
-        console.log("itemTree handleEditEnd node=>", row);
-
+        // Обновление или создание ноды
+        if(node.text !== originalValue){
+            const row = transformNodeToRow(node);
+            this.updateItemData(row);
+            console.log("itemTree handleEditEnd node=>", row);
+        }
         this.setState({
             editingNode: null
         })
     };
 
-    handleEditCancel = ({ node, originalValue }) =>{
+    handleEditCancel = () =>{
         this.setState({
             editingNode: null
         })
@@ -211,14 +229,14 @@ export default class ItemTree extends Component {
         // Удалим из nodeState uuid ноды, так как она закрыта
         if (node.uuid !== null)
             this.setState( { nodeState: nodeState.filter(uuid=>uuid!==node.uuid)});
-        console.log('----NodeCollapse state=>', nodeState);
+        //console.log('----NodeCollapse state=>', nodeState);
     };
 
     /* ----------------- Render методы отображения компонента ------------------------- */
     renderContextMenu = () => {
         return(
             <ContextMenu
-                menu = { this.props.contextMenu }
+                menu = { this.props.contextMenu.treeMenu }
                 menuRef = { (ref)=>this.menu=ref }
                 handleItemClick = { this.handleContextMenuClick }
             />
@@ -241,11 +259,9 @@ export default class ItemTree extends Component {
 
     render() {
         console.log("ItemTree render--->>>");
-        const { data, selection, hasError } = this.state;
-        if(hasError)
-            return (<ErrorView/>);
+        const { data, selection } = this.state;
         return (
-            <ErrorBoundry>
+            <ErrorBoundry key = "item-tree">
                 <Tree
                     style = {{ height: "100%" }}
                     ref = { tree=>this.tree=tree }

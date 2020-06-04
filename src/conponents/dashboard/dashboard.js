@@ -6,9 +6,9 @@ import ItemList from "../item-list";
 import ItemDetail from "../item-detail";
 import EvotorService from "../../services/evotor-service";
 import LoadingView from "../loading-view";
-import { moveNode } from "../../services/nodes-service";
-
-import './dashboard.css'
+import { deleteRow, moveNode } from "../../services/nodes-service";
+import ErrorBoundry from "../error-boundry";
+import ItemDialog from "../Item-dialog";
 
 export default class Dashboard extends React.Component {
     evotorService = new EvotorService();
@@ -26,40 +26,44 @@ export default class Dashboard extends React.Component {
                 {"nameField": "name", "valueField": null, "titleField": "Наименование", "groupField": "Основные",
                     "editorField": "text", "rules": ["required",]},
                 {"nameField": "code", "valueField": null, "titleField": "Код", "groupField": "Основные",
-                    "editorField": "text", "rules": ["required", "digital", "positive"] },
+                    "editorField": "text", "rules": ["unique", "required", "digital", "positive"] },
                 {"nameField": "articleNumber", "valueField": null, "titleField": "Артикул", "groupField": "Основные",
-                    "editorField": "text", "rules": ["nullable",] },
+                    "editorField": "text", "rules": ["nullable",], "condition": { "group": false }},
                 {"nameField": "barCodes", "valueField": null, "titleField": "Штрихкоды", "groupField": "Коды",
-                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable"] },
+                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable"], "condition": { "group": false }},
 
                 {"nameField": "price", "valueField": null, "titleField": "Цена продажи", "groupField": "Цены",
-                    "editorField": "text", "rules": ["required", "float", "precision2",] },
+                    "editorField": "text", "rules": ["required", "float", "precision2",], "condition": { "group": false }},
                 {"nameField": "costPrice", "valueField": null, "titleField": "Цена закупки", "groupField": "Цены",
-                    "editorField": "text", "rules": ["required", "float", "precision2"] },
+                    "editorField": "text", "rules": ["required", "float", "precision2"], "condition": { "group": false }},
 
                 {"nameField": "quantity", "valueField": null, "titleField": "Остаток", "groupField": "Склад",
-                    "editorField": "text", "rules": ["required", "float", "precision3"] },
+                    "editorField": "text", "rules": ["required", "float", "precision3"], "condition": { "group": false }},
 
                 {"nameField": "measureName", "valueField": null, "titleField": "Единицы", "groupField": "Цены",
-                    "editorField": "combo", "dataField": "measureTypes", "rules": ["required",]},
+                    "editorField": "combo", "dataField": "measureTypes", "rules": ["required",], "condition": { "group": false }},
                 {"nameField": "tax", "valueField": null, "titleField": "Ставка НДС", "groupField": "Цены",
                     "editorField": "combo", "dataField": "taxTypes", "rules": ["required",] },
                 {"nameField": "allowToSell", "valueField": null, "titleField": "Запрет продажи", "groupField": "Склад",
-                    "editorField": "switch", "rules": ["required",] },
+                    "editorField": "switch", "rules": ["required",], "condition": { "group": false }},
                 {"nameField": "description", "valueField": null, "titleField": "Описание", "groupField": "Основные",
-                    "editorField": "text", "rules": ["nullable",] },
+                    "editorField": "text", "rules": ["nullable",], "condition": { "group": false }},
 
                 {"nameField": "type", "valueField": null, "titleField": "Вид номенклатуры", "groupField": "Основные",
                     "editorField": "combo", "dataField": "productTypes", "rules": ["required",] },
 
                 {"nameField": "alcoCodes", "valueField": null, "titleField": "Алкокод", "groupField": "Коды",
-                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable", "digital", "length19"] },
+                    "editorField": "combo", "dataField": null, "edit": true, "rules": ["nullable", "digital", "length19"],
+                    "condition": { "type": ["ALCOHOL_MARKED", "ALCOHOL_NOT_MARKED"] }},
                 {"nameField": "alcoholProductKindCode", "valueField": null, "titleField": "Код вида продукции", "groupField": "ЕГАИС",
-                    "editorField": "text", "rules": ["positive", "digital"] },
+                    "editorField": "text", "rules": ["positive", "digital"],
+                    "condition": { "type": ["ALCOHOL_MARKED", "ALCOHOL_NOT_MARKED"] }},
                 {"nameField": "alcoholByVolume", "valueField": null, "titleField": "Крепкость", "groupField": "ЕГАИС",
-                    "editorField": "text", "rules": ["positive", "float", "precision2"] },
+                    "editorField": "text", "rules": ["positive", "float", "precision2"],
+                    "condition": { "type": ["ALCOHOL_MARKED", "ALCOHOL_NOT_MARKED"] }},
                 {"nameField": "tareVolume", "valueField": null, "titleField": "Объем тары", "groupField": "ЕГАИС",
-                    "editorField": "text","rules": ["positive", "float", "precision2"] },
+                    "editorField": "text","rules": ["positive", "float", "precision2"],
+                    "condition": { "type": ["ALCOHOL_MARKED", "ALCOHOL_NOT_MARKED"] }},
 
                 //{"nameField": "group", "valueField": null, "titleField": "Группа", "groupField": "Основные",
                 //    "editorField": "switch", "rules": ["required",] },
@@ -107,53 +111,43 @@ export default class Dashboard extends React.Component {
 
             itemTreeData: null,                         // Сырые данные для  ItemTree
             itemListData: null,                         // Сырые данные для  ItemList
-            itemDetailData: {
-                "uuid": "01ba18b6-8707-5f47-3d9c-4db058054cb2",
-                "code": "6",
-                "barCodes": [
-                    "200000000060",
-                    "200000000061",
-                    "200000000062",
-                ],
-                "alcoCodes": [
-                    "0000000000000000001",
-                    "0000000000000000002",
-                    "0000000000000000003",
-                    "0000000000000000004"
-                ],
-                "name": "Сидр",
-                "price": 123.12,
-                "quantity": 12,
-                "costPrice": 100.123,
-                "measureName": "шт",
-                "tax": "VAT_20",
-                "allowToSell": true,
-                "description": "Вкусный яблочный сидр.",
-                //"articleNumber": "сид123",
-                "parentUuid": "e12a2d7b-d3b7-4d4d-8e81-b581f652b9e8",
-                "group": false,
-                "type": "ALCOHOL_NOT_MARKED",
-                "alcoholByVolume": 5.45,
-                "alcoholProductKindCode": 123,
-                "tareVolume": 0.57
-            },        // Сырые данные для  ItemDetail
+            itemDetailData: undefined,                  // Сырые данные для  ItemDetail
 
             nodeView: null,                             //  Отображаемая Нода в ItemList выбранная в ItemTree
             collapsedDetail: true,
 
+            dlgTitle: "Подтверждение удаления групп с дочерними элементами",
+            dlgText: "Вы уверены?",
+            closed: true,
+
             // Drag'n'Drop
             isover: false,
             dragItems: null,
+
+            // Redo/Undo
+            undo: [],                                   //  Массив для восстановления предыдущего состояния данных
+            redo: [],                                   //  Массив для восстановления последующего состояния данных
         };
+        this.restoreIndex =  0;                              //  Индекс повторения
+        // Данные дня обновления с подтверждением
+        this.itemDataUpdateConfirm = [];
+        // Данные для удаления без подтверждения
+        this.itemDataUpdate = [];
         // Массив штришкодов
         this.barCodes = null;
         this.validateRules= {
-            //const n = value ? String(value).trim().length : 0;
-            //return value.length === parseInt(param[0], 10);
+            /* Проверяет то, чтобы значение было уникально */
+            "unique": {
+                "validator": (value) => {
+                    // todo: захардкодим "Code", потом сделать универсально, для любого поля
+                    return this.checkUnique(value, "code");
+                },
+                message: 'Значение должно быть уникальным'
+            },
             /* Проверяет то, чтобы значение обязательно было введено */
             "required": {
                 "validator": (value) => {
-                    console.log("required validation", value);
+                    //console.log("required validation", value);
                     //if(Array.isArray(value)) return true; // Todo доделать!!!
                     return null != value && ("boolean" == typeof value ? value : String(value).trim().length > 0);
                 },
@@ -162,7 +156,7 @@ export default class Dashboard extends React.Component {
             /* Проверяет то, чтобы значение не могло быть пустым (не null) */
             "nullable": {
                 "validator": (value) => {
-                    console.log("nullable validation", value);
+                    //console.log("nullable validation", value);
                     //if(Array.isArray(value)) return true; // Todo доделать!!!
                     return null === value || ("boolean" == typeof value ? value : String(value).trim().length > 0);
                 },
@@ -172,7 +166,6 @@ export default class Dashboard extends React.Component {
             "digital": {
                 "validator": (value) => {
                     //console.log("digital validation", value);
-
                     return /^\d+$/.test(value);
                 },
                 message: 'Значение может состоять только из цифр'
@@ -180,7 +173,7 @@ export default class Dashboard extends React.Component {
             /* Проверяет то, чтобы значение числом с плавающей точкой */
             "float": {
                 "validator": (value) => {
-                    console.log("float validation", value);
+                    //console.log("float validation", value);
                     return /^\d*\.?\d+$/.test(value);
                 },
                 message: 'Значение должно быть десятичным числом'
@@ -188,7 +181,7 @@ export default class Dashboard extends React.Component {
             /* Проверяет то, чтобы значение было положительным числом */
             "positive": {
                 "validator": (value) => {
-                    console.log("positive validation", value);
+                    //console.log("positive validation", value);
                     //if(Array.isArray(value)) return true; // Todo доделать!!!
                     return parseInt(value, 10) > 0;
                 },
@@ -198,7 +191,7 @@ export default class Dashboard extends React.Component {
             "precision2": {
                 "validator": (value) => {
                     const parts = String(value).split('.');
-                    console.log("precision validation", value);
+                    //console.log("precision validation", value);
                     //if(Array.isArray(value)) return true; // Todo доделать!!!
                     if (parts.length === 2) return parts[1].length === 1 || parts[1].length === 2;
                     else return true
@@ -209,7 +202,7 @@ export default class Dashboard extends React.Component {
             "precision3": {
                 "validator": (value) => {
                     const parts = String(value).split('.');
-                    console.log("precision validation", value);
+                    //console.log("precision validation", value);
                     //if(Array.isArray(value)) return true; // Todo доделать!!!
                     if (parts.length === 2) return parts[1].length === 3;
                     else return true
@@ -219,7 +212,7 @@ export default class Dashboard extends React.Component {
             /* Проверяет то, чтобы длина значения была 19 */
             "length19": {
                 "validator": (value) => {
-                    console.log("lenght19 validation", value);
+                    //console.log("lenght19 validation", value);
                     return value.length === 19;
                 },
                 message: 'Длина алкокода должна быть 19',
@@ -227,7 +220,7 @@ export default class Dashboard extends React.Component {
 
         };
 
-        this.keyboardEventListener = null;             
+        this.keyboardEventListener = null;
         this.menu = null;
         this.notificator = props.notificator;
 
@@ -237,38 +230,44 @@ export default class Dashboard extends React.Component {
                 { key: "rename", text: "Переименовать", disabled: false, iconCls: "icon-evotor-folder-edit" },
                 { key: "open", text: "Открыть", disabled: false, iconCls: "icon-evotor-folder-open" },
                 { key: "delete", text: "Удалить", disabled: false, iconCls: "icon-evotor-folder-delete" },
-                { key: "upload", text: "Выгрузить", disabled: true, iconCls: "icon-evotor-upload-to-the-cloud" },
-                { key: "submenu", text: "Субменю", disabled: false,
+                { key: "cloud", text: "Облако", disabled: false, iconCls: "icon-evotor-upload-to-the-cloud",
                     submenu: [
-                        { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" },
-                        { key: "menu1", text:"Меню1", disabled: false },
-                        { key: "menu2", text:"Меню2", disabled: false },
+                        { key: "upload_all", text:"Выгрузить все", disabled: false, iconCls: "icon-save" },
+                        { key: "upload_this", text:"Выгрузить группу", disabled: false },
+                        { key: "download_all", text:"Загрузить все", disabled: false },
+                        { key: "download_this", text:"Загрузить группу", disabled: false },
                     ]
                 },
                 { key: "close", text: "Закрыть", disabled: false },
             ],
-            listMenu: [
-                { key: "create", text: "Создать", disabled: false },
-                { key: "open", text: "Открыть", disabled: false },
-                { key: "edit", text: "Изменить", disabled: false },
-                { key: "func_sep", separator: true },
-                { key: "сut", text: "Вырезать", disabled: false, iconCls: "icon-evotor-folder-delete" },
-                { key: "copy", text: "Копировать", disabled: false },
-                { key: "select_sep", separator: true },
-                { key: "select", text: "Выделить все", disabled: false },
-                { key: "unselect", text: "Очистить", disabled: false },
+            listGroupMenu: [
+                { key: "create", text: "Создать", disabled: false, iconCls: "icon-evotor-document-add" },
+                { key: "open", text: "Открыть", disabled: false, iconCls: "icon-evotor-folder-open" },
+                { key: "remove", text: "Удалить", disabled: false, iconCls: "icon-evotor-remove" },
                 { key: "paste_sep", separator: true },
-                { key: "paste", text: "Вставить", disabled: false },
+                { key: "paste", text: "Вставить", disabled: false, iconCls: "icon-evotor-document-insert" },
+                { key: "select_sep", separator: true },
+                { key: "select", text: "Выделить все", disabled: false, iconCls: "icon-evotor-select" },
+                { key: "unselect", text: "Очистить", disabled: false, iconCls: "icon-evotor-unselect" },
+                { key: "end_sep", separator: true },
+                { key: "close", text: "Закрыть", disabled: false },
+            ],
+            listItemMenu: [
+                { key: "create", text: "Создать", disabled: false, iconCls: "icon-evotor-document-add" },
+                { key: "edit", text: "Править", disabled: false, iconCls: "icon-evotor-document-edit"},
+                { key: "remove", text: "Удалить", disabled: false, iconCls: "icon-evotor-remove" },
+                { key: "copy_paste_sep", separator: true },
+                { key: "copy", text: "Копировать", disabled: false, iconCls: "icon-evotor-document-copy" },
+                { key: "paste", text: "Вставить", disabled: false, iconCls: "icon-evotor-document-insert" },
+                { key: "select_sep", separator: true },
+                { key: "select", text: "Выделить все", disabled: false, iconCls: "icon-evotor-select" },
+                { key: "unselect", text: "Очистить", disabled: false, iconCls: "icon-evotor-unselect" },
                 { key: "end_sep", separator: true },
                 { key: "close", text: "Закрыть", disabled: false },
             ],
             itemMenu: [
-                { key: "create", text: "Создать", disabled: false, submenu: [
-                        { key: "save", text:"Сохранить", disabled: false, iconCls: "icon-save" },
-                        { key: "menu1", text:"Меню1", disabled: false },
-                        { key: "menu2", text:"Меню1", disabled: false },
-                    ]  },
-                { key: "print", text: "Печатать", disabled: true, iconCls: "icon-print" },
+                { key: "edit", text: "Редактировать", disabled: false, iconCls: "icon-evotor-property-edit" },
+                { key: "save", text: "Сохранить", disabled: false, iconCls: "icon-evotor-save" },
                 { key: "close", text: "Закрыть", disabled: false },
             ],
         };
@@ -294,27 +293,37 @@ export default class Dashboard extends React.Component {
             .then(this.updateData);
     };
 
+    sortData = (data) => {
+      return data.sort((a, b)=>{
+          const nameA=a.name.toLowerCase(), nameB=b.name.toLowerCase();
+          if (nameA < nameB) return -1; //сортируем строки по возрастанию
+          if (nameA > nameB) return 1;
+          return 0 // Никакой сортировки
+      })
+    };
+
     updateData = (data) =>{
         // первоначальное заполнение данных
-        const itemTreeData = data
+        const sortData = this.sortData(data);
+        const itemTreeData = sortData
             .filter(item => item.group === true)
             .map(itemTree=>Object.assign({}, itemTree, { state: 'closed' }));
-        const itemListData = data
+        const itemListData = sortData
             .filter(item => item.group === false)
             .map((itemList)=>Object.assign({}, itemList));
         // Todo: Вообще в будующем сделать чтоб подхватывался последний редактируемый объект
-        const itemDetailData = null;  // Проверим такой вариант
         this.setState({
             data,
             itemTreeData,
             itemListData,
-            itemDetailData,
+            // itemDetailData,
             loading: false,
         });
     };
 
-    updateItemData = (row) =>{
+    updateItemData = (data, viewNotification = true, restore = false) =>{
         /* Обновление основного хранилища информации товаров и групп
+        *  в state: itemTreeData и itemListData
         *
         *  Обязательно!!! наличие в row признака group
         *  Выполняются действия(удалить/добавить/изменить)
@@ -324,71 +333,176 @@ export default class Dashboard extends React.Component {
         *       3 Но Если же row.uuid не найден в данных, значит создаем новый item
         *           При добалении нового item, code вычисляем новый.
         */
-        console.log("DashBoard updateItemData=>row", row);
-        const group = row.group;
-        const itemData = group ? this.state.itemTreeData : this.state.itemListData;
+        const { itemTreeData, itemListData, itemDetailData, redo, undo } = this.state;
+        console.log("DashBoard updateItemData data/notification", data, viewNotification);
 
-        if(row.code === undefined){
-            // Удаляем item
-            const newData = itemData.filter(el=>el.uuid!==row.uuid);
-            // console.log("DashBoard delete row=>", row, newListData.length, itemListData.length);
-            if(newData.length === itemData.length - 1){
-                if(group){
-                    this.notificator.show("Группа товаров " + row.name + " успешно удалена", { type:"success" });
-                    this.setState({
-                        itemTreeData: newData
-                    })
-                }else{
-                    this.notificator.show("Товар " + row.name + " успешно удален", { type:"success" });
-                    this.setState({
-                        itemListData: newData
-                    })
-                }
-            }else this.notificator.show("Ошибка удаления " + row.name, { type:"error" });
-        }else {
-            const idx = itemData.findIndex(el=>el.uuid===row.uuid);
-            if(idx !== -1){
-                //  Заменяем товар
-                console.log("Dashboard замена row=>", row);
-                if (group){
-                    this.setState({
-                        itemTreeData: itemData.map((item)=>{
-                            if(item.uuid === row.uuid) return Object.assign({}, item, row);
-                            return item; // Вернем тот же, чтоб избежать его повторного рендера
-                        })
-                    })
-                }else{
-                    this.setState({
-                        itemListData: itemData.map((item)=>{
-                            if(item.uuid === row.uuid) return Object.assign({}, item, row);
-                            return item; // Вернем тот же, чтоб избежать его повторного рендера
-                        })
-                    })
-                }
-            } else {
-                // Создаем новый товар
-                // console.log("Dashboard создание нового row=>", row);
-                const newData = [].concat(itemData, Object.assign({},row, { code: this.getNewCode() }));
-                //console.log("DashBoard create row=>", row, newListData);
-                if(newData.length === itemData.length + 1){
-                    if(group){
-                        this.notificator.show("Группа товаров " + row.name + " успешно создана", { type:"success" });
-                        this.setState({
-                            itemTreeData: newData
-                        })
-                    }else{
-                        this.notificator.show("Товар " + row.name + " успешно создан", { type:"success" });
-                        this.setState({
-                            itemListData: newData
-                        })
+        const arr = Array.isArray(data) ? data : [data];
+        const fullNotification = arr.length < 7;
+        console.log("DashBoard updateItemData arr/fullNotification=>", arr, fullNotification);
+
+        let listData = [].concat(itemListData);
+        let treeData = [].concat(itemTreeData);
+        let deltaCut = 0;
+        let deltaUpdate = 0;
+        let deltaCreate = 0;
+        let undoArr = [];
+
+        arr.forEach((row, index)=>{
+            const group = row.group;
+            let itemData = group ? treeData : listData;
+            const total = itemData.length;
+            if(row.code === undefined){
+                itemData = itemData.filter((el)=>{
+                    if(el.uuid === row.uuid){
+                        if(!restore) undoArr.push(el);  //   Undo
+                        return false;
                     }
-                } else this.notificator.show("Ошибка создания " + row.name, { type:"error" });
+                    return true
+                }); // Удаляем item
+                console.log("Dashboard updateItemData delete row/idx length/total=>", row, itemData.length, total);
+                if(itemData.length === total - 1){
+                    deltaCut = deltaCut + 1;
+                    // notification
+                    if(fullNotification && viewNotification && !restore)
+                        group ?
+                            this.notificator.show("Группа товаров: '" + row.name + "' успешно удалена", { type:"success" }):
+                            this.notificator.show("Товар '" + row.name + "' успешно удален", { type:"success" });
+                } else
+                if(fullNotification && viewNotification && !restore)
+                    group ?
+                        this.notificator.show("Группа " + row.name + " не удалена", { type:"info" }):
+                        this.notificator.show("Ошибка удаления товара: " + row.name, { type:"error" });
+            }else{
+                const idx = itemData.findIndex(el=>el.uuid===row.uuid);
+                if(idx !== -1) {
+                    deltaUpdate = deltaUpdate + 1;
+                    if(!restore) undoArr.push(itemData[idx]);   //  Undo changed
+                    itemData[idx] = Object.assign({}, itemData[idx], row); // Заменяем
+                    console.log("Dashboard updateItemData rename/update row/idx=>", itemData[idx], idx);
+                    if(fullNotification && viewNotification && !restore)
+                        group ?
+                            this.notificator.show("Группа товаров '" + row.name + "' изменена", { type:"success" }):
+                            this.notificator.show("Товар '" + row.name + "' изменен", { type:"success" });
+                } else {
+                    const code  = restore ? {} : { code: this.getNewCode() };  // Поправка на сохранение code при восстановлении
+                    itemData.push(Object.assign({}, row, code));      // Создаем новый товар
+                    console.log("Dashboard updateItemData create/add row/idx=>", itemData[itemData.length-1], idx);
+                    if(!restore) undoArr.push(Object.assign({}, row, { code: undefined }));   //  Undo created
+                    if(itemData.length === total + 1) {
+                        deltaCreate = deltaCreate + 1;
+                        if(fullNotification && viewNotification && !restore)
+                            group ?
+                                this.notificator.show("Группа товаров '" + row.name + "' успешно создана", { type:"success" }):
+                                this.notificator.show("Товар '" + row.name + "' успешно создан", { type:"success" });
+                    } else
+                    if(fullNotification && viewNotification && !restore)
+                        group ?
+                            this.notificator.show("Ошибка создания группы: " + row.name, { type:"error" }):
+                            this.notificator.show("Ошибка создания товара: " + row.name, { type:"error" });
+
+                }
             }
+            group ? treeData = itemData : listData = itemData;
+            console.log("delta cut/update/create=>", deltaCut, deltaUpdate, deltaCreate);
+            // ***** Сохраняем состояние для Redo\Undo
+
+
+        });
+        //console.log("delta total cut/update/create=>", deltaCut, deltaUpdate, deltaCreate);
+        // Вывод информации в обычном режиме
+        if(viewNotification && !fullNotification && !restore) {
+            const cut = deltaCut > 0 ? "Удалено: " + deltaCut + ".": "" ;
+            const create = deltaCreate > 0 ? "Создано: " + deltaCreate + ".": "" ;
+            const update = deltaUpdate > 0 ? "Обновлено: " + deltaUpdate + ".": "" ;
+            this.notificator.show("Обработано "+ arr.length + " элемент(а/ов). " +  create + update + cut, { type:"success" });
+        }
+        const itemData = itemDetailData ?
+            listData.find(i=>i.uuid===itemDetailData.uuid) : undefined;
+        //console.log("itemUpdate=>", itemDetailData, itemData);
+
+        // Для сохранения состаяния:
+        if(!restore) {
+            const redoData = [ ...redo.slice(0, this.restoreIndex), arr];
+            const undoData = [ ...undo.slice(0, this.restoreIndex), undoArr ];
+            this.restoreIndex = this.restoreIndex + 1;
+            //console.log("<=Update redoUndoData redo/undo/restoreIndex=>", redoData, undoData, this.restoreIndex);
+            this.setState({
+                itemListData: this.sortData(listData),
+                itemTreeData: this.sortData(treeData),
+                itemDetailData: itemData,
+                undo: undoData,
+                redo: redoData,
+            });
+        }else{
+            //console.log("<=Restore redoUndoData restoreIndex=>", this.restoreIndex);
+            this.setState({
+                itemListData: this.sortData(listData),
+                itemTreeData: this.sortData(treeData),
+                itemDetailData: itemData,
+            });
         }
     };
 
-    handleDataOperations = (data, operations) =>{
-        // Через эту функцию проходят все операции по изменению данных
+    processingItemData = (data) =>{
+        /* Обработка и подготовка данных для обновления в updateItemData
+        *
+        *  Обязательно!!! наличие в row признака group
+        *  Выполняются действия(удалить/добавить/изменить)
+        *  в зависимости от полученного row:
+        *       1 Если row.code === undefined тогда удаляем item
+        *       2 Иначе если row.uuid существует, тогда заменяем item, на отредактированный
+        *       3 Но Если же row.uuid не найден в данных, значит создаем новый item
+        *           При добалении нового item, code вычисляем новый.
+        */
+
+        if(!Array.isArray(data)) return this.updateItemData([data]);  // Преобразуем в массив
+        console.log("DashBoard processingItemData arr=>", data);
+        const { data: itemData } = this.state;
+
+        // Отделим группы и товары
+        // Обработка групп --------------------------------
+        // Соберем все группы для обновления данных
+        const treeDataUpdate = data.filter((i)=>i.group===true&&i.code!==undefined) || [];
+        // Соберем все группы для удаления отдельно
+        const treeDataCut = data.filter((i)=>i.group===true&&i.code===undefined) || [];
+        // Обработка товаров -------------------------------
+        const listDataUpdate = data.filter((i)=>i.group===false) || [];
+        // Для групп, нужно вычислить все дочерние----------
+        // Если нет дочерних то вернет только родителей, которых проверяем
+        const itemDataCut = deleteRow(itemData, treeDataCut);
+
+        // Выборка групп с детьми
+        const hasChildren = treeDataCut
+            .filter(tree=>itemData.find(item=>item.parentUuid===tree.uuid) !== undefined);
+        // Выборка групп без детей
+        const withoutChildren = treeDataCut
+            .filter(tree=>hasChildren.find(item=>item.uuid===tree.uuid) === undefined);
+
+        // А вот тут сначала запрос на удаление не пустых
+        const closed = hasChildren.length === 0;
+        const dlgText = 'Группа(ы): ' +
+            hasChildren.reduce((str, row)=>row.name + ', ' + str, "") +
+            'содержит элементы. Удалить не пустые группы?';
+
+        console.log("itemDataCut/treeDataCut=>", itemDataCut, treeDataCut);
+        if(itemDataCut.length === treeDataCut.length)
+            this.updateItemData(data);
+        else {
+            console.log("itemDataCut=>", itemDataCut);
+            // Todo: доработать удаление после диалога
+            // Данные для удаления с подтверждением
+            this.itemDataUpdateConfirm = [].concat(itemDataCut, treeDataUpdate, listDataUpdate);
+            // Данные для удаления без подтверждения
+            this.itemDataUpdate = [].concat(withoutChildren, treeDataUpdate, listDataUpdate);
+
+            console.log("itemDataUpdateConfirm=>", this.itemDataUpdateConfirm);
+            console.log("itemDataUpdate=>", this.itemDataUpdate);
+
+            this.setState({
+                closed,
+                dlgText,
+            });
+        }
     };
 
     getRules = (rules) => {
@@ -401,14 +515,14 @@ export default class Dashboard extends React.Component {
         *  rules на входе это массив из itemProps
         */
         const allRules = this.validateRules;
-        console.log("validateRules=>", this.validateRules);
+        //console.log("validateRules=>", this.validateRules);
         if (rules === undefined) return {};
         let objectRules = {};
         rules.forEach(function (item) {
             if (item in allRules) objectRules[item] = allRules[item];
             else objectRules[item] = item
         });
-        console.log("get rules=>", objectRules);
+        //console.log("get rules=>", objectRules);
         return objectRules;
     };
 
@@ -422,6 +536,14 @@ export default class Dashboard extends React.Component {
         return maxListCode > maxTreeCode ? String(maxListCode + 1): String(maxTreeCode + 1)
     };
 
+    checkUnique = (value, field) =>{
+        const { itemDetailData, itemListData, itemTreeData } = this.state;
+        // Проверка на разрешение использования текущего значения
+        if(itemDetailData[field] === value) return true;
+        // Если индексы одинаковые  === undefined т.е не найдены
+        return itemListData.find(item=>item[field]===value) === itemTreeData.find(item=>item[field]===value)
+    };
+
     /* ----------------- Keyboard event functions ------------------------------------- */
     // Todo Undo/Redo event + other
     setKeyboardEventsListener = (listener) => {
@@ -433,6 +555,34 @@ export default class Dashboard extends React.Component {
         console.log(e);
         if(this.keyboardEventListener !== null)
             this.keyboardEventListener(e)
+    };
+
+    handleUndoKeyboardEvent = () => {
+        const { undo } = this.state;
+        if( this.restoreIndex > 0){
+            this.restoreIndex = this.restoreIndex - 1;
+            const arr = undo[this.restoreIndex];
+            // Вывод информации в режиме восстановления
+            this.updateItemData(arr, true, true);
+
+            //console.log("<--Undo arr/undo_length/restoreIndex-->", arr, undo.length, this.restoreIndex);
+            this.notificator.show("Отмена последнего действия для " + arr.length + " элемент(а/ов). ", { type:"info" });
+        }
+
+        else this.notificator.show("Еще нет действий для отмены", { type:"error" });
+    };
+
+    handleRedoKeyboardEvent = () => {
+        const { redo } = this.state;
+        if(redo.length > this.restoreIndex){
+            const arr = redo[this.restoreIndex];
+            this.updateItemData(arr, true, true);
+            this.restoreIndex = this.restoreIndex + 1;
+
+            //console.log("<--Redo state/redo_length/restoreIndex-->", arr, redo.length, this.restoreIndex);
+            this.notificator.show("Повторение последнего действия для " + arr.length + " элемент(а/ов). ", { type:"info" });
+        }
+        else this.notificator.show("Действий для повторения не найдено", { type:"error" });
     };
 
     /* ----------------- Обработка событий Dashboard ---------------------------------- */
@@ -522,8 +672,9 @@ export default class Dashboard extends React.Component {
 
     handleListItemSelection = (row) =>{
         const { itemDetailData } = this.state;
-        const isChangedUuid = itemDetailData ? row.uuid !== itemDetailData.uuid : itemDetailData === null;
-        console.log('ChangeNode row/nodeView/test=>', row, itemDetailData, isChangedUuid);
+        console.log('handleListItemSelection: row/itemDetailData=>', row, itemDetailData);
+        const isChangedUuid = itemDetailData ? row.uuid !== itemDetailData.uuid : itemDetailData === undefined;
+        console.log('handleListItemSelection: test=>', isChangedUuid);
         if(isChangedUuid){
             //const parentNode = getNodeByRow(itemTreeData, row);
             //const processedDetailData = processingItemData(itemTreeData, row , itemMatrix);
@@ -536,7 +687,45 @@ export default class Dashboard extends React.Component {
         }
     };
 
-    /* ----------------- Методы управления панелями ------------------------------- */
+    /* ----------------- Методы управления диалогами --------------------------------- */
+    onDlgBtnDelCancel = () =>{
+        this.updateItemData(this.itemDataUpdate);
+        this.itemDataUpdateConfirm =[];
+        this.itemDataUpdate =[];
+
+        this.setState({
+            closed: true
+        })
+    };
+
+    onDlgBtnDelConfirm = () =>{
+        /*
+        *   Обработка для сбора информации о всех элементах, для удаления
+        */
+        console.log("onDlgBtnDelConfirm dialog ok");
+        // Каскадное удаление, объединяем все в один массив
+        /*
+        const delGroup = deleteRow(itemTreeData, this.deletingNotEmptyGroup);
+        const delItem = delGroup.reduce((arr, target)=>{
+            //console.log('deleter=>', arr, current);
+            const listData = itemListData
+                .filter((listItem)=>target.uuid===listItem.parentUuid);
+            if(listData === undefined) return arr;
+            return arr.concat(listData
+                .map(el=>{return { name: el.name, uuid: el.uuid, group: el.group }})
+            );
+        }, []);
+        */
+        this.updateItemData(this.itemDataUpdateConfirm);
+        this.itemDataUpdateConfirm =[];
+        this.itemDataUpdate =[];
+
+        this.setState({
+            closed: true
+        })
+    };
+
+    /* ----------------- Методы управления панелями ---------------------------------- */
     handleCollapseEast = () =>{
         this.setState((state)=>{
             // console.log("CollapseEast", this.state.collapsedDetail);
@@ -578,88 +767,107 @@ export default class Dashboard extends React.Component {
         const {
             constants, collapsedDetail, nodeView, itemMatrix,
             itemTreeData, itemListData, itemDetailData, loading,
-            propertyPanelTitle, treePanelTitle } = this.state;
+            propertyPanelTitle, treePanelTitle,
+            closed, dlgTitle, dlgText } = this.state;
 
         if(loading)
             return(<LoadingView/>);
         return (
-            <Layout
-                style={{ width: '100%', height: '100%' }}>
-                <LayoutPanel
-                    region="north"
-                    style={{ height: 60 }}>
-                    <Header/>
-                </LayoutPanel>
+            <ErrorBoundry>
+                <Layout
+                    style={{ width: '100%', height: '100%' }}>
+                    <LayoutPanel
+                        region="north"
+                        style={{ height: 60 }}>
+                        <Header/>
+                    </LayoutPanel>
 
-                <LayoutPanel
-                    region="west"
-                    title={ treePanelTitle }
-                    collapsible
-                    collapsed = { !collapsedDetail }
-                    onCollapse = { this.handleCollapseWest }
-                    onExpand = { this.handleExpandWest }
-                    expander
-                    split
-                    style={{ minWidth: 150, maxWidth: 400 }}>
-                    <ItemTree
-                        itemTreeData = { itemTreeData }
-                        updateItemData = { this.updateItemData }
-                        onDrop = { this.handleDropListItem }
-                        //onTreeSelectionChange = { this.handleTreeSelectionChange }
-                        onTreeNodeSelectView = { this.handleTreeNodeSelectView }
-                        contextMenu = { this.contextMenu.treeMenu }
-                        setKeyboardEventsListener = { this.setKeyboardEventsListener }
-                    />
-                </LayoutPanel>
+                    <LayoutPanel
+                        region="west"
+                        title={ treePanelTitle }
+                        collapsible
+                        collapsed = { !collapsedDetail }
+                        onCollapse = { this.handleCollapseWest }
+                        onExpand = { this.handleExpandWest }
+                        expander
+                        split
+                        style={{ minWidth: 150, maxWidth: 400 }}>
+                        <ItemTree
+                            itemTreeData = { itemTreeData }
+                            updateItemData = { this.updateItemData }
+                            onDrop = { this.handleDropListItem }
+                            //onTreeSelectionChange = { this.handleTreeSelectionChange }
+                            onTreeNodeSelectView = { this.handleTreeNodeSelectView }
+                            contextMenu = { this.contextMenu }
+                            setKeyboardEventsListener = { this.setKeyboardEventsListener }
+                            notificator = { this.notificator }
+                        />
+                    </LayoutPanel>
 
-                <LayoutPanel
-                    region="center">
-                    <ItemList
-                        itemListData = { itemListData }
-                        itemTreeData = { itemTreeData }
-                        itemMatrix = { itemMatrix }
-                        nodeView = { nodeView }
-                        constants = { constants }
-                        collapsed = { collapsedDetail }
-                        onDrag = { this.handleDragListItem }
-                        updateItemData = { this.updateItemData }         //???
-                        contextMenu = { this.contextMenu.listMenu }
-                        onListNodeSelection = { this.handleListNodeSelection }
-                        onListItemSelection = { this.handleListItemSelection }
-                        notificator = { this.notificator }
-                        //handleListSelectionChange = { this.handleListSelectionChange }
-                        setKeyboardEventsListener = { this.setKeyboardEventsListener }
-                        getRules = { this.getRules }
-                        //loading = { loading }
-                    />
+                    <LayoutPanel
+                        region="center">
+                        <ItemList
+                            itemListData = { itemListData }
+                            itemTreeData = { itemTreeData }
+                            itemMatrix = { itemMatrix }
+                            nodeView = { nodeView }
+                            constants = { constants }
+                            collapsed = { collapsedDetail }
+                            onDrag = { this.handleDragListItem }
+                            updateItemData = { this.updateItemData }         //???
+                            processingItemData = { this.processingItemData }         //???
+                            contextMenu = { this.contextMenu }
+                            onListNodeSelection = { this.handleListNodeSelection }
+                            onListItemSelection = { this.handleListItemSelection }
 
-                </LayoutPanel>
+                            //handleListSelectionChange = { this.handleListSelectionChange }
+                            notificator = { this.notificator }
+                            setKeyboardEventsListener = { this.setKeyboardEventsListener }
+                            getRules = { this.getRules }
+                            redo = { this.handleRedoKeyboardEvent }
+                            undo = { this.handleUndoKeyboardEvent }
+                        />
 
-                <LayoutPanel
-                    region = "east"
-                    title = { propertyPanelTitle }
-                    collapsible
-                    collapsed ={ collapsedDetail }
-                    onCollapse = { this.handleCollapseEast }
-                    onExpand = { this.handleExpandEast }
-                    expander
-                    split
-                    style = {{ minWidth: 200, maxWidth: 400 }}
+                    </LayoutPanel>
+
+                    <LayoutPanel
+                        region = "east"
+                        title = { propertyPanelTitle }
+                        collapsible
+                        collapsed ={ collapsedDetail }
+                        onCollapse = { this.handleCollapseEast }
+                        onExpand = { this.handleExpandEast }
+                        expander
+                        split
+                        style = {{ minWidth: 200, maxWidth: 400 }}
                     >
-                    <ItemDetail
-                        itemDetailData = { itemDetailData }
-                        //itemListData = { itemListData }
-                        itemTreeData = { itemTreeData }
-                        itemMatrix = { itemMatrix }
-                        //parent = { parentDetailItem }
-                        collapsed = { collapsedDetail }
-                        constants = { constants }
-                        contextMenu = { this.contextMenu.itemMenu }
-                        setKeyboardEventsListener = { this.setKeyboardEventsListener }
-                        getRules = { this.getRules }
-                    />
-                </LayoutPanel>
-            </Layout>
+                        <ItemDetail
+                            itemDetailData = { itemDetailData }
+                            //itemListData = { itemListData }
+                            itemTreeData = { itemTreeData }
+                            itemMatrix = { itemMatrix }
+                            //parent = { parentDetailItem }
+                            updateItemData = { this.updateItemData }
+                            collapsed = { collapsedDetail }
+                            constants = { constants }
+                            contextMenu = { this.contextMenu }
+                            setKeyboardEventsListener = { this.setKeyboardEventsListener }
+                            getRules = { this.getRules }
+                            notificator = { this.notificator }
+                        />
+                    </LayoutPanel>
+                </Layout>
+                <ItemDialog
+                    closed={ closed }
+                    style={{ width:'400px', height:'200px' }}
+                    title = { dlgTitle }
+                    onConfirm = { this.onDlgBtnDelConfirm }
+                    onClose = { this.onDlgBtnDelCancel }>
+                    <p style={{ textAlign:'center', margin:'40px 20px', fontSize:'15px', maxWidth: '600px' }}>
+                        { dlgText }
+                    </p>
+                </ItemDialog>
+            </ErrorBoundry>
         );
     }
 }

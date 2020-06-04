@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { DataGrid, GridColumn, NumberBox, ComboBox } from 'rc-easyui';
+import {DataGrid, GridColumn, NumberBox, ComboBox } from 'rc-easyui';
 import { Draggable } from 'rc-easyui';
 import ContextMenu from "../context-menu";
 import './item-list.css';
 import ErrorBoundry from "../error-boundry";
 import ItemEditor from "./item-editor";
-import { processingListData } from "../../services/nodes-service";
+import { processingListData, cutRow } from "../../services/nodes-service";
 
 
 
@@ -22,6 +22,7 @@ export default class ItemList extends Component {
             selection: [],
             drag: [],
             copied: null,
+            menu: null,
 
             editingRow: null,
             processedRow: null,
@@ -30,10 +31,15 @@ export default class ItemList extends Component {
             titleAddItem: 'Добавление товара',
             titleCreateItem: 'Создаем новый товар',
 
-            errors: {},
             title: '',
             closed: true,
             collapsed: props.collapsed,
+
+            editorFields: [ "name", "measureName", "price", "costPrice", "tax" ],      // default
+            model: {},                                                          // Объект для редактирования диалогом
+            rules: {},
+            errors: null,
+
         };
         this.constants = props.constants;
         this.list = null;
@@ -62,14 +68,16 @@ export default class ItemList extends Component {
             { key: "Создать", function: this.handleListRowCreate },
             // Todo доработать для групп и товаров
             { key: "Открыть", function: this.handleRowDblClick },   // для row.group === true
+            { key: "Править", function: this.handleRowDblClick },
             { key: "Копировать", function: this.handleListRowCopy },
             { key: "Вставить", function: this.handleListRowPaste },
             { key: "Выделить все", function: this.handleListSelectAll },
             { key: "Очистить", function: this.clearSelection },
-            { key: "Вырезать", function: this.handleListRowCut },
+            { key: "Удалить", function: this.handleListRowCut },
             { key: "Закрыть", function: this.handleContextMenuClose },
         ];
         this.updateItemData = props.updateItemData;
+        this.processingItemData = props.processingItemData;
         this.onListNodeSelection = props.onListNodeSelection;
         this.onListItemSelection = props.onListItemSelection;
         this.notificator = props.notificator;
@@ -136,6 +144,19 @@ export default class ItemList extends Component {
             this.handleItemListKeyEnter();
         if(e.key === 'Escape' && e.code === 'Escape' && e.ctrlKey === false)
             this.handleItemListKeyEscape();
+        // MacOS undo
+        if(e.key === 'z' && e.code === 'KeyZ' && e.metaKey === true && e.ctrlKey === false && e.shiftKey === false)
+            this.props.undo();
+        // PC undo
+        if(e.key === 'z' && e.code === 'KeyZ' && e.metaKey === false && e.ctrlKey === true && e.shiftKey === false)
+            this.props.undo();
+
+        // MacOS redo
+        if(e.key === 'z' && e.code === 'KeyZ' && e.metaKey === true && e.ctrlKey === false && e.shiftKey === true)
+            this.props.redo();
+        // PC redo
+        if(e.key === 'z' && e.code === 'KeyZ' && e.metaKey === false && e.ctrlKey === true && e.shiftKey === true)
+            this.props.redo();
     };
 
     handleItemListKeyEnter = () =>{
@@ -174,7 +195,13 @@ export default class ItemList extends Component {
         originalEvent.preventDefault();
         // При контекстном меню отменим выделения - нет
         //this.changeSelection([row]);
-        this.setState({ editingRow: row });
+        const menu = row.group ?
+            this.props.contextMenu.listGroupMenu :
+            this.props.contextMenu.listItemMenu;
+        this.setState({
+            menu,
+            editingRow: row
+        });
         this.menu.showContextMenu(originalEvent.pageX, originalEvent.pageY);
     };
 
@@ -225,9 +252,11 @@ export default class ItemList extends Component {
     };
 
     handleListRowCut = (row) =>{
-        console.log('selected: ', this.state.selection);
-        // Удаляем row указывая только его uuid
-        this.updateItemData({ name: row.name, uuid: row.uuid});
+        // Удаляем row указывая только его uuid, parentUuid и group
+        const { selection } = this.state;
+        const data = selection.length > 0 ? selection.map(el=>cutRow(el)) : cutRow(row);
+        console.log("ItemList handleListRowCut selection/data=>", selection, data);
+        this.processingItemData(data);
     };
 
     handleListRowCopy = (row) =>{
@@ -258,8 +287,6 @@ export default class ItemList extends Component {
             selection: this.viewRows
         })
     };
-    /* ----------------- Обработка формы редактирования ------------------------------- */
-
     /* ----------------- Render методы отображения компонента ------------------------- */
     renderColumn = ({ value, row }) => {
         const proxy = () => {
@@ -306,14 +333,13 @@ export default class ItemList extends Component {
         return null;
     };
 
-    renderContextMenu = () => {
+    renderContextMenu = (menu) => {
         return(
             <ContextMenu
-                menu = { this.props.contextMenu }
+                menu = { menu }
                 menuRef = { (ref)=>this.menu=ref }
                 handleItemClick = { this.handleContextMenuClick }
-            />
-        )
+            />)
     };
 
     renderCode = ({ value, row, rowIndex }) =>{
@@ -325,8 +351,13 @@ export default class ItemList extends Component {
         return value
     };
 
+    sorting =(data)=>{
+        console.log("sorts=>", data);
+        return data
+    };
+
     render() {
-        const { data, selection, operators, title, model, closed } = this.state;
+        const { data, selection, operators, title, model, closed, menu } = this.state;
         const { measureTypes } = this.constants;
 
         console.log("itemList render--->>>");
@@ -344,7 +375,7 @@ export default class ItemList extends Component {
         //console.log("props=>", this.props.nodeView, "state=>",this.state.nodeView);
 
         return (
-            <ErrorBoundry>
+            <ErrorBoundry key = "item-list">
                 <DataGrid
                     ref = { list=>this.list=list }
                     data = { data }
@@ -363,13 +394,17 @@ export default class ItemList extends Component {
                     onRowContextMenu = { this.handleCellContextMenu }>
                     <GridColumn
                         render = { this.renderCode }
-                        field="code" title="Код" width="10%"/>
+                        field="code" title="Код" width="8%"/>
                     <GridColumn
                         render = { this.renderColumn }
                         field="name"
                         title="Наименование"
-                        width="50%"/>
+                        />
                     <GridColumn field="price" title="Цена продаж" width="10%" align="right"
+                                filterOperators={ operators }
+                                filter={ numberBoxFilter }
+                    />
+                    <GridColumn field="costPrice" title="Цена закупки" align="right" width="10%"
                                 filterOperators={ operators }
                                 filter={ numberBoxFilter }
                     />
@@ -377,8 +412,7 @@ export default class ItemList extends Component {
                                 filterOperators={ operators }
                                 filter={ numberBoxFilter }
                     />
-                    <GridColumn field="description" title="Описание" width="10%"/>
-                    <GridColumn field="measureName" title="Единицы" width="10%" align="center"
+                    <GridColumn field="measureName" title="Единицы" width="7%" align="center"
                                 filter={ comboBoxFilter }
                     />
                 </DataGrid>
@@ -386,13 +420,12 @@ export default class ItemList extends Component {
                     title = { title }
                     model = { model }
                     closed = { closed }
-                    saveRow = { this.saveRow }
                     updateItemData = { this.updateItemData }
                     itemMatrix = { this.itemMatrix }
                     constants = { this.constants }
                     getRules = { this.getRules }
                 />
-                { this.renderContextMenu() }
+                { this.renderContextMenu(menu) }
             </ErrorBoundry>
         )
     }

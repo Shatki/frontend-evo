@@ -38,6 +38,7 @@
          }
     У каждой ноды свойство children это массив дочерних нод
 */
+import { v4 as uuidv4 } from 'uuid';
 
 export const addRootNode = (children, text) => {
     return([
@@ -141,41 +142,57 @@ export const processingListData = (treeData, listData, nodeUuid) => {
     return tree.concat(listData.filter(item => item.parentUuid === nodeUuid));
 };
 
-export const processingItemData = (treeData, itemData, matrix) => {
-    //console.log("processingItemData=>", itemData);
+export const processingItemData = (itemData, matrix) => {
     if(!itemData || !matrix)
         return null;
-    else
-        return matrix.map((property) => {
-            // Если в свойстве пришел массив, то отправляем его в dataField
-            const data = itemData[property.nameField];
-            const valueField = !Array.isArray(data) ? { "valueField": data }: {};
-            const dataField = Array.isArray(data) ?
-                property.dataField = data.map((code)=>{ return { value: code, text: code } }) : {};
-            //console.log(property);
-            //if(property.nameField === "parentUuid") property.dataField = treeData;
-            return Object.assign({}, property, valueField, dataField);
-        });
+    // Корректировка матрицы товара, под разные виды продукции
+    const processedMatrix = matrix.filter((row, i, arr)=>{
+        // Условия существования или видимости поля
+        const condition = row.condition !== undefined ? row.condition : null;
+        for (let prop in condition) {
+            // тело цикла выполняется для каждого свойства объекта
+            // const obj = arr.find(i=>i.nameField===prop);
+            if(condition.hasOwnProperty(prop))
+                if(Array.isArray(condition[prop])){
+                    //console.log("Условия массив=>", prop, condition[prop], row.nameField, itemData[prop]);
+                    return condition[prop].find(i=>i===itemData[prop]) !== undefined
+                }else{
+                    return itemData[prop] === condition[prop]
+                    // console.log("Условия =>", prop, condition[prop], row.nameField, obj);
+                }
+        }
+        // Если в матрице не прописано условие, тогда включаем в матрицу это значение
+        return true;
+    });
+
+    return processedMatrix.map((property) => {
+        // Если в свойстве пришел массив, то отправляем его в dataField
+        const data = itemData[property.nameField];
+        const valueField = !Array.isArray(data) ? { "valueField": data }: {};
+        const dataField = Array.isArray(data) ?
+            property.dataField = data.map((code)=>{ return { value: code, text: code } }) : {};
+        //console.log(property);
+        return Object.assign({}, property, valueField, dataField);
+    });
 };
 
 
-export const createNode = (treeData, node) =>{
-    // Todo Переделать по фенШую React:
-    //  вернем новый элемент и новый массив для изменения через setState
-    // а пока тупое изменение входящих данных
-    const itemUuid = require('uuid/v4');
-    const newNode = {
-        uuid: itemUuid(),
+export const createNode = (node) =>{
+    // Возвращает новый row для itemTreeData
+    return transformNodeToRow({
+        uuid: uuidv4(),
         text: 'Новая группа',
         iconCls: "icon-evotor-folder",
-    };
+        parentUuid: node.uuid
+    });
     //console.log(newItemTree);
+    /*
     if(node.children === undefined){
         node.children = [newNode]
     }else{
         node.children.push(newNode);
     }
-    return newNode
+     */
 };
 
 
@@ -188,6 +205,19 @@ export const deleteNode = (treeData, node) =>{
         }
         return item.uuid !== node.uuid
     })
+};
+
+export const deleteRow = (itemData, data) =>{
+    // Замечание: Все операции проходят над массивами класса itemTreeData или itemListData,
+    // а не над обработанными типа processedTreeData
+    // Функция собирает все дочерние row и возвращает эти данные в массиве:
+    // data => это массив групп
+    return data.reduce((arr, current)=>{
+        //console.log('deleter=>', arr, current);
+        const children = itemData.filter((item)=>current.uuid===item.parentUuid);
+        if(children === undefined) return cutRow(current);
+        return arr.concat(deleteRow(itemData, children), cutRow(current));
+    }, []);
 };
 
 export const moveNode = (treeData, node, movingNode) =>{
@@ -269,4 +299,12 @@ export const getNodeByRow = (treeData, row) =>{
     }
     //console.log('нашли=>', foundNode);
     return foundNode
+};
+
+export const cutRow = (row) =>{
+    /*
+    *   Подготовка row для удаления
+    *   Так же поддерживается node в качестве аргумента
+    */
+    return { name: row.name, uuid: row.uuid, group: row.group, parentUuid: row.parentUuid }
 };

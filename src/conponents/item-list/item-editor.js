@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { ComboBox, Form, Dialog, TextBox, Label, LinkButton } from 'rc-easyui';
+import { ComboBox, Form, TextBox, Label } from 'rc-easyui';
+import ItemDialog from "../Item-dialog";
 
 
 export default class ItemEditor extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
             editorFields: [ "name", "measureName", "price", "costPrice", "tax" ],      // default
             data: null,
@@ -23,6 +23,7 @@ export default class ItemEditor extends Component {
         this.itemMatrix = props.itemMatrix;
         //this.measureTypes = props.measureTypes;
     }
+
     /* ----------------- Lifecycle methods -------------------------------------------- */
     componentDidMount() {
         this.updateData();
@@ -72,6 +73,7 @@ export default class ItemEditor extends Component {
         this.form.validate(() => {
             if (this.form.valid()) {
                 const { model } = this.state;
+                console.log("onDlgBtnSave updateData/model=>", model);
                 this.updateItemData(model);
                 this.setState({
                     closed: true
@@ -83,8 +85,9 @@ export default class ItemEditor extends Component {
     onValidate = (errors) =>{
         this.setState({ errors })
     };
+
     /* ----------------- Render методы отображения компонента ------------------------- */
-    renderForm = () =>{
+    renderDlgFormContent = () =>{
         const { model, editorFields } = this.state;
         if(model){
             return editorFields.map((field)=>{
@@ -95,14 +98,14 @@ export default class ItemEditor extends Component {
                     this.constants[fieldSet.dataField].filter(e=>e.value !== null) : null;
                 //console.log("fieldSet editorField/dataSet=>", fieldSet.editorField, dataSet);
                 const propsSet = {
-                        inputId: field,
-                        name: field,
-                        rules: fieldSet.rules, // В формах валидация работает по-другому
-                        value: model[field],
-                        style: { width: 450 },
-                        data: dataSet
+                    inputId: field,
+                    name: field,
+                    rules: fieldSet.rules, // В формах валидация работает по-другому
+                    value: model[field],
+                    style: { width: 450 },
+                    data: dataSet
 
-                    };
+                };
 
                 return (
                     <div key = { field } style={{ marginBottom: 10 }}>
@@ -118,32 +121,30 @@ export default class ItemEditor extends Component {
     };
 
     render() {
-        const { closed, title, rules, model } = this.state;
+        const { closed, title, model, rules } = this.state;
         if(model === undefined || closed ) return null;
 
         return(
-            <Dialog
-                modal
-                draggable
-                title={ title }
+            <ItemDialog
                 closed={ closed }
-                onClose={ this.onDlgBtnClose }>
+                title={ title }
+                textConfirm = 'Сохранить'
+                textCancel = 'Отмена'
+                onClose={ this.onDlgBtnClose }
+                onConfirm = { this.onDlgBtnSave }
+            >
                 <div className="f-full" style={{ padding: '20px 50px' }}>
                     <Form className="f-full"
                           ref={ ref => this.form = ref }
                           model={ model }
                           rules={ rules }
                           tooltipPosition = "down"
-                          onValidate={ this.onValidate }
-                    >
-                        { this.renderForm() }
+                          onValidate={ this.onValidate }>
+                        { this.renderDlgFormContent() }
                     </Form>
                 </div>
-                <div className="dialog-button">
-                    <LinkButton style={{ width: 80 }} onClick={ this.onDlgBtnSave }>Сохранить</LinkButton>
-                    <LinkButton style={{ width: 80 }} onClick={ this.onDlgBtnClose }>Закрыть</LinkButton>
-                </div>
-            </Dialog>
+
+            </ItemDialog>
         );
     }
 };
