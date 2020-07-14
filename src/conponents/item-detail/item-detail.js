@@ -17,6 +17,7 @@ export default class ItemDetail extends Component {
 
             parent: null,                       // Нода родитель, постоянная ссылка
             rules: null,
+            filterRules: [],
             errors: null,
             editing: false,                     // Маркер редактирования ItemDetail props
             focus: null,                    // Выделенная ячейка с значением
@@ -357,7 +358,7 @@ export default class ItemDetail extends Component {
     };
 
     render() {
-        const { data, rules, comboData, comboDlgClosed } = this.state;
+        const { data, rules, filterRules, comboData, comboDlgClosed } = this.state;
         const { collapsed } = this.props;
         if( collapsed ) return null;
         if(!data) return <img width="100%" alt="item" src={ noItem }/>;
@@ -369,6 +370,7 @@ export default class ItemDetail extends Component {
                     style = {{ height: "100%" }}
                     ref = { detail=>this.detail=detail }
                     data = { data }
+                    filterRules={ filterRules }
                     idField = "nameField"
                     columnResizing
                     dblclickToEdit

@@ -8,6 +8,7 @@ export default class CodeEditor extends Component {
         this.state = {
             data: null,                             // Редактируемые данные у редактора кодов
             rules: null,
+            filterRules: [],
             //reducer: null,                          // Строка для сравнения состояния свойства data
 
             old: null,                              // Значение data до изменения, для отката
@@ -276,7 +277,7 @@ export default class CodeEditor extends Component {
     };
 
     render(){
-        const { data, rules, comboDlgTitle,
+        const { data, rules, filterRules, comboDlgTitle,
             comboDlgSaveTitle, comboDlgCancelTitle, selection } = this.state;
         // Передадим в родителя обработчик клавиатурных событий
         return(
@@ -299,6 +300,7 @@ export default class CodeEditor extends Component {
                     <div className="f-full">
                         <DataGrid
                             ref={ ref => this.comboDlg = ref }
+                            filterRules={ filterRules }
                             dblclickToEdit
                             virtualScroll
                             selectionMode = "single"

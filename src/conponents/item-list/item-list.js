@@ -5,6 +5,7 @@ import ContextMenu from "../context-menu";
 import './item-list.css';
 import ErrorBoundry from "../error-boundry";
 import ItemEditor from "./item-editor";
+import { v4 as uuidv4 } from 'uuid';
 import { processingListData, cutRow } from "../../services/nodes-service";
 
 
@@ -44,6 +45,7 @@ export default class ItemList extends Component {
         this.constants = props.constants;
         this.list = null;
         this.viewRows = [];
+        this.filterRules = [];
         this.viewRowsLength = 0;
         this.itemMatrix = props.itemMatrix;
         this.getRules = props.getRules;
@@ -240,7 +242,7 @@ export default class ItemList extends Component {
     handleListRowCreate = (row) =>{
         const { titleCreateItem } = this.state;
         console.log("Создаем новый row ", row);
-        const itemUuid = require('uuid/v4');
+        const itemUuid = uuidv4();
         const code = null;
         const parentUuid = row.parentUuid;
         this.setState({
@@ -269,7 +271,7 @@ export default class ItemList extends Component {
     handleListRowPaste = (row) =>{
         const { copied, titleAddItem } = this.state;
         if(copied){
-            const itemUuid = require('uuid/v4');
+            const itemUuid = uuidv4();
             const code = null;
             const parentUuid = row.parentUuid;
             this.setState({
@@ -287,6 +289,11 @@ export default class ItemList extends Component {
             selection: this.viewRows
         })
     };
+
+    handleFilterChange = ( filterRules ) =>{
+        this.setState({ filterRules })
+    };
+
     /* ----------------- Render методы отображения компонента ------------------------- */
     renderColumn = ({ value, row }) => {
         const proxy = () => {
@@ -357,7 +364,7 @@ export default class ItemList extends Component {
     };
 
     render() {
-        const { data, selection, operators, title, model, closed, menu } = this.state;
+        const { data, selection, operators, title, model, closed, menu, filterRules } = this.state;
         const { measureTypes } = this.constants;
 
         console.log("itemList render--->>>");
@@ -382,6 +389,8 @@ export default class ItemList extends Component {
                     selection={ selection }
                     style = {{ height: 'calc(100vh - 60px)' }}
                     filterable
+                    filterRules={ filterRules }
+                    onFilterChange =  { this.handleFilterChange }
                     //loading = { this.props.loading }
                     columnMoving
                     columnResizing
