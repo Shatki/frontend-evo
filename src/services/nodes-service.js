@@ -167,12 +167,15 @@ export const processingItemData = (itemData, matrix) => {
 
     return processedMatrix.map((property) => {
         // Если в свойстве пришел массив, то отправляем его в dataField
+        // А valueField присваиваем первый элемент массива
         const data = itemData[property.nameField];
-        const valueField = !Array.isArray(data) ? { "valueField": data }: {};
+        const valueField = !Array.isArray(data) ? { "valueField": data }: { "valueField": data[0] };
+        //console.log("processedItemData=> valueField", data);
         const dataField = Array.isArray(data) ?
-            property.dataField = data.map((code)=>{ return { value: code, text: code } }) : {};
-        //console.log(property);
+            { "dataField": data.map((code)=>{ return { value: code, text: code } }) }: {};
+        //console.log("processedItemData=> property/valueField/dataField/new", property, valueField, dataField);
         return Object.assign({}, property, valueField, dataField);
+
     });
 };
 

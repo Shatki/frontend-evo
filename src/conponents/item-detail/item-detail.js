@@ -107,15 +107,17 @@ export default class ItemDetail extends Component {
 
     handleItemDetailKeyEnter = () =>{
         const { editing, focus } = this.state;
+        console.log("ItemDetail Enter Key editing/focus=>", editing, focus);
         if (!editing) this.detail.beginEdit(focus, "valueField");
         else this.detail.endEdit();
-        console.log("ItemDetail Enter Key editing/focus=>", editing, focus);
+
     };
 
     handleItemDetailKeyEscape = () =>{
         const { editing, focus } = this.state;
-        this.detail.cancelEdit();
         console.log("ItemDetail Escape Key editing/focus=>", editing, focus);
+        this.detail.cancelEdit();
+
     };
 
     /* ----------------- Combo Code Editor Dialog ------------------------------------- */
@@ -127,7 +129,8 @@ export default class ItemDetail extends Component {
             if(!state.comboDlgClosed){
                 // Восстановим реактор клавиатуры
                 this.setKeyboardEventsListener(this.componentKeyboardEvents);
-                // console.log("Save data=>", this.state.comboDlgEditRow, this.state.comboData, data);
+                console.log("Save data=> comboDlgEditRow/state.comboData/arr",
+                    this.state.comboDlgEditRow, this.state.comboData, arr);
                 if(Array.isArray(arr) && state.comboDlgEditRow){
                     //let dataFieldObject = {};
                     // Для itemData чтобы потом отдать изменения
@@ -160,7 +163,7 @@ export default class ItemDetail extends Component {
 
     handleClickComboDlgEditor = (row) => {
         this.setState((state)=>{
-            //console.log('Combo dlg Editor=>', row);
+            console.log('Combo dlg Editor=>', row);
             if(state.comboDlgClosed){
                 return{
                     comboData: row.dataField,
@@ -182,15 +185,16 @@ export default class ItemDetail extends Component {
     };
 
     handleEditEnd = ({ row, originalValue, errors }) =>{
-        console.log("itemDetail Обновление row/было=>", row, originalValue);
         // todo: Добавить проверку на объект row & originalValue
-
-        if(row.valueField !==originalValue.valueField) {
+        // todo: Сделать сравнение dataField
+        if(row.valueField !==originalValue.valueField ||
+            JSON.stringify(row.dataField) !== JSON.stringify(originalValue.dataField)) {
             const { itemDetailData } = this.props;
-            console.log("EndEdit row/originalValue/errors=>", row, originalValue, errors );
+            //console.log("itemDetail EndEdit row/itemDetailData=>", row, itemDetailData);
             const updateData = Object.assign({}, itemDetailData);
-            updateData[row.nameField] = row.valueField;
-            console.log("itemDetail Обновление item=>", updateData);
+            updateData[row.nameField] = Array.isArray(row.dataField) ?
+                row.dataField.map((code)=>code.value) : row.valueField;
+            //console.log("itemDetail EndEdit Обновление item=>", updateData);
             this.updateItemData(updateData);
 
             this.setState({
@@ -212,7 +216,7 @@ export default class ItemDetail extends Component {
         this.setState({
             editing: false,
         });
-        //console.log("CancelEdit=>", row, originalValue, errors );
+        console.log("CancelEdit=>", row, originalValue, errors );
     };
 
     handleItemClick = (value) => {
@@ -293,6 +297,7 @@ export default class ItemDetail extends Component {
         else if (row.editorField === "combo"){
             // const dataRow =
             const data = Array.isArray(row.dataField) ? row.dataField : this.constants[row.dataField] || null;
+            console.log("renderEditor(combo) data=>",data);
             if(data && row.dataField){
                 const value = row.valueField === null ?
                     data[0] : data.find(item => (item.value === row.valueField));
@@ -328,9 +333,10 @@ export default class ItemDetail extends Component {
             if(node) return(<div>{ node.text }</div>);}
         else if(row.editorField === "combo"){
             const dataField = Array.isArray(row.dataField) ? row.dataField : this.constants[row.dataField] || null;
-            //console.log("renderView=>combo=>dataField=>", dataField, row.valueField);
-            if(row.valueField===null && Array.isArray(dataField))
-                return(<div>{ dataField[0].text }</div>);
+            // Todo
+            console.log("renderView dataField/valueField", row.dataField, row.valueField);
+            //if(row.valueField===null && Array.isArray(dataField))
+            //    return(<div>{ row.valueField }</div>);
             if(row.valueField !== null && Array.isArray(dataField)){
                 const value = dataField.find(item => (item.value === row.valueField));
                 if (value !== undefined) return(<div>{ value.text }</div>);

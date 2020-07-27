@@ -45,6 +45,7 @@ export default class CodeEditor extends Component {
     /* ----------------- Data operations ---------------------------------------------- */
     updateData = () =>{
         const { comboData, rules } = this.props;
+        console.log("itemCodeEditor=> comboData/state.data", comboData, this.state.data);
         //const reducer = data.reduce((res, el) => res + el.value, "");
         if(Array.isArray(comboData)){
             this.setState({
